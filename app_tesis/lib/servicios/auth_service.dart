@@ -131,7 +131,7 @@ class AuthService {
   }
   
   /// Login para Estudiante
-  /// Backend devuelve: { token, rol, nombre, apellido, telefono, _id, emailEstudiante, fotoPerfil }
+  /// Backend devuelve: { token, rol, nombreEstudiante, telefono, _id, emailEstudiante, fotoPerfil }
   static Future<Map<String, dynamic>?> loginEstudiante({
     required String email,
     required String password,
@@ -155,9 +155,8 @@ class AuthService {
           rol: 'Estudiante',
           usuarioJson: {
             '_id': data['_id'],
-            'nombreEstudiante': data['nombre'] ?? '',
-            'apellido': data['apellido'] ?? '',
-            'emailEstudiante': data['emailEstudiante'],
+            'nombreEstudiante': data['nombreEstudiante'] ?? '',
+            'emailEstudiante': data['emailEstudiante'] ?? email,
             'telefono': data['telefono'],
             'fotoPerfil': data['fotoPerfil'],
             'rol': data['rol'],

@@ -8,7 +8,7 @@ import 'cambiar_password_screen.dart';
 class HomeScreen extends StatefulWidget {
   final Usuario usuario;
 
-  const HomeScreen({Key? key, required this.usuario}) : super(key: key);
+  const HomeScreen({super.key, required this.usuario});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

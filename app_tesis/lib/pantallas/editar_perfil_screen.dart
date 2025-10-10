@@ -8,7 +8,7 @@ import '../servicios/auth_service.dart';
 class EditarPerfilScreen extends StatefulWidget {
   final Usuario usuario;
 
-  const EditarPerfilScreen({Key? key, required this.usuario}) : super(key: key);
+  const EditarPerfilScreen({super.key, required this.usuario});
 
   @override
   State<EditarPerfilScreen> createState() => _EditarPerfilScreenState();

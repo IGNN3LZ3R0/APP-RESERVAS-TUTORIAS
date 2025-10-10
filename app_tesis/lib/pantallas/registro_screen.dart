@@ -4,7 +4,7 @@ import 'package:app_tesis/servicios/auth_service.dart';
 import 'package:app_tesis/config/routes.dart';
 
 class RegistroScreen extends StatefulWidget {
-  const RegistroScreen({Key? key}) : super(key: key);
+  const RegistroScreen({super.key});
 
   @override
   State<RegistroScreen> createState() => _RegistroScreenState();

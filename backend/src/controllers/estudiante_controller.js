@@ -116,17 +116,16 @@ const loginEstudiante = async (req, res) => {
     return res.status(401).json({ msg: "Lo sentimos, la contraseña es incorrecta." });
   }
 
-  const { nombre, apellido, telefono, _id, rol, fotoPerfil } = estudianteBDD;
+  const { nombreEstudiante, telefono, _id, rol, fotoPerfil } = estudianteBDD;
   const token = crearTokenJWT(_id, rol);
 
   res.status(200).json({
     token,
     rol,
-    nombre,
-    apellido,
+    nombreEstudiante,  // ✅ Cambiado de "nombre" a "nombreEstudiante"
     telefono,
     _id,
-    emailEstudiante,
+    emailEstudiante: estudianteBDD.emailEstudiante,
     fotoPerfil
   });
 };
