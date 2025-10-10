@@ -132,7 +132,6 @@ class AuthService {
   
   /// Login para Estudiante
   /// Backend devuelve: { token, rol, nombre, apellido, telefono, _id, emailEstudiante, fotoPerfil }
-  /// NOTA: Tu backend tiene 'nombre' y 'apellido' separados, pero en tu modelo es 'nombreEstudiante'
   static Future<Map<String, dynamic>?> loginEstudiante({
     required String email,
     required String password,
@@ -150,19 +149,14 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         
-        // Combinar nombre y apellido si vienen separados
-        String nombreCompleto = data['nombre'] ?? '';
-        if (data['apellido'] != null && data['apellido'].isNotEmpty) {
-          nombreCompleto += ' ${data['apellido']}';
-        }
-        
         // Guardar datos en SharedPreferences
         await _guardarSesion(
           token: data['token'],
           rol: 'Estudiante',
           usuarioJson: {
             '_id': data['_id'],
-            'nombreEstudiante': nombreCompleto,
+            'nombreEstudiante': data['nombre'] ?? '',
+            'apellido': data['apellido'] ?? '',
             'emailEstudiante': data['emailEstudiante'],
             'telefono': data['telefono'],
             'fotoPerfil': data['fotoPerfil'],

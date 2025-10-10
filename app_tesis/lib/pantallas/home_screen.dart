@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../modelos/usuario.dart';
 import '../servicios/auth_service.dart';
 import '../config/routes.dart';
+import 'editar_perfil_screen.dart';
+import 'cambiar_password_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Usuario usuario;
@@ -173,7 +175,7 @@ class _DashboardEstudiante extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '¡Hola, ${usuario.nombre}!',
+                            '¡Hola, ${usuario.nombreCompleto}!',
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
@@ -227,19 +229,31 @@ class _DashboardEstudiante extends StatelessWidget {
                   icon: Icons.event,
                   title: 'Mis Citas',
                   color: Colors.green,
-                  onTap: () {},
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Próximamente')),
+                    );
+                  },
                 ),
                 _QuickActionCard(
                   icon: Icons.history,
                   title: 'Historial',
                   color: Colors.orange,
-                  onTap: () {},
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Próximamente')),
+                    );
+                  },
                 ),
                 _QuickActionCard(
                   icon: Icons.help,
                   title: 'Ayuda',
                   color: Colors.purple,
-                  onTap: () {},
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Próximamente')),
+                    );
+                  },
                 ),
               ],
             ),
@@ -298,7 +312,11 @@ class _DashboardDocente extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications),
-            onPressed: () {},
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Notificaciones próximamente')),
+              );
+            },
           ),
         ],
       ),
@@ -366,10 +384,26 @@ class _DashboardDocente extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             
-            const Center(
+            Center(
               child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Text('No hay solicitudes pendientes'),
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.inbox,
+                      size: 64,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No hay solicitudes pendientes',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -445,11 +479,39 @@ class _DashboardAdministrador extends StatelessWidget {
   }
 }
 
-// Pantalla de Perfil
-class _PerfilScreen extends StatelessWidget {
+// Pantalla de Perfil - CORREGIDA
+class _PerfilScreen extends StatefulWidget {
   final Usuario usuario;
 
   const _PerfilScreen({required this.usuario});
+
+  @override
+  State<_PerfilScreen> createState() => _PerfilScreenState();
+}
+
+class _PerfilScreenState extends State<_PerfilScreen> {
+  late Usuario _usuario;
+
+  @override
+  void initState() {
+    super.initState();
+    _usuario = widget.usuario;
+  }
+
+  Future<void> _navegarAEditarPerfil() async {
+    final usuarioActualizado = await Navigator.push<Usuario>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditarPerfilScreen(usuario: _usuario),
+      ),
+    );
+
+    if (usuarioActualizado != null) {
+      setState(() {
+        _usuario = usuarioActualizado;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -463,14 +525,14 @@ class _PerfilScreen extends StatelessWidget {
           Center(
             child: CircleAvatar(
               radius: 60,
-              backgroundImage: NetworkImage(usuario.fotoPerfilUrl),
+              backgroundImage: NetworkImage(_usuario.fotoPerfilUrl),
               backgroundColor: Colors.grey[300],
             ),
           ),
           const SizedBox(height: 20),
           
           Text(
-            usuario.nombre,
+            _usuario.nombre,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 26,
@@ -480,7 +542,7 @@ class _PerfilScreen extends StatelessWidget {
           const SizedBox(height: 8),
           
           Text(
-            usuario.email,
+            _usuario.email,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
@@ -491,7 +553,7 @@ class _PerfilScreen extends StatelessWidget {
           
           Center(
             child: Chip(
-              label: Text(usuario.rol),
+              label: Text(_usuario.rol),
               backgroundColor: const Color(0xFF1565C0).withOpacity(0.1),
               labelStyle: const TextStyle(
                 color: Color(0xFF1565C0),
@@ -506,21 +568,22 @@ class _PerfilScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.edit),
             title: const Text('Editar Perfil'),
+            subtitle: const Text('Actualiza tu información personal'),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Próximamente')),
-              );
-            },
+            onTap: _navegarAEditarPerfil,
           ),
           
           ListTile(
             leading: const Icon(Icons.lock),
             title: const Text('Cambiar Contraseña'),
+            subtitle: const Text('Actualiza tu contraseña'),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Próximamente')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CambiarPasswordScreen(usuario: _usuario),
+                ),
               );
             },
           ),

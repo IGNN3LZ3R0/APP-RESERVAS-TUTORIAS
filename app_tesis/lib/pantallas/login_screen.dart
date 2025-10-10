@@ -297,17 +297,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
-                          '¿No tienes cuenta?',
+                          '¿No tienes cuenta? ',
                           style: TextStyle(color: Colors.grey),
                         ),
                         TextButton(
                           onPressed: () {
-                            // TODO: Navegar a registro
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Función de registro próximamente'),
-                              ),
-                            );
+                            AppRoutes.navigateToRegistro(context);
                           },
                           child: const Text('Regístrate'),
                         ),

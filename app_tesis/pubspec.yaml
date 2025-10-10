@@ -11,10 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  
-  # Dependencias necesarias para la app
-  http: ^1.1.0                    # Para peticiones HTTP al backend
-  shared_preferences: ^2.2.2      # Para guardar token y datos localmente
+  http: ^1.1.0
+  shared_preferences: ^2.2.2
+  image_picker: ^1.0.7
+  permission_handler: ^11.3.0
 
 dev_dependencies:
   flutter_test:

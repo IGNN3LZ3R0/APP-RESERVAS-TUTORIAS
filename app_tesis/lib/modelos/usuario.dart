@@ -1,6 +1,7 @@
 class Usuario {
   final String id;
   final String nombre;
+  final String? apellido; // Apellido del estudiante
   final String email;
   final String rol; // 'Administrador', 'Docente', 'Estudiante'
   final String? fotoPerfil;
@@ -25,6 +26,7 @@ class Usuario {
   Usuario({
     required this.id,
     required this.nombre,
+    this.apellido,
     required this.email,
     required this.rol,
     this.fotoPerfil,
