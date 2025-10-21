@@ -9,7 +9,7 @@ class PerfilService {
   
   // ========== ACTUALIZAR PERFIL ==========
   
-  /// Actualizar perfil de Administrador
+/// Actualizar perfil de Administrador
   static Future<Map<String, dynamic>?> actualizarPerfilAdministrador({
     required String id,
     String? nombre,
@@ -22,13 +22,13 @@ class PerfilService {
 
       var request = http.MultipartRequest(
         'PUT',
-        Uri.parse(ApiConfig.actualizarPerfilAdmin(id)), // CORREGIDO
+        Uri.parse(ApiConfig.actualizarPerfilAdmin(id)),
       );
 
       // Agregar headers
       request.headers.addAll(ApiConfig.getMultipartHeaders(token: token));
 
-      // Agregar campos
+      // Agregar campos - SIEMPRE enviar los campos aunque no cambien
       if (nombre != null && nombre.isNotEmpty) {
         request.fields['nombreAdministrador'] = nombre;
       }
@@ -68,7 +68,7 @@ class PerfilService {
       }
     } catch (e) {
       print('Error en actualizarPerfilAdministrador: $e');
-      return {'error': 'Error de conexión'};
+      return {'error': 'Error de conexión: $e'};
     }
   }
 
@@ -92,17 +92,16 @@ class PerfilService {
 
       var request = http.MultipartRequest(
         'PUT',
-        Uri.parse(ApiConfig.actualizarPerfilDocente(id)), // CORREGIDO
+        Uri.parse('${ApiConfig.baseUrl}/docente/actualizar/$id'), // ✅ CORRECTO
       );
 
       request.headers.addAll(ApiConfig.getMultipartHeaders(token: token));
 
-      // Agregar campos
+      // Agregar campos - SIN EMAIL porque el backend de docente no permite cambiarlo
       if (nombre != null) request.fields['nombreDocente'] = nombre;
       if (cedula != null) request.fields['cedulaDocente'] = cedula;
       if (fechaNacimiento != null) request.fields['fechaNacimientoDocente'] = fechaNacimiento;
       if (oficina != null) request.fields['oficinaDocente'] = oficina;
-      if (email != null) request.fields['emailDocente'] = email;
       if (emailAlternativo != null) request.fields['emailAlternativoDocente'] = emailAlternativo;
       if (celular != null) request.fields['celularDocente'] = celular;
       if (semestreAsignado != null) request.fields['semestreAsignado'] = semestreAsignado;
@@ -148,7 +147,7 @@ class PerfilService {
 
       var request = http.MultipartRequest(
         'PUT',
-        Uri.parse(ApiConfig.actualizarPerfilEstudiante(id)), // CORREGIDO
+        Uri.parse('${ApiConfig.baseUrl}/estudiante/$id'), // ✅ CORRECTO
       );
 
       request.headers.addAll(ApiConfig.getMultipartHeaders(token: token));
@@ -193,7 +192,7 @@ class PerfilService {
       if (token == null) return {'error': 'No hay sesión activa'};
 
       final response = await http.put(
-        Uri.parse(ApiConfig.actualizarPasswordAdmin(id)), // CORREGIDO
+        Uri.parse('${ApiConfig.baseUrl}/administrador/actualizarpassword/$id'),
         headers: ApiConfig.getHeaders(token: token),
         body: jsonEncode({
           'passwordactual': passwordActual,
@@ -225,7 +224,7 @@ class PerfilService {
       if (token == null) return {'error': 'No hay sesión activa'};
 
       final response = await http.put(
-        Uri.parse(ApiConfig.actualizarPasswordEstudiante(id)), // CORREGIDO
+        Uri.parse('${ApiConfig.baseUrl}/estudiante/actualizarpassword/$id'),
         headers: ApiConfig.getHeaders(token: token),
         body: jsonEncode({
           'passwordactual': passwordActual,
@@ -257,7 +256,7 @@ class PerfilService {
       if (token == null) return {'error': 'No hay sesión activa'};
 
       final response = await http.put(
-        Uri.parse(ApiConfig.actualizarPasswordDocente(id)), // AGREGADO
+        Uri.parse('${ApiConfig.baseUrl}/docente/actualizarpassword/$id'),
         headers: ApiConfig.getHeaders(token: token),
         body: jsonEncode({
           'passwordactual': passwordActual,

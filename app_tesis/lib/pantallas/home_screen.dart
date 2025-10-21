@@ -4,6 +4,7 @@ import '../servicios/auth_service.dart';
 import '../config/routes.dart';
 import 'editar_perfil_screen.dart';
 import 'cambiar_password_screen.dart';
+import 'admin/crear_docente_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Usuario usuario;
@@ -16,95 +17,84 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  late Usuario _usuario;
 
   // Obtener las pantallas según el rol
   List<Widget> _getScreens() {
-    switch (widget.usuario.rol) {
+    switch (_usuario.rol) {
       case 'Administrador':
         return [
-          _DashboardAdministrador(usuario: widget.usuario),
+          _DashboardAdministrador(usuario: _usuario),
           _PlaceholderScreen(titulo: 'Gestión de Usuarios'),
           _PlaceholderScreen(titulo: 'Reportes'),
-          _PerfilScreen(usuario: widget.usuario),
+          _PerfilScreen(usuario: _usuario, onUserUpdated: _onUserUpdated),
         ];
       case 'Docente':
         return [
-          _DashboardDocente(usuario: widget.usuario),
+          _DashboardDocente(usuario: _usuario),
           _PlaceholderScreen(titulo: 'Mi Disponibilidad'),
           _PlaceholderScreen(titulo: 'Mis Tutorías'),
-          _PerfilScreen(usuario: widget.usuario),
+          _PerfilScreen(usuario: _usuario, onUserUpdated: _onUserUpdated),
         ];
       case 'Estudiante':
       default:
         return [
-          _DashboardEstudiante(usuario: widget.usuario),
+          _DashboardEstudiante(usuario: _usuario),
           _PlaceholderScreen(titulo: 'Docentes Disponibles'),
           _PlaceholderScreen(titulo: 'Mis Citas'),
-          _PerfilScreen(usuario: widget.usuario),
+          _PerfilScreen(usuario: _usuario, onUserUpdated: _onUserUpdated),
         ];
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _usuario = widget.usuario;
+    debugPrint(
+      'HomeScreen init usuario: ${_usuario.id} | ${_usuario.nombre} | rol=${_usuario.rol}',
+    );
+  }
+
+  void _onUserUpdated(Usuario u) {
+    debugPrint(
+      'HomeScreen onUserUpdated: ${u.id} | ${u.nombre} | rol=${u.rol}',
+    );
+    setState(() {
+      _usuario = u;
+    });
+  }
+
   // Obtener los items del bottom navigation según el rol
   List<BottomNavigationBarItem> _getNavItems() {
-    switch (widget.usuario.rol) {
+    switch (_usuario.rol) {
       case 'Administrador':
         return const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Inicio',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Usuarios',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Inicio'),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Usuarios'),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
             label: 'Reportes',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ];
       case 'Docente':
         return const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Inicio',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
             label: 'Horario',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Tutorías',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Tutorías'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ];
       case 'Estudiante':
       default:
         return const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Inicio',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Docentes',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.event),
-            label: 'Mis Citas',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Docentes'),
+          BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Mis Citas'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ];
     }
   }
@@ -114,10 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final screens = _getScreens();
 
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: screens,
-      ),
+      body: IndexedStack(index: _selectedIndex, children: screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => setState(() => _selectedIndex = index),
@@ -201,10 +188,7 @@ class _DashboardEstudiante extends StatelessWidget {
             // Acciones rápidas
             const Text(
               'Acciones rápidas',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
 
@@ -262,13 +246,10 @@ class _DashboardEstudiante extends StatelessWidget {
             // Próximas tutorías
             const Text(
               'Próximas tutorías',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            
+
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(32),
@@ -282,10 +263,7 @@ class _DashboardEstudiante extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       'No tienes tutorías próximas',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -341,10 +319,7 @@ class _DashboardDocente extends StatelessWidget {
                     const SizedBox(height: 8),
                     const Text(
                       'Docente',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -377,30 +352,20 @@ class _DashboardDocente extends StatelessWidget {
 
             const Text(
               'Solicitudes pendientes',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            
+
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Column(
                   children: [
-                    Icon(
-                      Icons.inbox,
-                      size: 64,
-                      color: Colors.grey[400],
-                    ),
+                    Icon(Icons.inbox, size: 64, color: Colors.grey[400]),
                     const SizedBox(height: 16),
                     Text(
                       'No hay solicitudes pendientes',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -414,6 +379,7 @@ class _DashboardDocente extends StatelessWidget {
 }
 
 // Dashboard para Administradores
+// Dashboard para Administradores
 class _DashboardAdministrador extends StatelessWidget {
   final Usuario usuario;
 
@@ -422,9 +388,7 @@ class _DashboardAdministrador extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Panel de Administración'),
-      ),
+      appBar: AppBar(title: const Text('Panel de Administración')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -432,9 +396,28 @@ class _DashboardAdministrador extends StatelessWidget {
           children: [
             Text(
               'Bienvenido, ${usuario.nombre}',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 24),
+
+            // Botón para crear docente
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CrearDocenteScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.person_add),
+                label: const Text('Crear Nuevo Docente'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(16),
+                  backgroundColor: const Color(0xFF1565C0),
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -482,8 +465,9 @@ class _DashboardAdministrador extends StatelessWidget {
 // Pantalla de Perfil - CORREGIDA
 class _PerfilScreen extends StatefulWidget {
   final Usuario usuario;
+  final ValueChanged<Usuario>? onUserUpdated;
 
-  const _PerfilScreen({required this.usuario});
+  const _PerfilScreen({required this.usuario, this.onUserUpdated});
 
   @override
   State<_PerfilScreen> createState() => _PerfilScreenState();
@@ -516,9 +500,7 @@ class _PerfilScreenState extends State<_PerfilScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mi Perfil'),
-      ),
+      appBar: AppBar(title: const Text('Mi Perfil')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -530,27 +512,21 @@ class _PerfilScreenState extends State<_PerfilScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          
+
           Text(
             _usuario.nombre,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          
+
           Text(
             _usuario.email,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
           const SizedBox(height: 8),
-          
+
           Center(
             child: Chip(
               label: Text(_usuario.rol),
@@ -562,9 +538,9 @@ class _PerfilScreenState extends State<_PerfilScreen> {
             ),
           ),
           const SizedBox(height: 32),
-          
+
           const Divider(),
-          
+
           ListTile(
             leading: const Icon(Icons.edit),
             title: const Text('Editar Perfil'),
@@ -572,7 +548,7 @@ class _PerfilScreenState extends State<_PerfilScreen> {
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: _navegarAEditarPerfil,
           ),
-          
+
           ListTile(
             leading: const Icon(Icons.lock),
             title: const Text('Cambiar Contraseña'),
@@ -582,14 +558,15 @@ class _PerfilScreenState extends State<_PerfilScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CambiarPasswordScreen(usuario: _usuario),
+                  builder: (context) =>
+                      CambiarPasswordScreen(usuario: _usuario),
                 ),
               );
             },
           ),
-          
+
           const Divider(),
-          
+
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text(
@@ -601,7 +578,9 @@ class _PerfilScreenState extends State<_PerfilScreen> {
                 context: context,
                 builder: (context) => AlertDialog(
                   title: const Text('Cerrar Sesión'),
-                  content: const Text('¿Estás seguro de que deseas cerrar sesión?'),
+                  content: const Text(
+                    '¿Estás seguro de que deseas cerrar sesión?',
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
@@ -713,10 +692,7 @@ class _StatCard extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -739,26 +715,16 @@ class _PlaceholderScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.construction,
-              size: 80,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.construction, size: 80, color: Colors.grey[400]),
             const SizedBox(height: 24),
             Text(
               'Pantalla en construcción',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Text(
               titulo,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[500]),
             ),
           ],
         ),

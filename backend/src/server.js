@@ -17,11 +17,12 @@ dotenv.config()
 app.set('port',process.env.port || 3000)
 
 // CORS configurado para frontend específico
-app.use(cors({
   //origin: 'https://gestion-tutorias-modified-aw-1.onrender.com',  // Reemplaza con tu URL frontend
-  origin: 'http://10.0.2.2:3000',
+app.use(cors({
+  origin: '*', // Permite todas las conexiones (solo para desarrollo)
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
 app.use(fileUpload({

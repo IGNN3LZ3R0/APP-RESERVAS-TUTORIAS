@@ -17,30 +17,30 @@ class EditarPerfilScreen extends StatefulWidget {
 class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nombreController = TextEditingController();
-  final _apellidoController = TextEditingController();
   final _emailController = TextEditingController();
   final _telefonoController = TextEditingController();
   final _cedulaController = TextEditingController();
   final _oficinaController = TextEditingController();
   final _celularController = TextEditingController();
   final _emailAlternativoController = TextEditingController();
-  
+
   File? _imagenSeleccionada;
   bool _isLoading = false;
+  bool _hasChanges = false;
+  late Map<String, String> _initialValues;
   final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
     _cargarDatos();
+    _setListeners();
   }
 
   void _cargarDatos() {
     _nombreController.text = widget.usuario.nombre;
     _emailController.text = widget.usuario.email;
-    
     if (widget.usuario.esEstudiante) {
-      _apellidoController.text = widget.usuario.apellido ?? '';
       _telefonoController.text = widget.usuario.telefono ?? '';
     } else if (widget.usuario.esDocente) {
       _cedulaController.text = widget.usuario.cedula ?? '';
@@ -48,19 +48,72 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
       _celularController.text = widget.usuario.celular ?? '';
       _emailAlternativoController.text = widget.usuario.emailAlternativo ?? '';
     }
+    // Guardar valores iniciales para detectar cambios
+    _initialValues = {
+      'nombre': _nombreController.text.trim(),
+      'email': _emailController.text.trim(),
+      'telefono': _telefonoController.text.trim(),
+      'cedula': _cedulaController.text.trim(),
+      'oficina': _oficinaController.text.trim(),
+      'celular': _celularController.text.trim(),
+      'emailAlternativo': _emailAlternativoController.text.trim(),
+      'imagen': widget.usuario.fotoPerfil ?? '',
+    };
   }
 
   @override
   void dispose() {
     _nombreController.dispose();
-    _apellidoController.dispose();
     _emailController.dispose();
     _telefonoController.dispose();
     _cedulaController.dispose();
     _oficinaController.dispose();
     _celularController.dispose();
     _emailAlternativoController.dispose();
+    // remover listeners
+    _nombreController.removeListener(_checkForChanges);
+    _emailController.removeListener(_checkForChanges);
+    _telefonoController.removeListener(_checkForChanges);
+    _cedulaController.removeListener(_checkForChanges);
+    _oficinaController.removeListener(_checkForChanges);
+    _celularController.removeListener(_checkForChanges);
+    _emailAlternativoController.removeListener(_checkForChanges);
     super.dispose();
+  }
+
+  void _setListeners() {
+    _nombreController.addListener(_checkForChanges);
+    _emailController.addListener(_checkForChanges);
+    _telefonoController.addListener(_checkForChanges);
+    _cedulaController.addListener(_checkForChanges);
+    _oficinaController.addListener(_checkForChanges);
+    _celularController.addListener(_checkForChanges);
+    _emailAlternativoController.addListener(_checkForChanges);
+  }
+
+  void _checkForChanges() {
+    bool changed = false;
+
+    if (_nombreController.text.trim() != _initialValues['nombre'])
+      changed = true;
+    if (_emailController.text.trim() != _initialValues['email']) changed = true;
+    if (_telefonoController.text.trim() != _initialValues['telefono'])
+      changed = true;
+    if (_cedulaController.text.trim() != _initialValues['cedula'])
+      changed = true;
+    if (_oficinaController.text.trim() != _initialValues['oficina'])
+      changed = true;
+    if (_celularController.text.trim() != _initialValues['celular'])
+      changed = true;
+    if (_emailAlternativoController.text.trim() !=
+        _initialValues['emailAlternativo'])
+      changed = true;
+    // Imagen: si se seleccionó una nueva imagen, consideramos cambio
+    if (_imagenSeleccionada != null) changed = true;
+
+    if (changed != _hasChanges) {
+      setState(() => _hasChanges = changed);
+    }
   }
 
   // Mostrar opciones para seleccionar imagen
@@ -78,10 +131,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
             children: [
               const Text(
                 'Seleccionar foto',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
               ListTile(
@@ -93,14 +143,18 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library, color: Color(0xFF1565C0)),
+                leading: const Icon(
+                  Icons.photo_library,
+                  color: Color(0xFF1565C0),
+                ),
                 title: const Text('Elegir de galería'),
                 onTap: () {
                   Navigator.pop(context);
                   _seleccionarImagen(ImageSource.gallery);
                 },
               ),
-              if (_imagenSeleccionada != null || widget.usuario.fotoPerfil != null)
+              if (_imagenSeleccionada != null ||
+                  widget.usuario.fotoPerfil != null)
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.red),
                   title: const Text('Eliminar foto'),
@@ -186,12 +240,38 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
       _mostrarError(resultado['error']);
     } else {
       _mostrarExito('Perfil actualizado correctamente');
-      
-      // Obtener usuario actualizado
-      final usuarioActualizado = await AuthService.getUsuarioActual();
-      
-      await Future.delayed(const Duration(milliseconds: 500));
-      
+
+      // Obtener perfil actualizado desde el servidor para garantizar datos canonicos
+      final usuarioActualizado = await AuthService.obtenerPerfil();
+
+      // Actualizar estado local: limpiar imagen seleccionada y resetear indicadores
+      setState(() {
+        _imagenSeleccionada = null;
+        _hasChanges = false;
+        if (usuarioActualizado != null) {
+          _nombreController.text = usuarioActualizado.nombre;
+          _emailController.text = usuarioActualizado.email;
+          _telefonoController.text = usuarioActualizado.telefono ?? '';
+          _cedulaController.text = usuarioActualizado.cedula ?? '';
+          _oficinaController.text = usuarioActualizado.oficina ?? '';
+          _celularController.text = usuarioActualizado.celular ?? '';
+          _emailAlternativoController.text =
+              usuarioActualizado.emailAlternativo ?? '';
+          _initialValues = {
+            'nombre': _nombreController.text.trim(),
+            'email': _emailController.text.trim(),
+            'telefono': _telefonoController.text.trim(),
+            'cedula': _cedulaController.text.trim(),
+            'oficina': _oficinaController.text.trim(),
+            'celular': _celularController.text.trim(),
+            'emailAlternativo': _emailAlternativoController.text.trim(),
+            'imagen': usuarioActualizado.fotoPerfil ?? '',
+          };
+        }
+      });
+
+      await Future.delayed(const Duration(milliseconds: 300));
+
       if (!mounted) return;
       Navigator.pop(context, usuarioActualizado);
     }
@@ -223,7 +303,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
       appBar: AppBar(
         title: const Text('Editar Perfil'),
         actions: [
-          if (!_isLoading)
+          if (!_isLoading && _hasChanges)
             IconButton(
               icon: const Icon(Icons.check),
               onPressed: _guardarCambios,
@@ -243,7 +323,8 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                     radius: 60,
                     backgroundImage: _imagenSeleccionada != null
                         ? FileImage(_imagenSeleccionada!)
-                        : NetworkImage(widget.usuario.fotoPerfilUrl) as ImageProvider,
+                        : NetworkImage(widget.usuario.fotoPerfilUrl)
+                              as ImageProvider,
                     backgroundColor: Colors.grey[300],
                   ),
                   Positioned(
@@ -303,6 +384,27 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Puedes actualizar tu nombre, email y foto de perfil',
+                        style: TextStyle(fontSize: 12, color: Colors.blue[900]),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ] else if (widget.usuario.esDocente) ...[
               TextFormField(

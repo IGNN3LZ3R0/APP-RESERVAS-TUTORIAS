@@ -1,13 +1,14 @@
+import '../config/api_config.dart';
+
 class Usuario {
   final String id;
   final String nombre;
-  final String? apellido; // Apellido del estudiante
   final String email;
   final String rol; // 'Administrador', 'Docente', 'Estudiante'
   final String? fotoPerfil;
   final bool status;
   final bool confirmEmail;
-  
+
   // Campos específicos según el rol
   final String? cedula; // Solo docentes
   final String? telefono; // Estudiantes
@@ -18,7 +19,7 @@ class Usuario {
   final String? semestreAsignado; // Docentes
   final DateTime? fechaNacimiento; // Docentes
   final DateTime? fechaIngreso; // Docentes
-  
+
   // OAuth (no lo usaremos por ahora)
   final bool isOAuth;
   final String? oauthProvider;
@@ -26,7 +27,6 @@ class Usuario {
   Usuario({
     required this.id,
     required this.nombre,
-    this.apellido,
     required this.email,
     required this.rol,
     this.fotoPerfil,
@@ -60,7 +60,7 @@ class Usuario {
           isOAuth: json['isOAuth'] ?? false,
           oauthProvider: json['oauthProvider'],
         );
-      
+
       case 'Docente':
         return Usuario(
           id: json['_id'] ?? json['id'] ?? '',
@@ -74,8 +74,8 @@ class Usuario {
           celular: json['celularDocente'],
           oficina: json['oficinaDocente'],
           emailAlternativo: json['emailAlternativoDocente'],
-          asignaturas: json['asignaturas'] != null 
-              ? List<String>.from(json['asignaturas']) 
+          asignaturas: json['asignaturas'] != null
+              ? List<String>.from(json['asignaturas'])
               : null,
           semestreAsignado: json['semestreAsignado'],
           fechaNacimiento: json['fechaNacimientoDocente'] != null
@@ -87,7 +87,7 @@ class Usuario {
           isOAuth: json['isOAuth'] ?? false,
           oauthProvider: json['oauthProvider'],
         );
-      
+
       case 'Estudiante':
       default:
         return Usuario(
@@ -126,8 +126,10 @@ class Usuario {
     if (emailAlternativo != null) data['emailAlternativo'] = emailAlternativo;
     if (asignaturas != null) data['asignaturas'] = asignaturas;
     if (semestreAsignado != null) data['semestreAsignado'] = semestreAsignado;
-    if (fechaNacimiento != null) data['fechaNacimiento'] = fechaNacimiento!.toIso8601String();
-    if (fechaIngreso != null) data['fechaIngreso'] = fechaIngreso!.toIso8601String();
+    if (fechaNacimiento != null)
+      data['fechaNacimiento'] = fechaNacimiento!.toIso8601String();
+    if (fechaIngreso != null)
+      data['fechaIngreso'] = fechaIngreso!.toIso8601String();
 
     return data;
   }
@@ -194,7 +196,28 @@ class Usuario {
   bool get esDocente => rol == 'Docente';
   bool get esEstudiante => rol == 'Estudiante';
   bool get esOAuth => isOAuth;
-  
+
   String get nombreCompleto => nombre;
-  String get fotoPerfilUrl => fotoPerfil ?? 'https://cdn-icons-png.flaticon.com/512/4715/4715329.png';
+  String get fotoPerfilUrl {
+    final placeholder =
+        'https://cdn-icons-png.flaticon.com/512/4715/4715329.png';
+    if (fotoPerfil == null || fotoPerfil!.trim().isEmpty) return placeholder;
+    final f = fotoPerfil!.trim();
+    if (f.startsWith('http')) return f;
+    // si viene una ruta relativa (p.ej. /uploads/...), la normalizamos con baseUrl
+    var base = ApiConfig.baseUrl;
+    // baseUrl contiene '/api' al final; si la ruta ya incluye '/api' o '/uploads' manejamos sin duplicar
+    if (f.startsWith('/')) {
+      // quitar '/api' si base termina en '/api' para apuntar al host
+      if (base.endsWith('/api')) {
+        base = base.replaceFirst('/api', '');
+      }
+      return base + f;
+    }
+    // caso: ruta sin slash inicial
+    if (base.endsWith('/')) {
+      return base + f;
+    }
+    return '$base/$f';
+  }
 }
