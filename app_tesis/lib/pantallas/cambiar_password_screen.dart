@@ -42,7 +42,6 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
     setState(() => _isLoading = true);
 
     Map<String, dynamic>? resultado;
-
     try {
       if (widget.usuario.esAdministrador) {
         resultado = await PerfilService.cambiarPasswordAdministrador(
@@ -77,7 +76,6 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
       Navigator.pop(context);
     }
   }
-
   void _mostrarError(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -93,7 +91,6 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
       ),
     );
   }
-
   void _mostrarExito(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -109,7 +106,6 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
