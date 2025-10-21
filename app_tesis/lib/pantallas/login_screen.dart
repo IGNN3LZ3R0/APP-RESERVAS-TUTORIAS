@@ -3,7 +3,7 @@ import '../servicios/auth_service.dart';
 import '../config/routes.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -94,6 +94,14 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => AppRoutes.navigateToBienvenida(context),
+        ),
+        title: const Text('Iniciar Sesión'),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -114,24 +122,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   
                   // Título
                   const Text(
-                    'ESFOT Tutorías',
+                    'Bienvenido',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1565C0),
                     ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Escuela de Formación de Tecnólogos',
+                    'Ingresa tus credenciales',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey,
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 32),
                   
                   // Selector de rol
                   Container(
@@ -288,25 +296,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  
-                  // Registro para estudiantes
-                  if (_rolSeleccionado == 'Estudiante')
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          '¿No tienes cuenta? ',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            AppRoutes.navigateToRegistro(context);
-                          },
-                          child: const Text('Regístrate'),
-                        ),
-                      ],
-                    ),
                 ],
               ),
             ),

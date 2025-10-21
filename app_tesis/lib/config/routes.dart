@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../pantallas/splash_screen.dart';
+import '../pantallas/bienvenida_screen.dart';
 import '../pantallas/login_screen.dart';
 import '../pantallas/registro_screen.dart';
 import '../pantallas/home_screen.dart';
@@ -8,6 +9,7 @@ import '../modelos/usuario.dart';
 class AppRoutes {
   // Nombres de las rutas
   static const String splash = '/';
+  static const String bienvenida = '/bienvenida';
   static const String login = '/login';
   static const String registro = '/registro';
   static const String home = '/home';
@@ -16,6 +18,7 @@ class AppRoutes {
   static Map<String, WidgetBuilder> get routes {
     return {
       splash: (context) => const SplashScreen(),
+      bienvenida: (context) => const BienvenidaScreen(),
       login: (context) => const LoginScreen(),
       registro: (context) => const RegistroScreen(),
     };
@@ -98,6 +101,11 @@ class AppRoutes {
     Usuario usuario,
   ) {
     return pushAndRemoveUntil(context, home, arguments: usuario);
+  }
+
+  /// Navega a la pantalla de bienvenida
+  static Future<void> navigateToBienvenida(BuildContext context) {
+    return pushAndRemoveUntil(context, bienvenida);
   }
 
   /// Navega al login limpiando el stack

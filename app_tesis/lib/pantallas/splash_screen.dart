@@ -3,7 +3,7 @@ import '../servicios/auth_service.dart';
 import '../config/routes.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({Key? key}) : super(key: key);
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -54,8 +54,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       // Usuario logueado, ir al home
       AppRoutes.navigateToHome(context, usuario);
     } else {
-      // No hay sesión, ir al login
-      AppRoutes.navigateToLogin(context);
+      // No hay sesión, ir a la pantalla de bienvenida
+      AppRoutes.navigateToBienvenida(context);
     }
   }
 
