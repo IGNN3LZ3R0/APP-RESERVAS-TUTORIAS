@@ -1,3 +1,4 @@
+// lib/pantallas/login_screen.dart
 import 'package:flutter/material.dart';
 import '../servicios/auth_service.dart';
 import '../config/routes.dart';
@@ -16,7 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   
   bool _isLoading = false;
   bool _obscurePassword = true;
-  String _rolSeleccionado = 'Estudiante'; // Por defecto
+  String _rolSeleccionado = 'Estudiante';
 
   @override
   void dispose() {
@@ -32,7 +33,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     Map<String, dynamic>? resultado;
 
-    // Llamar al servicio según el rol seleccionado
     switch (_rolSeleccionado) {
       case 'Administrador':
         resultado = await AuthService.loginAdministrador(
@@ -59,18 +59,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!mounted) return;
 
-    // Verificar si hay error
     if (resultado != null && resultado.containsKey('error')) {
       _mostrarError(resultado['error']);
       return;
     }
 
-    // Login exitoso
+    // Verificar si requiere confirmación de email
+    if (resultado != null && resultado.containsKey('requiresConfirmation')) {
+      _mostrarDialogoConfirmacion(resultado['email']);
+      return;
+    }
+
     if (resultado != null && resultado.containsKey('token')) {
       final usuario = await AuthService.getUsuarioActual();
       
       if (usuario != null) {
-        // Navegar al home
         AppRoutes.navigateToHome(context, usuario);
       } else {
         _mostrarError('Error al obtener datos del usuario');
@@ -78,6 +81,26 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
       _mostrarError('Credenciales incorrectas');
     }
+  }
+
+  void _mostrarDialogoConfirmacion(String email) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirma tu cuenta'),
+        content: Text(
+          'Debes confirmar tu cuenta antes de iniciar sesión.\n\n'
+          'Hemos enviado un correo a:\n$email\n\n'
+          'Abre el enlace desde tu dispositivo móvil para activar tu cuenta.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Entendido'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _mostrarError(String mensaje) {
@@ -254,12 +277,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () {
-                        // TODO: Navegar a recuperar contraseña
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Función de recuperar contraseña próximamente'),
-                          ),
-                        );
+                        AppRoutes.navigateToRecuperarPassword(context);
                       },
                       child: const Text('¿Olvidaste tu contraseña?'),
                     ),

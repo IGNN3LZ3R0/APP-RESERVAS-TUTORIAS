@@ -1,8 +1,10 @@
+// lib/config/routes.dart
 import 'package:flutter/material.dart';
 import '../pantallas/splash_screen.dart';
 import '../pantallas/bienvenida_screen.dart';
 import '../pantallas/login_screen.dart';
 import '../pantallas/registro_screen.dart';
+import '../pantallas/recuperar_password_screen.dart';
 import '../pantallas/home_screen.dart';
 import '../modelos/usuario.dart';
 
@@ -12,6 +14,7 @@ class AppRoutes {
   static const String bienvenida = '/bienvenida';
   static const String login = '/login';
   static const String registro = '/registro';
+  static const String recuperarPassword = '/recuperar-password';
   static const String home = '/home';
 
   // Mapa de rutas estáticas
@@ -21,6 +24,7 @@ class AppRoutes {
       bienvenida: (context) => const BienvenidaScreen(),
       login: (context) => const LoginScreen(),
       registro: (context) => const RegistroScreen(),
+      recuperarPassword: (context) => const RecuperarPasswordScreen(),
     };
   }
 
@@ -116,5 +120,10 @@ class AppRoutes {
   /// Navega a registro
   static Future<void> navigateToRegistro(BuildContext context) {
     return push(context, registro);
+  }
+
+  /// Navega a recuperar contraseña
+  static Future<void> navigateToRecuperarPassword(BuildContext context) {
+    return push(context, recuperarPassword);
   }
 }
