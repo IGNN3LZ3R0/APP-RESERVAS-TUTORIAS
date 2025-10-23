@@ -1,39 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:app_links/app_links.dart';
 import 'dart:async';
 import '../servicios/auth_service.dart';
 import '../config/routes.dart';
 
 class DeepLinkService {
-  static const platform = MethodChannel('com.example.app_tesis/deeplink');
-  static StreamController<String>? _streamController;
+  static AppLinks? _appLinks;
+  static StreamSubscription<Uri>? _linkSubscription;
   
   static Future<void> initialize() async {
-    _streamController = StreamController<String>.broadcast();
+    _appLinks = AppLinks();
     
-    platform.setMethodCallHandler((call) async {
-      print('📱 [DeepLink] Method call: ${call.method}');
-      if (call.method == 'onDeepLink') {
-        final String? link = call.arguments;
-        print('📱 [DeepLink] Link recibido: $link');
-        if (link != null) {
-          _streamController?.add(link);
-        }
-      }
-    });
-    
+    // Verificar link inicial
     try {
-      final String? initialLink = await platform.invokeMethod('getInitialLink');
-      if (initialLink != null) {
-        print('📱 [DeepLink] Link inicial: $initialLink');
-        _streamController?.add(initialLink);
+      final initialUri = await _appLinks!.getInitialLink();
+      if (initialUri != null) {
+        print('📱 [DeepLink] Link inicial: $initialUri');
       }
     } catch (e) {
       print('❌ [DeepLink] Error obteniendo link inicial: $e');
     }
+    
+    // Escuchar nuevos links
+    _linkSubscription = _appLinks!.uriLinkStream.listen(
+      (Uri? uri) {
+        if (uri != null) {
+          print('📱 [DeepLink] Nuevo link: $uri');
+        }
+      },
+      onError: (err) {
+        print('❌ [DeepLink] Error: $err');
+      },
+    );
   }
 
-  static Stream<String>? get deepLinkStream => _streamController?.stream;
+  static Stream<Uri>? get deepLinkStream => _appLinks?.uriLinkStream;
 
   static void handleDeepLink(BuildContext context, String link) {
     print('🔗 [DeepLink] Procesando: $link');
@@ -205,6 +206,6 @@ class DeepLinkService {
   }
 
   static void dispose() {
-    _streamController?.close();
+    _linkSubscription?.cancel();
   }
 }

@@ -1,4 +1,3 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'config/theme.dart';
 import 'config/routes.dart';
@@ -9,10 +8,7 @@ import 'pantallas/confirmar_codigo_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Inicializar servicio de deep links
   await DeepLinkService.initialize();
-
   runApp(const TutoriasApp());
 }
 
@@ -33,14 +29,13 @@ class _TutoriasAppState extends State<TutoriasApp> {
   }
 
   void _listenToDeepLinks() {
-    DeepLinkService.deepLinkStream?.listen((String link) {
-      print('🔗 Deep link detectado en app: $link');
-
-      // Esperar un momento para que el navigator esté listo
+    DeepLinkService.deepLinkStream?.listen((uri) {
+      print('🔗 Deep link detectado: $uri');
+      
       Future.delayed(const Duration(milliseconds: 500), () {
         final context = _navigatorKey.currentContext;
         if (context != null) {
-          DeepLinkService.handleDeepLink(context, link);
+          DeepLinkService.handleDeepLink(context, uri.toString());
         }
       });
     });
@@ -53,13 +48,11 @@ class _TutoriasAppState extends State<TutoriasApp> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ESFOT Tutorías',
       debugShowCheckedModeBanner: false,
       navigatorKey: _navigatorKey,
-      // Localizations for Material widgets (DatePicker, etc.)
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

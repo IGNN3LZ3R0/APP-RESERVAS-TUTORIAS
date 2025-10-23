@@ -22,9 +22,12 @@ const registroEstudiante = async (req, res) => {
       });
     }
 
+    // 🔥 NORMALIZAR EMAIL DESDE EL REGISTRO
+    const emailNormalizado = emailEstudiante.trim().toLowerCase();
+
     // Validar formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailEstudiante)) {
+    if (!emailRegex.test(emailNormalizado)) {
       return res.status(400).json({
         msg: "Por favor ingresa un email válido."
       });
@@ -42,16 +45,21 @@ const registroEstudiante = async (req, res) => {
       return res.status(400).json({
         msg: "El nombre debe tener entre 3 y 100 caracteres."
       });
-    }    // Verificar si el email ya existe
-    const verificarEmailBDD = await Estudiante.findOne({ emailEstudiante });
+    }
+
+    // 🔥 BUSCAR CON EMAIL NORMALIZADO
+    const verificarEmailBDD = await Estudiante.findOne({ emailEstudiante: emailNormalizado });
     if (verificarEmailBDD) {
       return res.status(400).json({
         msg: "Este email ya está registrado. Intenta iniciar sesión o recuperar tu contraseña."
       });
     }
 
-    // Crear nuevo estudiante
-    const nuevoEstudiante = new Estudiante(req.body);
+    // 🔥 CREAR ESTUDIANTE CON EMAIL NORMALIZADO
+    const nuevoEstudiante = new Estudiante({
+      ...req.body,
+      emailEstudiante: emailNormalizado
+    });
     nuevoEstudiante.password = await nuevoEstudiante.encrypPassword(password);
 
     // Generar token de confirmación
@@ -60,10 +68,10 @@ const registroEstudiante = async (req, res) => {
     // Guardar en base de datos
     await nuevoEstudiante.save();
 
-    // Enviar email de confirmación
+    // Enviar email de confirmación (usar el email original para que lo vea bien el usuario)
     await sendMailToRegister(emailEstudiante, token);
 
-    console.log(`✅ Estudiante registrado: ${emailEstudiante}`);
+    console.log(`✅ Estudiante registrado: ${emailNormalizado}`);
 
     res.status(200).json({
       msg: "¡Registro exitoso! Revisa tu correo electrónico para activar tu cuenta.",
@@ -141,9 +149,10 @@ const confirmarMailEstudiante = async (req, res) => {
  */
 const recuperarPasswordEstudiante = async (req, res) => {
   try {
-    const { email } = req.body;
+    // 🔥 ACEPTA AMBOS NOMBRES DE CAMPOS
+    const email = req.body.emailEstudiante || req.body.email;
 
-    console.log('📨 Solicitud de recuperación recibida:', { email });
+    console.log('📨 Solicitud de recuperación recibida:', { email, body: req.body });
 
     if (!email) {
       console.log('❌ Email no proporcionado');
@@ -153,12 +162,12 @@ const recuperarPasswordEstudiante = async (req, res) => {
       });
     }
 
-    // Normalizar el email (trim y lowercase)
+    // 🔥 NORMALIZAR EMAIL
     const emailNormalizado = email.trim().toLowerCase();
 
-    console.log('� Buscando estudiante con email:', emailNormalizado);
+    console.log('🔍 Buscando estudiante con email:', emailNormalizado);
 
-    // Buscar estudiante - asegurarse de usar el email normalizado
+    // 🔥 BUSCAR CON EMAIL NORMALIZADO
     const estudianteBDD = await Estudiante.findOne({
       emailEstudiante: emailNormalizado
     });
@@ -170,6 +179,8 @@ const recuperarPasswordEstudiante = async (req, res) => {
         msg: "Lo sentimos, el usuario no existe"
       });
     }
+
+    console.log('✅ Estudiante encontrado:', estudianteBDD.nombreEstudiante);
 
     // Verificar si la cuenta está confirmada
     if (!estudianteBDD.confirmEmail) {
@@ -185,18 +196,22 @@ const recuperarPasswordEstudiante = async (req, res) => {
     estudianteBDD.token = token;
     await estudianteBDD.save();
 
-    // Enviar email
+    console.log('🔑 Token generado:', token);
+
+    // Enviar email (usar el email original para que se vea bien)
     await sendMailToRecoveryPassword(email, token);
 
     console.log(`✅ Email de recuperación enviado a: ${email}`);
 
     res.status(200).json({
+      success: true,
       msg: "Correo enviado. Revisa tu bandeja de entrada y sigue las instrucciones para restablecer tu contraseña.",
       email: email
     });
   } catch (error) {
     console.error("❌ Error en recuperación de password:", error);
     res.status(500).json({
+      success: false,
       msg: "Error al procesar solicitud. Intenta nuevamente.",
       error: error.message
     });
@@ -211,6 +226,8 @@ const comprobarTokenPasswordEstudiante = async (req, res) => {
   try {
     const { token } = req.params;
 
+    console.log('🔍 Comprobando token:', token);
+
     if (!token) {
       return res.status(400).json({
         success: false,
@@ -222,11 +239,14 @@ const comprobarTokenPasswordEstudiante = async (req, res) => {
     const estudianteBDD = await Estudiante.findOne({ token });
 
     if (!estudianteBDD || !estudianteBDD.token) {
+      console.log('❌ Token no encontrado o ya usado');
       return res.status(404).json({
         success: false,
         msg: "Token inválido o expirado. Solicita un nuevo enlace de recuperación."
       });
     }
+
+    console.log('✅ Token válido para:', estudianteBDD.emailEstudiante);
 
     res.status(200).json({
       success: true,
@@ -251,21 +271,26 @@ const crearNuevoPasswordEstudiante = async (req, res) => {
     const { password, confirmpassword } = req.body;
     const { token } = req.params;
 
+    console.log('🔐 Intentando crear nueva contraseña con token:', token);
+
     // Validaciones
     if (!password || !confirmpassword) {
       return res.status(400).json({
+        success: false,
         msg: "Debes llenar todos los campos"
       });
     }
 
     if (password !== confirmpassword) {
       return res.status(400).json({
+        success: false,
         msg: "Las contraseñas no coinciden"
       });
     }
 
     if (password.length < 8) {
       return res.status(400).json({
+        success: false,
         msg: "La contraseña debe tener al menos 8 caracteres"
       });
     }
@@ -274,17 +299,21 @@ const crearNuevoPasswordEstudiante = async (req, res) => {
     const estudianteBDD = await Estudiante.findOne({ token });
 
     if (!estudianteBDD) {
+      console.log('❌ Token no encontrado');
       return res.status(404).json({
+        success: false,
         msg: "Token inválido o expirado. Solicita un nuevo enlace de recuperación."
       });
     }
+
+    console.log('✅ Actualizando contraseña para:', estudianteBDD.emailEstudiante);
 
     // Actualizar contraseña
     estudianteBDD.token = null;
     estudianteBDD.password = await estudianteBDD.encrypPassword(password);
     await estudianteBDD.save();
 
-    console.log(`✅ Contraseña actualizada para: ${estudianteBDD.emailEstudiante}`);
+    console.log(`✅ Contraseña actualizada exitosamente`);
 
     res.status(200).json({
       success: true,
@@ -294,6 +323,7 @@ const crearNuevoPasswordEstudiante = async (req, res) => {
   } catch (error) {
     console.error("❌ Error creando nueva contraseña:", error);
     res.status(500).json({
+      success: false,
       msg: "Error al actualizar contraseña. Intenta nuevamente"
     });
   }
@@ -316,8 +346,11 @@ const loginEstudiante = async (req, res) => {
       });
     }
 
-    // Buscar estudiante
-    const estudianteBDD = await Estudiante.findOne({ emailEstudiante })
+    // 🔥 NORMALIZAR EMAIL EN LOGIN
+    const emailNormalizado = emailEstudiante.trim().toLowerCase();
+
+    // 🔥 BUSCAR CON EMAIL NORMALIZADO
+    const estudianteBDD = await Estudiante.findOne({ emailEstudiante: emailNormalizado })
       .select("-status -__v -token -createdAt -updatedAt");
 
     if (!estudianteBDD) {
@@ -346,7 +379,7 @@ const loginEstudiante = async (req, res) => {
     // Generar token JWT
     const token = crearTokenJWT(estudianteBDD._id, estudianteBDD.rol);
 
-    console.log(`✅ Login exitoso: ${emailEstudiante}`);
+    console.log(`✅ Login exitoso: ${emailNormalizado}`);
 
     // Responder con datos del usuario
     res.status(200).json({
@@ -443,7 +476,7 @@ const actualizarPerfilEstudiante = async (req, res) => {
 
     // ========== ACTUALIZAR EMAIL ==========
     if (req.body.emailEstudiante !== undefined && req.body.emailEstudiante !== null && req.body.emailEstudiante.trim() !== '') {
-      const nuevoEmail = req.body.emailEstudiante.trim();
+      const nuevoEmail = req.body.emailEstudiante.trim().toLowerCase();
 
       // Validar formato de email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -467,17 +500,14 @@ const actualizarPerfilEstudiante = async (req, res) => {
 
     // ========== ACTUALIZAR TELÉFONO ==========
     if (telefono !== undefined && telefono !== null && telefono.trim() !== '') {
-      // Limpiar teléfono (quitar espacios, guiones, paréntesis)
       const telefonoLimpio = telefono.replace(/[\s\-\(\)]/g, '');
 
-      // Validar que solo contenga números
       if (!/^\d+$/.test(telefonoLimpio)) {
         return res.status(400).json({
           msg: "El teléfono solo debe contener números"
         });
       }
 
-      // Validar longitud (10 dígitos para Ecuador)
       if (telefonoLimpio.length !== 10) {
         return res.status(400).json({
           msg: "El teléfono debe tener exactamente 10 dígitos"
@@ -491,13 +521,11 @@ const actualizarPerfilEstudiante = async (req, res) => {
     // ========== ACTUALIZAR FOTO DE PERFIL ==========
     if (req.files?.imagen) {
       try {
-        // Eliminar imagen anterior de Cloudinary si existe
         if (estudianteBDD.fotoPerfilID) {
           await cloudinary.uploader.destroy(estudianteBDD.fotoPerfilID);
           console.log(`🗑️ Imagen anterior eliminada de Cloudinary`);
         }
 
-        // Validar tipo de archivo
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
         if (!allowedTypes.includes(req.files.imagen.mimetype)) {
           await fs.unlink(req.files.imagen.tempFilePath);
@@ -506,8 +534,7 @@ const actualizarPerfilEstudiante = async (req, res) => {
           });
         }
 
-        // Validar tamaño de archivo (máximo 5MB)
-        const maxSize = 5 * 1024 * 1024; // 5MB en bytes
+        const maxSize = 5 * 1024 * 1024;
         if (req.files.imagen.size > maxSize) {
           await fs.unlink(req.files.imagen.tempFilePath);
           return res.status(400).json({
@@ -515,7 +542,6 @@ const actualizarPerfilEstudiante = async (req, res) => {
           });
         }
 
-        // Subir nueva imagen a Cloudinary
         const { secure_url, public_id } = await cloudinary.uploader.upload(
           req.files.imagen.tempFilePath,
           {
@@ -525,10 +551,11 @@ const actualizarPerfilEstudiante = async (req, res) => {
               { quality: "auto:good" }
             ]
           }
-        ); estudianteBDD.fotoPerfil = secure_url;
+        );
+
+        estudianteBDD.fotoPerfil = secure_url;
         estudianteBDD.fotoPerfilID = public_id;
 
-        // Eliminar archivo temporal
         await fs.unlink(req.files.imagen.tempFilePath);
 
         console.log(`📸 Foto de perfil actualizada`);
@@ -543,7 +570,6 @@ const actualizarPerfilEstudiante = async (req, res) => {
     // Guardar cambios
     await estudianteBDD.save();
 
-    // Obtener estudiante actualizado sin campos sensibles
     const estudianteActualizado = await Estudiante.findById(id)
       .select('-password -token -__v -createdAt -updatedAt');
 
@@ -571,7 +597,6 @@ const actualizarPasswordEstudiante = async (req, res) => {
   try {
     const { passwordactual, passwordnuevo } = req.body;
 
-    // Validaciones
     if (!passwordactual || !passwordnuevo) {
       return res.status(400).json({
         msg: "Debes proporcionar la contraseña actual y la nueva contraseña"
@@ -584,7 +609,6 @@ const actualizarPasswordEstudiante = async (req, res) => {
       });
     }
 
-    // Buscar estudiante
     const estudianteBDD = await Estudiante.findById(req.estudianteBDD._id);
 
     if (!estudianteBDD) {
@@ -593,7 +617,6 @@ const actualizarPasswordEstudiante = async (req, res) => {
       });
     }
 
-    // Verificar contraseña actual
     const verificarPassword = await estudianteBDD.matchPassword(passwordactual);
 
     if (!verificarPassword) {
@@ -602,7 +625,6 @@ const actualizarPasswordEstudiante = async (req, res) => {
       });
     }
 
-    // Actualizar contraseña
     estudianteBDD.password = await estudianteBDD.encrypPassword(passwordnuevo);
     await estudianteBDD.save();
 
