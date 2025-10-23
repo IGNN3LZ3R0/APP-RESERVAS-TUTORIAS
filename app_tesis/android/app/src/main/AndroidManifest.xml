@@ -6,10 +6,11 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     
-    <application
-        android:label="ESFOT Tutorías"
-        android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+<application
+    android:label="ESFOT Tutorías"
+    android:name="${applicationName}"
+    android:icon="@mipmap/ic_launcher"
+    android:usesCleartextTraffic="true">
         
         <activity
             android:name=".MainActivity"

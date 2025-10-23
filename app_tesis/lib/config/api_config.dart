@@ -1,9 +1,6 @@
 class ApiConfig {
   // ========== CONFIGURACIÓN BASE ==========
-  // URL del backend en producción
-  // static const String baseUrl = 'https://gestion-tutorias-modified-aw.onrender.com/api';
-  
-  // Para desarrollo local, descomenta y usa tu IP local:
+  // ✅ Para emulador de Android Studio
   static const String baseUrl = 'http://10.0.2.2:3000/api';
   
   // ========== ENDPOINTS DE AUTENTICACIÓN ==========

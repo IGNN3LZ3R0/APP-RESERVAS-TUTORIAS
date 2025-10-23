@@ -19,6 +19,25 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   late Usuario _usuario;
 
+  @override
+  void initState() {
+    super.initState();
+    _usuario = widget.usuario;
+    debugPrint(
+      'HomeScreen init usuario: ${_usuario.id} | ${_usuario.nombre} | rol=${_usuario.rol}',
+    );
+  }
+
+  // ✅ MÉTODO CORREGIDO: Actualiza el usuario en toda la app
+  void _onUserUpdated(Usuario usuarioActualizado) {
+    debugPrint(
+      'HomeScreen onUserUpdated: ${usuarioActualizado.id} | ${usuarioActualizado.nombre}',
+    );
+    setState(() {
+      _usuario = usuarioActualizado;
+    });
+  }
+
   // Obtener las pantallas según el rol
   List<Widget> _getScreens() {
     switch (_usuario.rol) {
@@ -47,24 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _usuario = widget.usuario;
-    debugPrint(
-      'HomeScreen init usuario: ${_usuario.id} | ${_usuario.nombre} | rol=${_usuario.rol}',
-    );
-  }
-
-  void _onUserUpdated(Usuario u) {
-    debugPrint(
-      'HomeScreen onUserUpdated: ${u.id} | ${u.nombre} | rol=${u.rol}',
-    );
-    setState(() {
-      _usuario = u;
-    });
-  }
-
   // Obtener los items del bottom navigation según el rol
   List<BottomNavigationBarItem> _getNavItems() {
     switch (_usuario.rol) {
@@ -72,19 +73,13 @@ class _HomeScreenState extends State<HomeScreen> {
         return const [
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Inicio'),
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Usuarios'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: 'Reportes',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Reportes'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ];
       case 'Docente':
         return const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Horario',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Horario'),
           BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Tutorías'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ];
@@ -379,7 +374,6 @@ class _DashboardDocente extends StatelessWidget {
 }
 
 // Dashboard para Administradores
-// Dashboard para Administradores
 class _DashboardAdministrador extends StatelessWidget {
   final Usuario usuario;
 
@@ -462,7 +456,7 @@ class _DashboardAdministrador extends StatelessWidget {
   }
 }
 
-// Pantalla de Perfil - CORREGIDA
+// Pantalla de Perfil
 class _PerfilScreen extends StatefulWidget {
   final Usuario usuario;
   final ValueChanged<Usuario>? onUserUpdated;
@@ -482,6 +476,7 @@ class _PerfilScreenState extends State<_PerfilScreen> {
     _usuario = widget.usuario;
   }
 
+  // ✅ MÉTODO CORREGIDO: Navega y actualiza el perfil
   Future<void> _navegarAEditarPerfil() async {
     final usuarioActualizado = await Navigator.push<Usuario>(
       context,
@@ -490,10 +485,13 @@ class _PerfilScreenState extends State<_PerfilScreen> {
       ),
     );
 
-    if (usuarioActualizado != null) {
+    if (usuarioActualizado != null && mounted) {
       setState(() {
         _usuario = usuarioActualizado;
       });
+      
+      // ✅ ESTA LÍNEA ES LA CLAVE - Notifica al HomeScreen
+      widget.onUserUpdated?.call(usuarioActualizado);
     }
   }
 
