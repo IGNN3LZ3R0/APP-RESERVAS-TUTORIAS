@@ -40,15 +40,12 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
   void _cargarDatos() {
     _nombreController.text = widget.usuario.nombre;
     _emailController.text = widget.usuario.email;
-    if (widget.usuario.esEstudiante) {
-      _telefonoController.text = widget.usuario.telefono ?? '';
-    } else if (widget.usuario.esDocente) {
-      _cedulaController.text = widget.usuario.cedula ?? '';
-      _oficinaController.text = widget.usuario.oficina ?? '';
-      _celularController.text = widget.usuario.celular ?? '';
-      _emailAlternativoController.text = widget.usuario.emailAlternativo ?? '';
-    }
-    // Guardar valores iniciales para detectar cambios
+    _telefonoController.text = widget.usuario.telefono ?? '';
+    _cedulaController.text = widget.usuario.cedula ?? '';
+    _oficinaController.text = widget.usuario.oficina ?? '';
+    _celularController.text = widget.usuario.celular ?? '';
+    _emailAlternativoController.text = widget.usuario.emailAlternativo ?? '';
+
     _initialValues = {
       'nombre': _nombreController.text.trim(),
       'email': _emailController.text.trim(),
@@ -61,26 +58,6 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     };
   }
 
-  @override
-  void dispose() {
-    _nombreController.dispose();
-    _emailController.dispose();
-    _telefonoController.dispose();
-    _cedulaController.dispose();
-    _oficinaController.dispose();
-    _celularController.dispose();
-    _emailAlternativoController.dispose();
-    // remover listeners
-    _nombreController.removeListener(_checkForChanges);
-    _emailController.removeListener(_checkForChanges);
-    _telefonoController.removeListener(_checkForChanges);
-    _cedulaController.removeListener(_checkForChanges);
-    _oficinaController.removeListener(_checkForChanges);
-    _celularController.removeListener(_checkForChanges);
-    _emailAlternativoController.removeListener(_checkForChanges);
-    super.dispose();
-  }
-
   void _setListeners() {
     _nombreController.addListener(_checkForChanges);
     _emailController.addListener(_checkForChanges);
@@ -89,6 +66,26 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     _oficinaController.addListener(_checkForChanges);
     _celularController.addListener(_checkForChanges);
     _emailAlternativoController.addListener(_checkForChanges);
+  }
+
+  @override
+  void dispose() {
+    _nombreController.removeListener(_checkForChanges);
+    _emailController.removeListener(_checkForChanges);
+    _telefonoController.removeListener(_checkForChanges);
+    _cedulaController.removeListener(_checkForChanges);
+    _oficinaController.removeListener(_checkForChanges);
+    _celularController.removeListener(_checkForChanges);
+    _emailAlternativoController.removeListener(_checkForChanges);
+
+    _nombreController.dispose();
+    _emailController.dispose();
+    _telefonoController.dispose();
+    _cedulaController.dispose();
+    _oficinaController.dispose();
+    _celularController.dispose();
+    _emailAlternativoController.dispose();
+    super.dispose();
   }
 
   void _checkForChanges() {
@@ -108,7 +105,6 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     if (_emailAlternativoController.text.trim() !=
         _initialValues['emailAlternativo'])
       changed = true;
-    // Imagen: si se seleccionó una nueva imagen, consideramos cambio
     if (_imagenSeleccionada != null) changed = true;
 
     if (changed != _hasChanges) {
@@ -116,7 +112,6 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     }
   }
 
-  // Mostrar opciones para seleccionar imagen
   Future<void> _mostrarOpcionesImagen() async {
     showModalBottomSheet(
       context: context,
@@ -170,7 +165,6 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     );
   }
 
-  // Seleccionar imagen desde cámara o galería
   Future<void> _seleccionarImagen(ImageSource source) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(
@@ -190,7 +184,6 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     }
   }
 
-  // Guardar cambios
   Future<void> _guardarCambios() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -218,15 +211,14 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
           imagen: _imagenSeleccionada,
         );
       } else if (widget.usuario.esEstudiante) {
-        // Para estudiante solo se puede actualizar la foto
-        if (_imagenSeleccionada != null) {
-          resultado = await PerfilService.actualizarPerfilEstudiante(
-            id: widget.usuario.id,
-            imagen: _imagenSeleccionada!,
-          );
-        } else {
-          resultado = {'msg': 'No hay cambios para guardar'};
-        }
+        // Estudiante: ahora permitimos nombre, email y teléfono además de la foto
+        resultado = await PerfilService.actualizarPerfilEstudiante(
+          id: widget.usuario.id,
+          nombre: _nombreController.text.trim(),
+          telefono: _telefonoController.text.trim(),
+          email: _emailController.text.trim(),
+          imagen: _imagenSeleccionada,
+        );
       }
     } catch (e) {
       resultado = {'error': 'Error inesperado: $e'};
@@ -238,43 +230,45 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
 
     if (resultado != null && resultado.containsKey('error')) {
       _mostrarError(resultado['error']);
-    } else {
-      _mostrarExito('Perfil actualizado correctamente');
-
-      // Obtener perfil actualizado desde el servidor para garantizar datos canonicos
-      final usuarioActualizado = await AuthService.obtenerPerfil();
-
-      // Actualizar estado local: limpiar imagen seleccionada y resetear indicadores
-      setState(() {
-        _imagenSeleccionada = null;
-        _hasChanges = false;
-        if (usuarioActualizado != null) {
-          _nombreController.text = usuarioActualizado.nombre;
-          _emailController.text = usuarioActualizado.email;
-          _telefonoController.text = usuarioActualizado.telefono ?? '';
-          _cedulaController.text = usuarioActualizado.cedula ?? '';
-          _oficinaController.text = usuarioActualizado.oficina ?? '';
-          _celularController.text = usuarioActualizado.celular ?? '';
-          _emailAlternativoController.text =
-              usuarioActualizado.emailAlternativo ?? '';
-          _initialValues = {
-            'nombre': _nombreController.text.trim(),
-            'email': _emailController.text.trim(),
-            'telefono': _telefonoController.text.trim(),
-            'cedula': _cedulaController.text.trim(),
-            'oficina': _oficinaController.text.trim(),
-            'celular': _celularController.text.trim(),
-            'emailAlternativo': _emailAlternativoController.text.trim(),
-            'imagen': usuarioActualizado.fotoPerfil ?? '',
-          };
-        }
-      });
-
-      await Future.delayed(const Duration(milliseconds: 300));
-
-      if (!mounted) return;
-      Navigator.pop(context, usuarioActualizado);
+      return;
     }
+
+    _mostrarExito('Perfil actualizado correctamente');
+
+    // Obtener perfil actualizado desde el servidor para garantizar datos canonicos
+    final usuarioActualizado = await AuthService.obtenerPerfil();
+
+    // Actualizar estado local: limpiar imagen seleccionada y resetear indicadores
+    setState(() {
+      _imagenSeleccionada = null;
+      _hasChanges = false;
+      if (usuarioActualizado != null) {
+        _nombreController.text = usuarioActualizado.nombre;
+        _emailController.text = usuarioActualizado.email;
+        _telefonoController.text = usuarioActualizado.telefono ?? '';
+        _cedulaController.text = usuarioActualizado.cedula ?? '';
+        _oficinaController.text = usuarioActualizado.oficina ?? '';
+        _celularController.text = usuarioActualizado.celular ?? '';
+        _emailAlternativoController.text =
+            usuarioActualizado.emailAlternativo ?? '';
+
+        _initialValues = {
+          'nombre': _nombreController.text.trim(),
+          'email': _emailController.text.trim(),
+          'telefono': _telefonoController.text.trim(),
+          'cedula': _cedulaController.text.trim(),
+          'oficina': _oficinaController.text.trim(),
+          'celular': _celularController.text.trim(),
+          'emailAlternativo': _emailAlternativoController.text.trim(),
+          'imagen': usuarioActualizado.fotoPerfil ?? '',
+        };
+      }
+    });
+
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    if (!mounted) return;
+    Navigator.pop(context, usuarioActualizado);
   }
 
   void _mostrarError(String mensaje) {
@@ -315,7 +309,6 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Foto de perfil
             Center(
               child: Stack(
                 children: [
@@ -371,7 +364,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
-                  labelText: 'Correo electrónico',
+                  labelText: 'Correo electr f3nico',
                   prefixIcon: Icon(Icons.email),
                 ),
                 keyboardType: TextInputType.emailAddress,
@@ -380,7 +373,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                     return 'Por favor ingresa tu correo';
                   }
                   if (!value.contains('@')) {
-                    return 'Ingresa un correo válido';
+                    return 'Ingresa un correo v e1lido';
                   }
                   return null;
                 },
@@ -424,7 +417,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
               TextFormField(
                 controller: _cedulaController,
                 decoration: const InputDecoration(
-                  labelText: 'Cédula',
+                  labelText: 'C e9dula',
                   prefixIcon: Icon(Icons.badge),
                 ),
                 keyboardType: TextInputType.number,
@@ -465,54 +458,48 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                 ),
               ),
             ] else if (widget.usuario.esEstudiante) ...[
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Información Personal',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ListTile(
-                        leading: const Icon(Icons.person),
-                        title: const Text('Nombre'),
-                        subtitle: Text(widget.usuario.nombre),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.email),
-                        title: const Text('Correo'),
-                        subtitle: Text(widget.usuario.email),
-                      ),
-                      if (widget.usuario.telefono != null)
-                        ListTile(
-                          leading: const Icon(Icons.phone),
-                          title: const Text('Teléfono'),
-                          subtitle: Text(widget.usuario.telefono!),
-                        ),
-                      const Divider(),
-                      const Text(
-                        'Para estudiantes solo se puede cambiar la foto de perfil.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
-                  ),
+              TextFormField(
+                controller: _nombreController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre',
+                  prefixIcon: Icon(Icons.person),
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor ingresa tu nombre';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Correo electr f3nico',
+                  prefixIcon: Icon(Icons.email),
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor ingresa tu correo';
+                  }
+                  if (!value.contains('@')) return 'Ingresa un correo v e1lido';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _telefonoController,
+                decoration: const InputDecoration(
+                  labelText: 'Tel e9fono',
+                  prefixIcon: Icon(Icons.phone),
+                ),
+                keyboardType: TextInputType.phone,
               ),
             ],
 
             const SizedBox(height: 32),
 
-            // Botón guardar
             SizedBox(
               height: 50,
               child: ElevatedButton(

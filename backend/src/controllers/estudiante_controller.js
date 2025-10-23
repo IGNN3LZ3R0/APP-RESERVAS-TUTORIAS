@@ -143,19 +143,40 @@ const recuperarPasswordEstudiante = async (req, res) => {
   try {
     const { email } = req.body;
 
+    console.log('📨 Solicitud de recuperación recibida:', { email });
+
     if (!email) {
+      console.log('❌ Email no proporcionado');
       return res.status(400).json({
+        success: false,
         msg: "El email es obligatorio"
       });
     }
 
-    // Buscar estudiante
-    const estudianteBDD = await Estudiante.findOne({ emailEstudiante: email });
+    // Normalizar el email (trim y lowercase)
+    const emailNormalizado = email.trim().toLowerCase();
+
+    console.log('� Buscando estudiante con email:', emailNormalizado);
+
+    // Buscar estudiante - asegurarse de usar el email normalizado
+    const estudianteBDD = await Estudiante.findOne({
+      emailEstudiante: emailNormalizado
+    });
 
     if (!estudianteBDD) {
-      // Por seguridad, no revelar si el email existe o no
-      return res.status(200).json({
-        msg: "Si el email existe en nuestro sistema, recibirás un correo con instrucciones."
+      console.log(`ℹ️ Email no encontrado en la base de datos: ${emailNormalizado}`);
+      return res.status(404).json({
+        success: false,
+        msg: "Lo sentimos, el usuario no existe"
+      });
+    }
+
+    // Verificar si la cuenta está confirmada
+    if (!estudianteBDD.confirmEmail) {
+      console.log(`⚠️ Intento de recuperación para cuenta no confirmada: ${email}`);
+      return res.status(400).json({
+        success: false,
+        msg: "Por favor, confirma tu cuenta primero. Revisa tu correo electrónico."
       });
     }
 
@@ -418,6 +439,30 @@ const actualizarPerfilEstudiante = async (req, res) => {
       }
       estudianteBDD.nombreEstudiante = nombreEstudiante.trim();
       console.log(`📝 Nombre actualizado a: ${nombreEstudiante.trim()}`);
+    }
+
+    // ========== ACTUALIZAR EMAIL ==========
+    if (req.body.emailEstudiante !== undefined && req.body.emailEstudiante !== null && req.body.emailEstudiante.trim() !== '') {
+      const nuevoEmail = req.body.emailEstudiante.trim();
+
+      // Validar formato de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(nuevoEmail)) {
+        return res.status(400).json({
+          msg: "Por favor ingresa un email válido."
+        });
+      }
+
+      // Verificar si el email ya existe en otro usuario
+      const emailExistente = await Estudiante.findOne({ emailEstudiante: nuevoEmail });
+      if (emailExistente && emailExistente._id.toString() !== id) {
+        return res.status(400).json({
+          msg: "El email ingresado ya está en uso por otro usuario"
+        });
+      }
+
+      estudianteBDD.emailEstudiante = nuevoEmail;
+      console.log(`✉️ Email actualizado a: ${nuevoEmail}`);
     }
 
     // ========== ACTUALIZAR TELÉFONO ==========

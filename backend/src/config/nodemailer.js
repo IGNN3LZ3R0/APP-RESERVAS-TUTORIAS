@@ -56,21 +56,12 @@ const sendMailToRegister = (userMail, token) => {
             </p>
             
             <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
-              Haz clic en el botón de abajo <strong>desde tu dispositivo móvil</strong> para <strong>activar tu cuenta inmediatamente</strong>:
-            </p>
-            
-            <!-- Botón Principal -->
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${deepLink}" 
-                 style="display: inline-block; background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 18px; font-weight: 600; box-shadow: 0 4px 12px rgba(21,101,192,0.3); transition: transform 0.2s;">
-                🚀 Activar Mi Cuenta
-              </a>
-            </div>
-            
+              copia el codigo de abajo en nuesta app <strong>desde tu dispositivo móvil</strong> para <strong>activar tu cuenta inmediatamente</strong>:
+            </p>            
             <!-- Código alternativo -->
             <div style="background-color: #F5F5F5; border-left: 4px solid #1565C0; padding: 15px; margin: 25px 0; border-radius: 4px;">
               <p style="color: #666; font-size: 14px; margin: 0 0 10px;">
-                <strong>¿El botón no funciona?</strong> Copia este código y pégalo en la app:
+                <strong>Paso 1:</strong> Copia este código y pégalo en la app:
               </p>
               <div style="background-color: #ffffff; padding: 12px; border-radius: 6px; border: 1px dashed #1565C0; text-align: center;">
                 <code style="color: #1565C0; font-size: 16px; font-weight: 600; letter-spacing: 1px; word-break: break-all;">
@@ -113,6 +104,16 @@ const sendMailToRegister = (userMail, token) => {
     }
   });
 };
+//  BOTÓN ELIMINADO
+/*
+            <!-- Botón Principal -->
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${deepLink}" 
+                 style="display: inline-block; background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 18px; font-weight: 600; box-shadow: 0 4px 12px rgba(21,101,192,0.3); transition: transform 0.2s;">
+                🚀 Activar Mi Cuenta
+              </a>
+           </div>
+*/
 
 // ========== EMAIL DE RECUPERACIÓN DE CONTRASEÑA ==========
 const sendMailToRecoveryPassword = async (userMail, token) => {

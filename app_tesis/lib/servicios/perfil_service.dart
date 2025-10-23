@@ -6,10 +6,9 @@ import '../modelos/usuario.dart';
 import '../servicios/auth_service.dart';
 
 class PerfilService {
-  
   // ========== ACTUALIZAR PERFIL ==========
-  
-/// Actualizar perfil de Administrador
+
+  /// Actualizar perfil de Administrador
   static Future<Map<String, dynamic>?> actualizarPerfilAdministrador({
     required String id,
     String? nombre,
@@ -39,10 +38,7 @@ class PerfilService {
       // Agregar imagen si existe
       if (imagen != null) {
         request.files.add(
-          await http.MultipartFile.fromPath(
-            'imagen',
-            imagen.path,
-          ),
+          await http.MultipartFile.fromPath('imagen', imagen.path),
         );
       }
 
@@ -51,7 +47,7 @@ class PerfilService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        
+
         // Actualizar usuario en SharedPreferences
         if (data['administrador'] != null) {
           final usuarioActualizado = Usuario.fromJson(
@@ -60,7 +56,7 @@ class PerfilService {
           );
           await AuthService.actualizarUsuario(usuarioActualizado);
         }
-        
+
         return data;
       } else {
         final error = jsonDecode(response.body);
@@ -100,12 +96,16 @@ class PerfilService {
       // Agregar campos - SIN EMAIL porque el backend de docente no permite cambiarlo
       if (nombre != null) request.fields['nombreDocente'] = nombre;
       if (cedula != null) request.fields['cedulaDocente'] = cedula;
-      if (fechaNacimiento != null) request.fields['fechaNacimientoDocente'] = fechaNacimiento;
+      if (fechaNacimiento != null)
+        request.fields['fechaNacimientoDocente'] = fechaNacimiento;
       if (oficina != null) request.fields['oficinaDocente'] = oficina;
-      if (emailAlternativo != null) request.fields['emailAlternativoDocente'] = emailAlternativo;
+      if (emailAlternativo != null)
+        request.fields['emailAlternativoDocente'] = emailAlternativo;
       if (celular != null) request.fields['celularDocente'] = celular;
-      if (semestreAsignado != null) request.fields['semestreAsignado'] = semestreAsignado;
-      if (asignaturas != null) request.fields['asignaturas'] = jsonEncode(asignaturas);
+      if (semestreAsignado != null)
+        request.fields['semestreAsignado'] = semestreAsignado;
+      if (asignaturas != null)
+        request.fields['asignaturas'] = jsonEncode(asignaturas);
 
       // Agregar imagen
       if (imagen != null) {
@@ -119,12 +119,15 @@ class PerfilService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        
+
         if (data['docente'] != null) {
-          final usuarioActualizado = Usuario.fromJson(data['docente'], 'Docente');
+          final usuarioActualizado = Usuario.fromJson(
+            data['docente'],
+            'Docente',
+          );
           await AuthService.actualizarUsuario(usuarioActualizado);
         }
-        
+
         return data;
       } else {
         final error = jsonDecode(response.body);
@@ -136,10 +139,13 @@ class PerfilService {
     }
   }
 
-  /// Actualizar perfil de Estudiante (solo foto)
+  /// Actualizar perfil de Estudiante (nombre, teléfono y foto opcional)
   static Future<Map<String, dynamic>?> actualizarPerfilEstudiante({
     required String id,
-    required File imagen,
+    String? nombre,
+    String? telefono,
+    String? email,
+    File? imagen,
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -147,27 +153,37 @@ class PerfilService {
 
       var request = http.MultipartRequest(
         'PUT',
-        Uri.parse('${ApiConfig.baseUrl}/estudiante/$id'), // ✅ CORRECTO
+        Uri.parse(ApiConfig.actualizarPerfilEstudiante(id)), // ✅ CORRECTO
       );
 
       request.headers.addAll(ApiConfig.getMultipartHeaders(token: token));
 
-      // Agregar imagen
-      request.files.add(
-        await http.MultipartFile.fromPath('imagen', imagen.path),
-      );
+      // Agregar campos editables
+      if (nombre != null) request.fields['nombreEstudiante'] = nombre;
+      if (telefono != null) request.fields['telefono'] = telefono;
+      if (email != null) request.fields['emailEstudiante'] = email;
+
+      // Agregar imagen si existe
+      if (imagen != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('imagen', imagen.path),
+        );
+      }
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        
+
         if (data['estudiante'] != null) {
-          final usuarioActualizado = Usuario.fromJson(data['estudiante'], 'Estudiante');
+          final usuarioActualizado = Usuario.fromJson(
+            data['estudiante'],
+            'Estudiante',
+          );
           await AuthService.actualizarUsuario(usuarioActualizado);
         }
-        
+
         return data;
       } else {
         final error = jsonDecode(response.body);
@@ -180,7 +196,7 @@ class PerfilService {
   }
 
   // ========== CAMBIAR CONTRASEÑA ==========
-  
+
   /// Cambiar contraseña de Administrador
   static Future<Map<String, dynamic>?> cambiarPasswordAdministrador({
     required String id,

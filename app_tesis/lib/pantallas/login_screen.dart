@@ -88,15 +88,46 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirma tu cuenta'),
-        content: Text(
-          'Debes confirmar tu cuenta antes de iniciar sesión.\n\n'
-          'Hemos enviado un correo a:\n$email\n\n'
-          'Abre el enlace desde tu dispositivo móvil para activar tu cuenta.',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Debes confirmar tu cuenta antes de iniciar sesión.\n\n'
+              'Hemos enviado un correo a:\n$email',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 8),
+            const Text(
+              '¿No recibiste el correo?',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              '• Revisa tu carpeta de spam\n'
+              '• Haz clic en el botón del correo desde tu celular\n'
+              '• O ingresa el código manualmente',
+              style: TextStyle(fontSize: 13),
+            ),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Entendido'),
+            child: const Text('Cerrar'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/confirmar-codigo');
+            },
+            icon: const Icon(Icons.vpn_key, size: 18),
+            label: const Text('Ingresar Código'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1565C0),
+            ),
           ),
         ],
       ),
@@ -312,6 +343,56 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ========== SECCIÓN NUEVA: PROBLEMAS DE ACCESO ==========
+                  
+                  // Separador
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: Colors.grey[400])),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          '¿Problemas para acceder?',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: Colors.grey[400])),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Botón para activar cuenta
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/confirmar-codigo');
+                    },
+                    icon: const Icon(Icons.verified_user, size: 20),
+                    label: const Text('Activar mi cuenta'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF1565C0),
+                      side: const BorderSide(color: Color(0xFF1565C0)),
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Texto informativo
+                  Text(
+                    '¿No recibiste el código? Revisa tu spam',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
                     ),
                   ),
                 ],
