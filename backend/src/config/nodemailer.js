@@ -15,11 +15,8 @@ let transporter = nodemailer.createTransport({
 
 // ========== EMAIL DE CONFIRMACIÓN DE CUENTA ==========
 const sendMailToRegister = (userMail, token) => {
-  // Deep link que abre la app directamente
+  // Deep link que abre la app directamente en Android
   const deepLink = `myapp://confirm/${token}`;
-  
-  // Fallback: URL del backend que devuelve JSON si se abre en navegador
-  const apiFallback = `${process.env.URL_BACKEND}confirmar/${token}`;
 
   let mailOptions = {
     from: "Tutorías ESFOT <tutorias.esfot@gmail.com>",
@@ -59,7 +56,7 @@ const sendMailToRegister = (userMail, token) => {
             </p>
             
             <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
-              Haz clic en el botón de abajo para <strong>activar tu cuenta inmediatamente</strong>:
+              Haz clic en el botón de abajo <strong>desde tu dispositivo móvil</strong> para <strong>activar tu cuenta inmediatamente</strong>:
             </p>
             
             <!-- Botón Principal -->
@@ -121,9 +118,6 @@ const sendMailToRegister = (userMail, token) => {
 const sendMailToRecoveryPassword = async (userMail, token) => {
   // Deep link que abre la app directamente con el token
   const deepLink = `myapp://reset-password/${token}`;
-  
-  // Fallback: URL del backend para validar token
-  const apiFallback = `${process.env.URL_BACKEND}recuperarpassword/${token}`;
 
   try {
     await transporter.sendMail({
@@ -164,7 +158,7 @@ const sendMailToRecoveryPassword = async (userMail, token) => {
               </p>
               
               <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
-                Haz clic en el botón de abajo para <strong>continuar con el proceso</strong>:
+                Haz clic en el botón de abajo <strong>desde tu dispositivo móvil</strong> para <strong>continuar con el proceso</strong>:
               </p>
               
               <!-- Botón Principal -->
@@ -224,7 +218,7 @@ const sendMailToRecoveryPassword = async (userMail, token) => {
   }
 };
 
-// ========== EMAIL PARA DOCENTES (Mantener igual) ==========
+// ========== EMAIL PARA DOCENTES ==========
 const sendMailToOwner = async (userMail, password) => {
   try {
     let info = await transporter.sendMail({
@@ -263,7 +257,7 @@ const sendMailToOwner = async (userMail, password) => {
   }
 };
 
-// ========== EMAIL PARA ADMINISTRADORES (Mantener igual) ==========
+// ========== EMAIL PARA ADMINISTRADORES ==========
 const sendMailWithCredentials = async (email, nombreAdministrador, passwordGenerada) => {
   try {
     let mailOptions = {
