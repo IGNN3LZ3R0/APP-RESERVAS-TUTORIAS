@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { loginOAuthEstudiante } from "../controllers/sesion_google_correo_controller.js"; // Nueva importacion del controlador para OAuth
+import { loginOAuthEstudiante } from "../controllers/sesion_google_correo_controller.js";
 import {
   confirmarMailEstudiante,
   recuperarPasswordEstudiante,
@@ -15,27 +15,34 @@ import { verificarTokenJWT } from '../middlewares/JWT.js'
 
 const routerEstudiante = Router()
 
-// Rutas públicas
+// ========== RUTAS PÚBLICAS ==========
+
+// Registro
 routerEstudiante.post('/estudiante/registro', registroEstudiante)
 
+// Confirmación de email
 routerEstudiante.get('/confirmar/:token', confirmarMailEstudiante)
 
+// Recuperar contraseña
 routerEstudiante.post('/recuperarpassword', recuperarPasswordEstudiante)
-
 routerEstudiante.get('/recuperarpassword/:token', comprobarTokenPasswordEstudiante)
-
 routerEstudiante.post('/nuevopassword/:token', crearNuevoPasswordEstudiante)
 
+// Login
 routerEstudiante.post('/estudiante/login', loginEstudiante)
 
-// Nueva ruta para login con OAuth (Google, Microsoft)
+// Login con OAuth (Google, Microsoft)
 routerEstudiante.post('/estudiante/login-oauth', loginOAuthEstudiante)
 
-// Rutas privadas
+// ========== RUTAS PRIVADAS (requieren autenticación) ==========
+
+// Perfil
 routerEstudiante.get('/estudiante/perfil', verificarTokenJWT, perfilEstudiante)
 
+// Actualizar perfil
 routerEstudiante.put('/estudiante/:id', verificarTokenJWT, actualizarPerfilEstudiante)
 
+// Actualizar contraseña
 routerEstudiante.put('/estudiante/actualizarpassword/:id', verificarTokenJWT, actualizarPasswordEstudiante)
 
 export default routerEstudiante
