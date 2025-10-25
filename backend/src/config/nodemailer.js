@@ -13,7 +13,7 @@ let transporter = nodemailer.createTransport({
   },
 });
 
-// ========== EMAIL DE CONFIRMACIÓN DE CUENTA ==========
+// ========== EMAIL DE CONFIRMACIÓN DE CUENTA (ESTUDIANTE) ==========
 const sendMailToRegister = (userMail, token) => {
   // Deep link que abre la app directamente en Android
   const deepLink = `myapp://confirm/${token}`;
@@ -56,8 +56,9 @@ const sendMailToRegister = (userMail, token) => {
             </p>
             
             <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
-              copia el codigo de abajo en nuesta app <strong>desde tu dispositivo móvil</strong> para <strong>activar tu cuenta inmediatamente</strong>:
+              Copia el código de abajo en nuestra app <strong>desde tu dispositivo móvil</strong> para <strong>activar tu cuenta inmediatamente</strong>:
             </p>            
+            
             <!-- Código alternativo -->
             <div style="background-color: #F5F5F5; border-left: 4px solid #1565C0; padding: 15px; margin: 25px 0; border-radius: 4px;">
               <p style="color: #666; font-size: 14px; margin: 0 0 10px;">
@@ -104,18 +105,8 @@ const sendMailToRegister = (userMail, token) => {
     }
   });
 };
-//  BOTÓN ELIMINADO
-/*
-            <!-- Botón Principal -->
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${deepLink}" 
-                 style="display: inline-block; background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 18px; font-weight: 600; box-shadow: 0 4px 12px rgba(21,101,192,0.3); transition: transform 0.2s;">
-                🚀 Activar Mi Cuenta
-              </a>
-           </div>
-*/
 
-// ========== EMAIL DE RECUPERACIÓN DE CONTRASEÑA ==========
+// ========== EMAIL DE RECUPERACIÓN DE CONTRASEÑA (ESTUDIANTE Y DOCENTE) ==========
 const sendMailToRecoveryPassword = async (userMail, token) => {
   // Deep link que abre la app directamente con el token
   const deepLink = `myapp://reset-password/${token}`;
@@ -159,24 +150,16 @@ const sendMailToRecoveryPassword = async (userMail, token) => {
               </p>
               
               <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
-                Haz clic en el botón de abajo <strong>desde tu dispositivo móvil</strong> para <strong>continuar con el proceso</strong>:
+                <strong>Copia el código de verificación</strong> de abajo y pégalo en la aplicación para continuar:
               </p>
               
-              <!-- Botón Principal -->
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${deepLink}" 
-                   style="display: inline-block; background: linear-gradient(135deg, #EF5350 0%, #D32F2F 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 18px; font-weight: 600; box-shadow: 0 4px 12px rgba(239,83,80,0.3);">
-                  🔑 Restablecer Contraseña
-                </a>
-              </div>
-              
-              <!-- Código alternativo -->
+              <!-- Código de verificación -->
               <div style="background-color: #F5F5F5; border-left: 4px solid #D32F2F; padding: 15px; margin: 25px 0; border-radius: 4px;">
                 <p style="color: #666; font-size: 14px; margin: 0 0 10px;">
-                  <strong>¿El botón no funciona?</strong> Copia este código de verificación:
+                  <strong>Código de verificación:</strong>
                 </p>
                 <div style="background-color: #ffffff; padding: 12px; border-radius: 6px; border: 1px dashed #D32F2F; text-align: center;">
-                  <code style="color: #D32F2F; font-size: 16px; font-weight: 600; letter-spacing: 1px; word-break: break-all;">
+                  <code style="color: #D32F2F; font-size: 18px; font-weight: 600; letter-spacing: 1px; word-break: break-all;">
                     ${token}
                   </code>
                 </div>
@@ -194,7 +177,7 @@ const sendMailToRecoveryPassword = async (userMail, token) => {
               
               <div style="background-color: #E3F2FD; padding: 15px; border-radius: 8px; margin: 25px 0;">
                 <p style="color: #1565C0; font-size: 14px; margin: 0; line-height: 1.5;">
-                  🕐 <strong>Validez:</strong> Este enlace expirará en <strong>24 horas</strong> por seguridad. Después de ese tiempo, deberás solicitar uno nuevo.
+                  🕐 <strong>Validez:</strong> Este código expirará cuando lo uses o cuando solicites uno nuevo. Por seguridad, úsalo lo antes posible.
                 </p>
               </div>
             </div>
@@ -216,10 +199,11 @@ const sendMailToRecoveryPassword = async (userMail, token) => {
     console.log("✅ Correo de recuperación enviado correctamente a:", userMail);
   } catch (error) {
     console.error("❌ Error enviando correo de recuperación:", error);
+    throw error; // Propagamos el error para manejarlo en el controlador
   }
 };
 
-// ========== EMAIL PARA DOCENTES ==========
+// ========== EMAIL PARA DOCENTES (CREDENCIALES INICIALES) ==========
 const sendMailToOwner = async (userMail, password) => {
   try {
     let info = await transporter.sendMail({
@@ -255,10 +239,11 @@ const sendMailToOwner = async (userMail, password) => {
     console.log("✅ Correo enviado al docente:", info.messageId);
   } catch (error) {
     console.error("❌ Error enviando correo al docente:", error);
+    throw error;
   }
 };
 
-// ========== EMAIL PARA ADMINISTRADORES ==========
+// ========== EMAIL PARA ADMINISTRADORES (CREDENCIALES) ==========
 const sendMailWithCredentials = async (email, nombreAdministrador, passwordGenerada) => {
   try {
     let mailOptions = {
@@ -292,6 +277,7 @@ const sendMailWithCredentials = async (email, nombreAdministrador, passwordGener
     console.log("✅ Correo de credenciales enviado al administrador");
   } catch (error) {
     console.error("❌ Error enviando correo con credenciales:", error);
+    throw error;
   }
 };
 

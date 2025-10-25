@@ -147,9 +147,15 @@ const confirmarMailEstudiante = async (req, res) => {
  * Solicitar recuperación de contraseña
  * POST /api/recuperarpassword
  */
+// ========== RECUPERACIÓN DE CONTRASEÑA ==========
+
+/**
+ * Solicitar recuperación de contraseña (ESTUDIANTE)
+ * POST /api/estudiante/recuperarpassword
+ */
 const recuperarPasswordEstudiante = async (req, res) => {
   try {
-    // 🔥 ACEPTA AMBOS NOMBRES DE CAMPOS
+    // Acepta ambos nombres de campos para flexibilidad
     const email = req.body.emailEstudiante || req.body.email;
 
     console.log('📨 Solicitud de recuperación recibida:', { email, body: req.body });
@@ -162,12 +168,12 @@ const recuperarPasswordEstudiante = async (req, res) => {
       });
     }
 
-    // 🔥 NORMALIZAR EMAIL
+    // Normalizar email
     const emailNormalizado = email.trim().toLowerCase();
 
     console.log('🔍 Buscando estudiante con email:', emailNormalizado);
 
-    // 🔥 BUSCAR CON EMAIL NORMALIZADO
+    // Buscar con email normalizado
     const estudianteBDD = await Estudiante.findOne({
       emailEstudiante: emailNormalizado
     });
@@ -183,7 +189,7 @@ const recuperarPasswordEstudiante = async (req, res) => {
     console.log('✅ Estudiante encontrado:', estudianteBDD.nombreEstudiante);
 
     // Verificar si la cuenta está confirmada
-    if (!estudianteBDD.confirmEmail) {
+    if (estudianteBDD.confirmEmail === false) {
       console.log(`⚠️ Intento de recuperación para cuenta no confirmada: ${email}`);
       return res.status(400).json({
         success: false,
@@ -219,8 +225,8 @@ const recuperarPasswordEstudiante = async (req, res) => {
 };
 
 /**
- * Comprobar validez del token de recuperación
- * GET /api/recuperarpassword/:token
+ * Comprobar validez del token de recuperación (ESTUDIANTE)
+ * GET /api/estudiante/recuperarpassword/:token
  */
 const comprobarTokenPasswordEstudiante = async (req, res) => {
   try {
@@ -263,8 +269,8 @@ const comprobarTokenPasswordEstudiante = async (req, res) => {
 };
 
 /**
- * Crear nueva contraseña con token válido
- * POST /api/nuevopassword/:token
+ * Crear nueva contraseña con token válido (ESTUDIANTE)
+ * POST /api/estudiante/nuevopassword/:token
  */
 const crearNuevoPasswordEstudiante = async (req, res) => {
   try {
