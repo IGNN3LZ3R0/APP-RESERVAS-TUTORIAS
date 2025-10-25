@@ -4,6 +4,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import fs from "fs-extra";
 import mongoose from "mongoose";
 import { crearTokenJWT } from "../middlewares/JWT.js";
+import docente from "../models/docente.js";
 
 const registrarDocente = async (req, res) => {
   try {
@@ -50,6 +51,60 @@ const registrarDocente = async (req, res) => {
     res.status(500).json({ msg: "Error interno del servidor", error: error.message });
   }
 };
+const recuperarPasswordDocente = async (req, res) => {
+  const { email } = req.body;
+
+  if (Object.values(req.body).includes(""))
+    return res.status(404).json({ msg: "Todos los campos deben ser llenados obligatoriamente." });
+
+  const docenteBDD = await Docente.findOne({ email });
+  if (!docenteBDD)
+    return res.status(404).json({ msg: "Lo sentimos, el usuario no existe" });
+
+  const token = docenteBDD.crearToken();
+  docenteBDD.token = token;
+
+  await sendMailToRecoveryPassword(email, token);
+  await docenteBDD.save();
+
+  res.status(200).json({ msg: "Revisa tu correo electrónico para restablecer tu contraseña." });
+};
+
+
+const comprobarTokenPasswordDocente = async (req, res) => {
+  const { token } = req.params;
+  const docenteBDD = await Docente.findOne({ token });
+
+  if (!docenteBDD || docenteBDD.token !== token)
+    return res.status(404).json({ msg: "Lo sentimos, no se puede validar la cuenta" });
+
+  await docenteBDD.save();
+  res.status(200).json({ msg: "Token confirmado, ya puedes crear tu password" });
+};
+
+// Etapa 3
+const crearNuevoPasswordDocente = async (req, res) => {
+  const { password, confirmpassword } = req.body;
+
+  if (Object.values(req.body).includes(""))
+    return res.status(404).json({ msg: "Lo sentimos, debes llenar todos los campos" });
+
+  if (password !== confirmpassword)
+    return res.status(404).json({ msg: "Lo sentimos, los passwords no coinciden" });
+
+  const docenteBDD = await Docente.findOne({ token: req.params.token });
+
+  if (!docenteBDD || docenteBDD.token !== req.params.token)
+    return res.status(404).json({ msg: "Lo sentimos, no se puede validar su cuenta" });
+
+  docenteBDD.token = null;
+  docenteBDD.password = await docenteBDD.encrypPassword(password);
+  await docenteBDD.save();
+
+  res.status(200).json({ msg: "Ya puede iniciar sesión con su nueva contraseña." });
+};
+
+
 
 const listarDocentes = async (req, res) => {
   try {
@@ -181,6 +236,9 @@ export {
   eliminarDocente,
   actualizarDocente,
   loginDocente,
-  perfilDocente
+  perfilDocente, 
+  recuperarPasswordDocente,
+  comprobarTokenPasswordDocente,
+  crearNuevoPasswordDocente
 };
 

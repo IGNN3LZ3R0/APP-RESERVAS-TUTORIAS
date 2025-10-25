@@ -16,11 +16,11 @@ const routerAdministrador = Router()
 
 //routerAdministrador.get('/confirmar/:token', confirmarMailAdministrador)
 
-routerAdministrador.post('/recuperarpassword', recuperarPasswordAdministrador)
+routerAdministrador.post('/administrador/recuperarpassword', recuperarPasswordAdministrador)
 
-routerAdministrador.get('/recuperarpassword/:token', comprobarTokenPasswordAdministrador)
+routerAdministrador.get('/administrador/recuperarpassword/:token', comprobarTokenPasswordAdministrador)
 
-routerAdministrador.post('/nuevopassword/:token',crearNuevoPasswordAdministrador)
+routerAdministrador.post('/administrador/nuevopassword/:token',crearNuevoPasswordAdministrador)
 
 routerAdministrador.post ('/login',loginAdministrador)
 
@@ -32,6 +32,6 @@ routerAdministrador.get('/perfil',verificarTokenJWT,perfilAdministrador)
 
 routerAdministrador.put('/administrador/:id',verificarTokenJWT,actualizarPerfilAdministrador)
 
-routerAdministrador.put('/administrador/actualizarpassword/:id',verificarTokenJWT,actualizarPasswordAdministrador)
+routerAdministrador.put('/administrador/administrador/actualizarpassword/:id',verificarTokenJWT,actualizarPasswordAdministrador)
 
 export default routerAdministrador

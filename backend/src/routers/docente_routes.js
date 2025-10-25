@@ -6,7 +6,10 @@ import {
   eliminarDocente, 
   actualizarDocente, 
   loginDocente, 
-  perfilDocente, 
+  perfilDocente,
+  crearNuevoPasswordDocente,
+  comprobarTokenPasswordDocente,
+  recuperarPasswordDocente, 
 } from '../controllers/docente_controller.js'
 import { loginOAuthDocente } from "../controllers/sesion_google_correo_controller.js"; // Nueva importación del controlador para OAuth
 import { verificarTokenJWT } from '../middlewares/JWT.js'
@@ -16,11 +19,18 @@ const routerDocente = Router()
 
 // --- Login del docente ---
 routerDocente.post('/docente/login', loginDocente)
+routerDocente.post('/docente/recuperarpassword', recuperarPasswordDocente)
+
+routerDocente.get('/docente/recuperarpassword/:token', comprobarTokenPasswordDocente)
+
+routerDocente.post('/docente/nuevopassword/:token',crearNuevoPasswordDocente)
+
 routerDocente.post('/docente/login-oauth', loginOAuthDocente)  //Nueva ruta para el inicio/registro con Google/Microsoft
 routerDocente.get('/docente/perfil', verificarTokenJWT, perfilDocente)
 
 // --- Registro y administración del docente por el administrador ---
 routerDocente.post("/docente/registro", verificarTokenJWT, registrarDocente)
+
 routerDocente.get("/docentes",verificarTokenJWT,verificarRol(["Administrador", "Estudiante"]),listarDocentes);
 routerDocente.get("/docente/:id", verificarTokenJWT, detalleDocente)
 routerDocente.delete("/docente/eliminar/:id", verificarTokenJWT, eliminarDocente)

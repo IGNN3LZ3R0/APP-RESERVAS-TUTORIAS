@@ -24,9 +24,9 @@ routerEstudiante.post('/estudiante/registro', registroEstudiante)
 routerEstudiante.get('/confirmar/:token', confirmarMailEstudiante)
 
 // Recuperar contraseña
-routerEstudiante.post('/recuperarpassword', recuperarPasswordEstudiante)
-routerEstudiante.get('/recuperarpassword/:token', comprobarTokenPasswordEstudiante)
-routerEstudiante.post('/nuevopassword/:token', crearNuevoPasswordEstudiante)
+routerEstudiante.post('/estudiante/recuperarpassword', recuperarPasswordEstudiante)
+routerEstudiante.get('/estudiante/recuperarpassword/:token', comprobarTokenPasswordEstudiante)
+routerEstudiante.post('/estudiante/nuevopassword/:token', crearNuevoPasswordEstudiante)
 
 // Login
 routerEstudiante.post('/estudiante/login', loginEstudiante)
