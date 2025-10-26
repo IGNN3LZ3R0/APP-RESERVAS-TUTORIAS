@@ -5,6 +5,7 @@ import 'servicios/deep_link_service.dart';
 import 'pantallas/nueva_password_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'pantallas/confirmar_codigo_screen.dart';
+import 'pantallas/ingresar_codigo_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,6 +69,7 @@ class _TutoriasAppState extends State<TutoriasApp> {
         ...AppRoutes.routes,
         '/nueva-password': (context) => const NuevaPasswordScreen(),
         '/confirmar-codigo': (context) => const ConfirmarCodigoScreen(),
+        '/ingresar-codigo': (context) => const IngresarCodigoScreen(),
       },
       onGenerateRoute: AppRoutes.onGenerateRoute,
     );
