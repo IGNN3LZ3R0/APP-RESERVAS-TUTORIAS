@@ -62,29 +62,36 @@ const registrarDocente = async (req, res) => {
 // ========== RECUPERACIÓN DE CONTRASEÑA ==========
 
 /**
+ * Etapa 1: Solicitar recuperación de contraseña
+ * POST /api/docente/recuperarpassword
+ */
+
+// ========== RECUPERACIÓN DE CONTRASEÑA ==========
+
+/**
  * Etapa 1: Solicitar recuperación de contraseña (DOCENTE)
  * POST /api/docente/recuperarpassword
  */
 const recuperarPasswordDocente = async (req, res) => {
   try {
-    // ✅ Acepta ambos campos para flexibilidad
-    const email = req.body.emailDocente || req.body.email;
-    console.log('📨 Solicitud de recuperación docente:', { email, body: req.body });
+    const { emailDocente } = req.body;
 
-    if (!email) {
+    console.log('📨 Solicitud de recuperación docente:', { emailDocente });
+
+    if (!emailDocente) {
       return res.status(400).json({ 
         success: false,
         msg: "El email es obligatorio" 
       });
     }
 
-    // ✅ NORMALIZAR EMAIL
-    const emailNormalizado = email.trim().toLowerCase();
+    // Normalizar email
+    const emailNormalizado = emailDocente.trim().toLowerCase();
+
     console.log('🔍 Buscando docente con email:', emailNormalizado);
 
-    // ✅ BUSCAR CON REGEX INSENSIBLE A MAYÚSCULAS
     const docenteBDD = await Docente.findOne({ 
-      emailDocente: { $regex: new RegExp(`^${emailNormalizado}$`, 'i') }
+      emailDocente: emailNormalizado 
     });
 
     if (!docenteBDD) {
@@ -101,15 +108,15 @@ const recuperarPasswordDocente = async (req, res) => {
     const token = docenteBDD.crearToken();
     docenteBDD.token = token;
 
-    await sendMailToRecoveryPassword(email, token);
+    await sendMailToRecoveryPassword(emailDocente, token);
     await docenteBDD.save();
 
-    console.log(`✅ Email de recuperación enviado a docente: ${email}`);
+    console.log(`✅ Email de recuperación enviado a docente: ${emailDocente}`);
 
     res.status(200).json({ 
       success: true,
       msg: "Revisa tu correo electrónico para restablecer tu contraseña.",
-      email: email
+      email: emailDocente
     });
   } catch (error) {
     console.error("❌ Error en recuperación de password docente:", error);
@@ -680,4 +687,4 @@ export {
   crearNuevoPasswordDocente,
   actualizarPerfilDocente,      
   actualizarPasswordDocente      
-};
+};  
