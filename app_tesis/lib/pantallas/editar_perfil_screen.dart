@@ -91,31 +91,56 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
   void _checkForChanges() {
     bool changed = false;
 
-    if (_nombreController.text.trim() != _initialValues['nombre']) {
-      changed = true;
-    }
+    if (_nombreController.text.trim() != _initialValues['nombre']) changed = true;
     if (_emailController.text.trim() != _initialValues['email']) changed = true;
-    if (_telefonoController.text.trim() != _initialValues['telefono']) {
-      changed = true;
-    }
-    if (_cedulaController.text.trim() != _initialValues['cedula']) {
-      changed = true;
-    }
-    if (_oficinaController.text.trim() != _initialValues['oficina']) {
-      changed = true;
-    }
-    if (_celularController.text.trim() != _initialValues['celular']) {
-      changed = true;
-    }
-    if (_emailAlternativoController.text.trim() !=
-        _initialValues['emailAlternativo']) {
-      changed = true;
-    }
+    if (_telefonoController.text.trim() != _initialValues['telefono']) changed = true;
+    if (_cedulaController.text.trim() != _initialValues['cedula']) changed = true;
+    if (_oficinaController.text.trim() != _initialValues['oficina']) changed = true;
+    if (_celularController.text.trim() != _initialValues['celular']) changed = true;
+    if (_emailAlternativoController.text.trim() != _initialValues['emailAlternativo']) changed = true;
     if (_imagenSeleccionada != null) changed = true;
 
     if (changed != _hasChanges) {
       setState(() => _hasChanges = changed);
     }
+  }
+
+  // ✅ VALIDACIONES EN FRONTEND
+  String? _validarNombre(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'El nombre es obligatorio';
+    }
+    if (value.trim().length < 3) {
+      return 'El nombre debe tener al menos 3 caracteres';
+    }
+    if (value.trim().length > 100) {
+      return 'El nombre no puede tener más de 100 caracteres';
+    }
+    return null;
+  }
+
+  String? _validarEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'El email es obligatorio';
+    }
+    final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+    if (!emailRegex.hasMatch(value)) {
+      return 'Ingresa un email válido';
+    }
+    return null;
+  }
+
+  String? _validarTelefono(String? value) {
+    if (value != null && value.trim().isNotEmpty) {
+      final telefonoLimpio = value.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+      if (!RegExp(r'^\d+$').hasMatch(telefonoLimpio)) {
+        return 'El teléfono solo debe contener números';
+      }
+      if (telefonoLimpio.length != 10) {
+        return 'El teléfono debe tener exactamente 10 dígitos';
+      }
+    }
+    return null;
   }
 
   Future<void> _mostrarOpcionesImagen() async {
@@ -144,18 +169,14 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(
-                  Icons.photo_library,
-                  color: Color(0xFF1565C0),
-                ),
+                leading: const Icon(Icons.photo_library, color: Color(0xFF1565C0)),
                 title: const Text('Elegir de galería'),
                 onTap: () {
                   Navigator.pop(context);
                   _seleccionarImagen(ImageSource.gallery);
                 },
               ),
-              if (_imagenSeleccionada != null ||
-                  widget.usuario.fotoPerfil != null)
+              if (_imagenSeleccionada != null || widget.usuario.fotoPerfil != null)
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.red),
                   title: const Text('Eliminar foto'),
@@ -181,15 +202,14 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
       );
 
       if (pickedFile != null) {
-        setState(() {
-          _imagenSeleccionada = File(pickedFile.path);
-        });
+        setState(() => _imagenSeleccionada = File(pickedFile.path));
       }
     } catch (e) {
       _mostrarError('Error al seleccionar imagen: $e');
     }
   }
 
+  // ✅ MÉTODO MEJORADO: Obtiene perfil actualizado del servidor
   Future<void> _guardarCambios() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -217,7 +237,6 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
           imagen: _imagenSeleccionada,
         );
       } else if (widget.usuario.esEstudiante) {
-        // Estudiante: ahora permitimos nombre, email y teléfono además de la foto
         resultado = await PerfilService.actualizarPerfilEstudiante(
           id: widget.usuario.id,
           nombre: _nombreController.text.trim(),
@@ -241,10 +260,10 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
 
     _mostrarExito('Perfil actualizado correctamente');
 
-    // Obtener perfil actualizado desde el servidor para garantizar datos canonicos
+    // ✅ CLAVE: Obtener perfil actualizado desde el servidor
     final usuarioActualizado = await AuthService.obtenerPerfil();
 
-    // Actualizar estado local: limpiar imagen seleccionada y resetear indicadores
+    // Actualizar estado local
     setState(() {
       _imagenSeleccionada = null;
       _hasChanges = false;
@@ -255,8 +274,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
         _cedulaController.text = usuarioActualizado.cedula ?? '';
         _oficinaController.text = usuarioActualizado.oficina ?? '';
         _celularController.text = usuarioActualizado.celular ?? '';
-        _emailAlternativoController.text =
-            usuarioActualizado.emailAlternativo ?? '';
+        _emailAlternativoController.text = usuarioActualizado.emailAlternativo ?? '';
 
         _initialValues = {
           'nombre': _nombreController.text.trim(),
@@ -322,8 +340,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                     radius: 60,
                     backgroundImage: _imagenSeleccionada != null
                         ? FileImage(_imagenSeleccionada!)
-                        : NetworkImage(widget.usuario.fotoPerfilUrl)
-                              as ImageProvider,
+                        : NetworkImage(widget.usuario.fotoPerfilUrl) as ImageProvider,
                     backgroundColor: Colors.grey[300],
                   ),
                   Positioned(
@@ -359,51 +376,17 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   labelText: 'Nombre',
                   prefixIcon: Icon(Icons.person),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa tu nombre';
-                  }
-                  return null;
-                },
+                validator: _validarNombre,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
-                  labelText: 'Correo electr f3nico',
+                  labelText: 'Correo electrónico',
                   prefixIcon: Icon(Icons.email),
                 ),
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa tu correo';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Ingresa un correo v e1lido';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue[200]!),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Puedes actualizar tu nombre, email y foto de perfil',
-                        style: TextStyle(fontSize: 12, color: Colors.blue[900]),
-                      ),
-                    ),
-                  ],
-                ),
+                validator: _validarEmail,
               ),
             ] else if (widget.usuario.esDocente) ...[
               TextFormField(
@@ -412,18 +395,13 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   labelText: 'Nombre',
                   prefixIcon: Icon(Icons.person),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa tu nombre';
-                  }
-                  return null;
-                },
+                validator: _validarNombre,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _cedulaController,
                 decoration: const InputDecoration(
-                  labelText: 'C e9dula',
+                  labelText: 'Cédula',
                   prefixIcon: Icon(Icons.badge),
                 ),
                 keyboardType: TextInputType.number,
@@ -436,6 +414,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   prefixIcon: Icon(Icons.email),
                 ),
                 keyboardType: TextInputType.emailAddress,
+                enabled: false, // El backend de docente no permite cambiar email
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -445,6 +424,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   prefixIcon: Icon(Icons.alternate_email),
                 ),
                 keyboardType: TextInputType.emailAddress,
+                validator: _validarEmail,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -454,6 +434,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   prefixIcon: Icon(Icons.phone),
                 ),
                 keyboardType: TextInputType.phone,
+                validator: _validarTelefono,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -470,37 +451,27 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   labelText: 'Nombre',
                   prefixIcon: Icon(Icons.person),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa tu nombre';
-                  }
-                  return null;
-                },
+                validator: _validarNombre,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
-                  labelText: 'Correo electr f3nico',
+                  labelText: 'Correo electrónico',
                   prefixIcon: Icon(Icons.email),
                 ),
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa tu correo';
-                  }
-                  if (!value.contains('@')) return 'Ingresa un correo v e1lido';
-                  return null;
-                },
+                validator: _validarEmail,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _telefonoController,
                 decoration: const InputDecoration(
-                  labelText: 'Tel e9fono',
+                  labelText: 'Teléfono',
                   prefixIcon: Icon(Icons.phone),
                 ),
                 keyboardType: TextInputType.phone,
+                validator: _validarTelefono,
               ),
             ],
 

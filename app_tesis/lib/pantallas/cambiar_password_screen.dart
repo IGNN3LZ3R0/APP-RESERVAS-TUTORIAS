@@ -30,6 +30,27 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
     super.dispose();
   }
 
+  // ✅ VALIDACIÓN: Mínimo 8 caracteres
+  String? _validarPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Por favor ingresa una contraseña';
+    }
+    if (value.length < 8) {
+      return 'La contraseña debe tener al menos 8 caracteres';
+    }
+    return null;
+  }
+
+  String? _validarConfirmPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Por favor confirma tu nueva contraseña';
+    }
+    if (value != _passwordNuevoController.text) {
+      return 'Las contraseñas no coinciden';
+    }
+    return null;
+  }
+
   Future<void> _cambiarPassword() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -56,8 +77,11 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
           passwordNuevo: _passwordNuevoController.text,
         );
       } else if (widget.usuario.esDocente) {
-        // El backend de docente no tiene endpoint para cambiar contraseña
-        resultado = {'error': 'Los docentes no pueden cambiar su contraseña desde aquí'};
+        resultado = await PerfilService.cambiarPasswordDocente(
+          id: widget.usuario.id,
+          passwordActual: _passwordActualController.text,
+          passwordNuevo: _passwordNuevoController.text,
+        );
       }
     } catch (e) {
       resultado = {'error': 'Error inesperado: $e'};
@@ -76,6 +100,7 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
       Navigator.pop(context);
     }
   }
+
   void _mostrarError(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -91,6 +116,7 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
       ),
     );
   }
+
   void _mostrarExito(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -106,6 +132,7 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,7 +155,7 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'La contraseña debe tener al menos 6 caracteres',
+                        'La contraseña debe tener al menos 8 caracteres',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.blue[900],
@@ -182,15 +209,7 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
                   },
                 ),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor ingresa una nueva contraseña';
-                }
-                if (value.length < 6) {
-                  return 'La contraseña debe tener al menos 6 caracteres';
-                }
-                return null;
-              },
+              validator: _validarPassword,
             ),
             const SizedBox(height: 16),
 
@@ -210,15 +229,7 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
                   },
                 ),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor confirma tu nueva contraseña';
-                }
-                if (value != _passwordNuevoController.text) {
-                  return 'Las contraseñas no coinciden';
-                }
-                return null;
-              },
+              validator: _validarConfirmPassword,
             ),
             const SizedBox(height: 32),
 
