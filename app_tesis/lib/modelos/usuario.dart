@@ -126,10 +126,12 @@ class Usuario {
     if (emailAlternativo != null) data['emailAlternativo'] = emailAlternativo;
     if (asignaturas != null) data['asignaturas'] = asignaturas;
     if (semestreAsignado != null) data['semestreAsignado'] = semestreAsignado;
-    if (fechaNacimiento != null)
+    if (fechaNacimiento != null) {
       data['fechaNacimiento'] = fechaNacimiento!.toIso8601String();
-    if (fechaIngreso != null)
+    }
+    if (fechaIngreso != null) {
       data['fechaIngreso'] = fechaIngreso!.toIso8601String();
+    }
 
     return data;
   }

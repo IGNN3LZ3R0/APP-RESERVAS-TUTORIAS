@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../servicios/docente_service.dart';
 
 class CrearDocenteScreen extends StatefulWidget {
-  const CrearDocenteScreen({Key? key}) : super(key: key);
+  const CrearDocenteScreen({super.key});
 
   @override
   State<CrearDocenteScreen> createState() => _CrearDocenteScreenState();
@@ -428,7 +428,7 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
 
             // Semestre asignado
             DropdownButtonFormField<String>(
-              value: _semestreSeleccionado,
+              initialValue: _semestreSeleccionado,
               decoration: InputDecoration(
                 labelText: 'Semestre Asignado',
                 prefixIcon: const Icon(Icons.school),

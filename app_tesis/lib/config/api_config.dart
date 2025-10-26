@@ -13,13 +13,27 @@ class ApiConfig {
   // Registro
   static const String registroEstudiante = '$baseUrl/estudiante/registro';
   
-  // Confirmar email
+  // ========== CONFIRMAR EMAIL ==========
+  
+  // Confirmar email (solo estudiantes)
   static String confirmarEmail(String token) => '$baseUrl/confirmar/$token';
   
-  // Recuperar contraseña
-  static const String recuperarPassword = '$baseUrl/recuperarpassword';
-  static String comprobarToken(String token) => '$baseUrl/recuperarpassword/$token';
-  static String nuevoPassword(String token) => '$baseUrl/nuevopassword/$token';
+  // ========== RECUPERAR CONTRASEÑA - POR ROL ==========
+  
+  // ESTUDIANTE
+  static const String recuperarPasswordEstudiante = '$baseUrl/estudiante/recuperarpassword';
+  static String comprobarTokenEstudiante(String token) => '$baseUrl/estudiante/recuperarpassword/$token';
+  static String nuevoPasswordEstudiante(String token) => '$baseUrl/estudiante/nuevopassword/$token';
+  
+  // DOCENTE
+  static const String recuperarPasswordDocente = '$baseUrl/docente/recuperarpassword';
+  static String comprobarTokenDocente(String token) => '$baseUrl/docente/recuperarpassword/$token';
+  static String nuevoPasswordDocente(String token) => '$baseUrl/docente/nuevopassword/$token';
+  
+  // ADMINISTRADOR
+  static const String recuperarPasswordAdmin = '$baseUrl/administrador/recuperarpassword';
+  static String comprobarTokenAdmin(String token) => '$baseUrl/administrador/recuperarpassword/$token';
+  static String nuevoPasswordAdmin(String token) => '$baseUrl/administrador/nuevopassword/$token';
   
   // ========== ENDPOINTS DE PERFIL ==========
   
@@ -29,11 +43,11 @@ class ApiConfig {
   
   // Actualizar perfil
   static String actualizarPerfilAdmin(String id) => '$baseUrl/administrador/$id';
-  static String actualizarPerfilDocente(String id) => '$baseUrl/docente/actualizar/$id';
+  static String actualizarPerfilDocente(String id) => '$baseUrl/docente/perfil/$id';
   static String actualizarPerfilEstudiante(String id) => '$baseUrl/estudiante/$id';
   
   // Actualizar contraseña
-  static String actualizarPasswordAdmin(String id) => '$baseUrl/administrador/actualizarpassword/$id';
+  static String actualizarPasswordAdmin(String id) => '$baseUrl/administrador/administrador/actualizarpassword/$id';
   static String actualizarPasswordDocente(String id) => '$baseUrl/docente/actualizarpassword/$id';
   static String actualizarPasswordEstudiante(String id) => '$baseUrl/estudiante/actualizarpassword/$id';
   
@@ -108,6 +122,79 @@ class ApiConfig {
       case 'estudiante':
       default:
         return perfilEstudiante;
+    }
+  }
+  
+  // ========== MÉTODOS PARA RECUPERACIÓN DE CONTRASEÑA ==========
+  
+  /// Obtiene el endpoint de recuperación de contraseña según el rol
+  /// @deprecated Usa los endpoints específicos por rol
+  static String getRecuperarPasswordEndpoint(String rol) {
+    switch (rol.toLowerCase()) {
+      case 'administrador':
+        return recuperarPasswordAdmin;
+      case 'docente':
+        return recuperarPasswordDocente;
+      case 'estudiante':
+      default:
+        return recuperarPasswordEstudiante;
+    }
+  }
+  
+  /// Obtiene el endpoint de comprobación de token según el rol
+  /// @deprecated Usa los endpoints específicos por rol
+  static String getComprobarTokenEndpoint(String rol, String token) {
+    switch (rol.toLowerCase()) {
+      case 'administrador':
+        return comprobarTokenAdmin(token);
+      case 'docente':
+        return comprobarTokenDocente(token);
+      case 'estudiante':
+      default:
+        return comprobarTokenEstudiante(token);
+    }
+  }
+  
+  /// Obtiene el endpoint de nueva contraseña según el rol
+  /// @deprecated Usa los endpoints específicos por rol
+  static String getNuevoPasswordEndpoint(String rol, String token) {
+    switch (rol.toLowerCase()) {
+      case 'administrador':
+        return nuevoPasswordAdmin(token);
+      case 'docente':
+        return nuevoPasswordDocente(token);
+      case 'estudiante':
+      default:
+        return nuevoPasswordEstudiante(token);
+    }
+  }
+  
+  /// Detecta el rol basándose en el formato del email
+  /// Emails @epn.edu.ec = institucionales (docente/admin)
+  /// Otros emails = estudiante
+  static String detectarRolPorEmail(String email) {
+    final emailLower = email.toLowerCase().trim();
+    
+    if (emailLower.endsWith('@epn.edu.ec')) {
+      // Email institucional - por defecto docente
+      // El backend intentará primero docente, luego admin
+      return 'docente';
+    } else {
+      // Email normal - estudiante
+      return 'estudiante';
+    }
+  }
+  
+  /// Obtiene el nombre del campo de email según el rol para el body de las peticiones
+  static String getCampoEmailPorRol(String rol) {
+    switch (rol.toLowerCase()) {
+      case 'administrador':
+        return 'email';
+      case 'docente':
+        return 'emailDocente';
+      case 'estudiante':
+      default:
+        return 'emailEstudiante';
     }
   }
 }

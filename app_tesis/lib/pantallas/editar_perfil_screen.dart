@@ -91,20 +91,26 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
   void _checkForChanges() {
     bool changed = false;
 
-    if (_nombreController.text.trim() != _initialValues['nombre'])
+    if (_nombreController.text.trim() != _initialValues['nombre']) {
       changed = true;
+    }
     if (_emailController.text.trim() != _initialValues['email']) changed = true;
-    if (_telefonoController.text.trim() != _initialValues['telefono'])
+    if (_telefonoController.text.trim() != _initialValues['telefono']) {
       changed = true;
-    if (_cedulaController.text.trim() != _initialValues['cedula'])
+    }
+    if (_cedulaController.text.trim() != _initialValues['cedula']) {
       changed = true;
-    if (_oficinaController.text.trim() != _initialValues['oficina'])
+    }
+    if (_oficinaController.text.trim() != _initialValues['oficina']) {
       changed = true;
-    if (_celularController.text.trim() != _initialValues['celular'])
+    }
+    if (_celularController.text.trim() != _initialValues['celular']) {
       changed = true;
+    }
     if (_emailAlternativoController.text.trim() !=
-        _initialValues['emailAlternativo'])
+        _initialValues['emailAlternativo']) {
       changed = true;
+    }
     if (_imagenSeleccionada != null) changed = true;
 
     if (changed != _hasChanges) {

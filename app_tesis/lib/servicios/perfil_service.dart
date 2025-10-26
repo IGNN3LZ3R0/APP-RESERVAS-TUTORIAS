@@ -96,16 +96,20 @@ class PerfilService {
       // Agregar campos - SIN EMAIL porque el backend de docente no permite cambiarlo
       if (nombre != null) request.fields['nombreDocente'] = nombre;
       if (cedula != null) request.fields['cedulaDocente'] = cedula;
-      if (fechaNacimiento != null)
+      if (fechaNacimiento != null) {
         request.fields['fechaNacimientoDocente'] = fechaNacimiento;
+      }
       if (oficina != null) request.fields['oficinaDocente'] = oficina;
-      if (emailAlternativo != null)
+      if (emailAlternativo != null) {
         request.fields['emailAlternativoDocente'] = emailAlternativo;
+      }
       if (celular != null) request.fields['celularDocente'] = celular;
-      if (semestreAsignado != null)
+      if (semestreAsignado != null) {
         request.fields['semestreAsignado'] = semestreAsignado;
-      if (asignaturas != null)
+      }
+      if (asignaturas != null) {
         request.fields['asignaturas'] = jsonEncode(asignaturas);
+      }
 
       // Agregar imagen
       if (imagen != null) {

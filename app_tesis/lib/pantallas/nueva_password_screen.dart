@@ -24,9 +24,7 @@ class _NuevaPasswordScreenState extends State<NuevaPasswordScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Obtener el token de los argumentos
-    if (_token == null) {
-      _token = ModalRoute.of(context)?.settings.arguments as String?;
-    }
+    _token ??= ModalRoute.of(context)?.settings.arguments as String?;
   }
 
   @override

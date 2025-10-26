@@ -325,27 +325,111 @@ class AuthService {
     }
   }
 
-  // ========== COMPROBAR TOKEN DE RECUPERACIÓN ==========
+  // ========== RECUPERAR CONTRASEÑA ==========
 
-  /// Verifica si el token de recuperación de contraseña es válido
+  /// Solicita recuperación de contraseña
+  /// Detecta automáticamente el rol según el formato del email
+  static Future<Map<String, dynamic>?> recuperarPassword({
+    required String email,
+  }) async {
+    try {
+      print('📧 Enviando solicitud de recuperación para: $email');
+      
+      // Detectar rol por email
+      String endpoint;
+      Map<String, String> body;
+      
+      if (email.toLowerCase().endsWith('@epn.edu.ec')) {
+        // Email institucional - puede ser docente o admin
+        // Intentar primero como docente, luego admin
+        endpoint = ApiConfig.recuperarPasswordDocente;
+        body = {'emailDocente': email};
+      } else {
+        // Email normal - estudiante
+        endpoint = ApiConfig.recuperarPasswordEstudiante;
+        body = {'emailEstudiante': email};
+      }
+
+      final response = await http.post(
+        Uri.parse(endpoint),
+        headers: ApiConfig.getHeaders(),
+        body: jsonEncode(body),
+      );
+
+      print('📬 Código de estado: ${response.statusCode}');
+      print('📝 Respuesta: ${response.body}');
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        if (data['success'] == true || !data.containsKey('success')) {
+          print('✅ ${data['msg']}');
+          return {'msg': data['msg'], 'success': true};
+        } else {
+          print('⚠️ Respuesta con success=false: ${data['msg']}');
+          return {'error': data['msg']};
+        }
+      } 
+      
+      // Si falla con docente y es institucional, intentar como admin
+      if (response.statusCode == 404 && email.toLowerCase().endsWith('@epn.edu.ec')) {
+        print('🔄 Reintentando como administrador...');
+        
+        final adminResponse = await http.post(
+          Uri.parse(ApiConfig.recuperarPasswordAdmin),
+          headers: ApiConfig.getHeaders(),
+          body: jsonEncode({'email': email}),
+        );
+        
+        final adminData = jsonDecode(adminResponse.body);
+        
+        if (adminResponse.statusCode == 200) {
+          return {'msg': adminData['msg'], 'success': true};
+        }
+      }
+      
+      print('❌ Error en recuperación: ${data['msg']}');
+      return {'error': data['msg'] ?? 'Error al procesar la solicitud'};
+      
+    } catch (e) {
+      print('❌ Error en recuperarPassword: $e');
+      return {'error': 'Error de conexión. Verifica tu internet.'};
+    }
+  }
+
+  // ========== COMPROBAR TOKEN ==========
+
+  /// Verifica si el token de recuperación es válido
   static Future<Map<String, dynamic>?> comprobarTokenPassword(
     String token,
   ) async {
     try {
-      final response = await http.get(
-        Uri.parse(ApiConfig.comprobarToken(token)),
-        headers: ApiConfig.getHeaders(),
-      );
+      // Intentar con los 3 roles
+      final endpoints = [
+        ApiConfig.comprobarTokenEstudiante(token),
+        ApiConfig.comprobarTokenDocente(token),
+        ApiConfig.comprobarTokenAdmin(token),
+      ];
+      
+      for (String endpoint in endpoints) {
+        try {
+          final response = await http.get(
+            Uri.parse(endpoint),
+            headers: ApiConfig.getHeaders(),
+          );
 
-      final data = jsonDecode(response.body);
+          final data = jsonDecode(response.body);
 
-      if (response.statusCode == 200 && data['success'] == true) {
-        print('✅ Token válido');
-        return data;
-      } else {
-        print('❌ Token inválido: ${data['msg']}');
-        return {'error': data['msg'] ?? 'Token inválido o expirado'};
+          if (response.statusCode == 200 && data['success'] == true) {
+            print('✅ Token válido en: $endpoint');
+            return data;
+          }
+        } catch (e) {
+          continue; // Intentar siguiente endpoint
+        }
       }
+      
+      return {'error': 'Token inválido o expirado'};
     } catch (e) {
       print('❌ Error en comprobarTokenPassword: $e');
       return {'error': 'Error de conexión'};
@@ -361,65 +445,39 @@ class AuthService {
     required String confirmPassword,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse(ApiConfig.nuevoPassword(token)),
-        headers: ApiConfig.getHeaders(),
-        body: jsonEncode({
-          'password': password,
-          'confirmpassword': confirmPassword,
-        }),
-      );
+      // Intentar con los 3 roles
+      final endpoints = [
+        ApiConfig.nuevoPasswordEstudiante(token),
+        ApiConfig.nuevoPasswordDocente(token),
+        ApiConfig.nuevoPasswordAdmin(token),
+      ];
+      
+      for (String endpoint in endpoints) {
+        try {
+          final response = await http.post(
+            Uri.parse(endpoint),
+            headers: ApiConfig.getHeaders(),
+            body: jsonEncode({
+              'password': password,
+              'confirmpassword': confirmPassword,
+            }),
+          );
 
-      final data = jsonDecode(response.body);
+          final data = jsonDecode(response.body);
 
-      if (response.statusCode == 200 && data['success'] == true) {
-        print('✅ Contraseña actualizada');
-        return data;
-      } else {
-        print('❌ Error actualizando contraseña: ${data['msg']}');
-        return {'error': data['msg'] ?? 'Error al actualizar contraseña'};
+          if (response.statusCode == 200 && data['success'] == true) {
+            print('✅ Contraseña actualizada en: $endpoint');
+            return data;
+          }
+        } catch (e) {
+          continue; // Intentar siguiente endpoint
+        }
       }
+      
+      return {'error': 'No se pudo actualizar la contraseña'};
     } catch (e) {
       print('❌ Error en crearNuevaPassword: $e');
       return {'error': 'Error de conexión'};
-    }
-  }
-
-  // ========== RECUPERAR CONTRASEÑA ==========
-
-  /// Solicita un enlace de recuperación de contraseña
-  static Future<Map<String, dynamic>?> recuperarPassword({
-    required String email,
-  }) async {
-    try {
-      print('📧 Enviando solicitud de recuperación para: $email');
-
-      final response = await http.post(
-        Uri.parse(ApiConfig.recuperarPassword),
-        headers: ApiConfig.getHeaders(),
-        body: jsonEncode({'emailEstudiante': email}),
-      );
-
-      print('📬 Código de estado: ${response.statusCode}');
-      print('📝 Respuesta: ${response.body}');
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        if (data['success'] == true || !data.containsKey('success')) {
-          print('✅ ${data['msg']}');
-          return {'msg': data['msg']};
-        } else {
-          print('⚠️ Respuesta con success=false: ${data['msg']}');
-          return {'error': data['msg']};
-        }
-      } else {
-        print('❌ Error en recuperación: ${data['msg']}');
-        return {'error': data['msg'] ?? 'Error al procesar la solicitud'};
-      }
-    } catch (e) {
-      print('❌ Error en recuperarPassword: $e');
-      return {'error': 'Error de conexión. Verifica tu internet.'};
     }
   }
 }
