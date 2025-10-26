@@ -4,7 +4,6 @@ import '../servicios/auth_service.dart';
 import '../config/routes.dart';
 import 'editar_perfil_screen.dart';
 import 'cambiar_password_screen.dart';
-import 'admin/crear_docente_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Usuario usuario;
@@ -394,23 +393,72 @@ class _DashboardAdministrador extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Botón para crear docente
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CrearDocenteScreen(),
+            // Acciones rápidas
+            const Text(
+              'Acciones rápidas',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+
+            // Tarjeta de Gestión de Usuarios
+            Card(
+              elevation: 2,
+              child: InkWell(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Pantalla de Gestión de Usuarios próximamente'),
+                      backgroundColor: Colors.blue,
                     ),
                   );
                 },
-                icon: const Icon(Icons.person_add),
-                label: const Text('Crear Nuevo Docente'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
-                  backgroundColor: const Color(0xFF1565C0),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1565C0).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.people,
+                          size: 32,
+                          color: Color(0xFF1565C0),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Gestión de Usuarios',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Administrar docentes del sistema',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 18,
+                        color: Colors.grey,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

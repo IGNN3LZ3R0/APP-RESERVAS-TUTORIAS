@@ -20,27 +20,8 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
   final _emailAlternativoController = TextEditingController();
   
   bool _isLoading = false;
-  String _semestreSeleccionado = 'Nivelacion';
   DateTime? _fechaNacimiento;
   DateTime? _fechaIngreso;
-  List<String> _asignaturasSeleccionadas = [];
-  
-  // Lista de materias por semestre
-  final Map<String, List<String>> _materiasPorSemestre = {
-    'Nivelacion': [
-      'Matemáticas',
-      'Física',
-      'Química',
-      'Biología',
-    ],
-    'Primer Semestre': [
-      'Cálculo I',
-      'Física I',
-      'Programación I',
-      'Álgebra Lineal',
-      'Introducción a la Ingeniería',
-    ],
-  };
 
   @override
   void dispose() {
@@ -124,59 +105,6 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
     }
   }
 
-  void _mostrarDialogoAsignaturas() {
-    List<String> materiasDisponibles = _materiasPorSemestre[_semestreSeleccionado] ?? [];
-    List<String> seleccionadasTemp = List.from(_asignaturasSeleccionadas);
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setStateDialog) {
-          return AlertDialog(
-            title: const Text('Seleccionar Asignaturas'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: ListView(
-                shrinkWrap: true,
-                children: materiasDisponibles.map((materia) {
-                  return CheckboxListTile(
-                    title: Text(materia),
-                    value: seleccionadasTemp.contains(materia),
-                    onChanged: (bool? value) {
-                      setStateDialog(() {
-                        if (value == true) {
-                          seleccionadasTemp.add(materia);
-                        } else {
-                          seleccionadasTemp.remove(materia);
-                        }
-                      });
-                    },
-                    activeColor: const Color(0xFF1565C0),
-                  );
-                }).toList(),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _asignaturasSeleccionadas = seleccionadasTemp;
-                  });
-                  Navigator.pop(context);
-                },
-                child: const Text('Aceptar'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
   Future<void> _registrarDocente() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -187,13 +115,34 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
       return;
     }
 
-    if (_fechaIngreso == null) {
-      _mostrarError('Por favor selecciona la fecha de ingreso');
+    // ⭐ NUEVO: Validar edad mínima (18 años) y año mínimo (1960)
+    final fechaActual = DateTime.now();
+    final edad = fechaActual.year - _fechaNacimiento!.year;
+    final mesActual = fechaActual.month;
+    final diaActual = fechaActual.day;
+
+    // Ajustar edad si aún no ha cumplido años este año
+    int edadReal = edad;
+    if (mesActual < _fechaNacimiento!.month ||
+        (mesActual == _fechaNacimiento!.month && diaActual < _fechaNacimiento!.day)) {
+      edadReal = edad - 1;
+    }
+
+    // Validar año mínimo
+    if (_fechaNacimiento!.year < 1960) {
+      _mostrarError('El año de nacimiento debe ser 1960 o posterior');
       return;
     }
 
-    if (_asignaturasSeleccionadas.isEmpty) {
-      _mostrarError('Por favor selecciona al menos una asignatura');
+    // Validar edad mínima
+    if (edadReal < 18) {
+      _mostrarError('El docente debe tener al menos 18 años');
+      return;
+    }
+    // ⭐ FIN NUEVO
+
+    if (_fechaIngreso == null) {
+      _mostrarError('Por favor selecciona la fecha de ingreso');
       return;
     }
 
@@ -208,8 +157,6 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
       emailAlternativoDocente: _emailAlternativoController.text.trim(),
       fechaNacimientoDocente: _fechaNacimiento!.toIso8601String().split('T')[0],
       fechaIngresoDocente: _fechaIngreso!.toIso8601String().split('T')[0],
-      semestreAsignado: _semestreSeleccionado,
-      asignaturas: _asignaturasSeleccionadas,
     );
 
     setState(() => _isLoading = false);
@@ -422,77 +369,6 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
                     color: _fechaIngreso == null ? Colors.grey : Colors.black,
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Semestre asignado
-            DropdownButtonFormField<String>(
-              initialValue: _semestreSeleccionado,
-              decoration: InputDecoration(
-                labelText: 'Semestre Asignado',
-                prefixIcon: const Icon(Icons.school),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              items: const [
-                DropdownMenuItem(
-                  value: 'Nivelacion',
-                  child: Text('Nivelación'),
-                ),
-                DropdownMenuItem(
-                  value: 'Primer Semestre',
-                  child: Text('Primer Semestre'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _semestreSeleccionado = value!;
-                  _asignaturasSeleccionadas.clear();
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Asignaturas
-            InkWell(
-              onTap: _mostrarDialogoAsignaturas,
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: 'Asignaturas',
-                  prefixIcon: const Icon(Icons.menu_book),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _asignaturasSeleccionadas.isEmpty
-                    ? const Text(
-                        'Seleccionar asignaturas',
-                        style: TextStyle(color: Colors.grey),
-                      )
-                    : Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _asignaturasSeleccionadas.map((materia) {
-                          return Chip(
-                            label: Text(
-                              materia,
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                            backgroundColor: const Color(0xFF1565C0).withOpacity(0.1),
-                            labelStyle: const TextStyle(
-                              color: Color(0xFF1565C0),
-                            ),
-                            deleteIcon: const Icon(Icons.close, size: 16),
-                            onDeleted: () {
-                              setState(() {
-                                _asignaturasSeleccionadas.remove(materia);
-                              });
-                            },
-                          );
-                        }).toList(),
-                      ),
               ),
             ),
             const SizedBox(height: 32),

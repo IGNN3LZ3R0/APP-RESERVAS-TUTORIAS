@@ -56,7 +56,7 @@ class AuthService {
   }
 
   /// Login para Docente
-  /// Backend devuelve: { token, rol, _id, avatarDocente }
+  /// Backend devuelve: { token, rol, _id, avatarDocente, requiresPasswordChange? }
   /// NOTA: El backend solo devuelve estos 4 campos, necesitamos obtener el perfil completo después
   static Future<Map<String, dynamic>?> loginDocente({
     required String email,
@@ -72,6 +72,57 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
+        // ⭐ VERIFICAR SI REQUIERE CAMBIO DE CONTRASEÑA
+        if (data['requiresPasswordChange'] == true) {
+          print('⚠️ Docente requiere cambio de contraseña obligatorio');
+          
+          // Guardar token temporalmente
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_keyToken, data['token']);
+          await prefs.setString(_keyRol, 'Docente');
+
+          // Obtener perfil mínimo para mostrar en pantalla de cambio
+          final perfilResponse = await http.get(
+            Uri.parse(ApiConfig.perfilDocente),
+            headers: ApiConfig.getHeaders(token: data['token']),
+          );
+
+          if (perfilResponse.statusCode == 200) {
+            final perfilData = jsonDecode(perfilResponse.body);
+
+            // Guardar sesión temporal
+            await _guardarSesion(
+              token: data['token'],
+              rol: 'Docente',
+              usuarioJson: {
+                '_id': perfilData['_id'],
+                'nombreDocente': perfilData['nombreDocente'],
+                'emailDocente': perfilData['emailDocente'],
+                'cedulaDocente': perfilData['cedulaDocente'],
+                'celularDocente': perfilData['celularDocente'],
+                'oficinaDocente': perfilData['oficinaDocente'],
+                'emailAlternativoDocente': perfilData['emailAlternativoDocente'],
+                'avatarDocente': perfilData['avatarDocente'],
+                'asignaturas': perfilData['asignaturas'],
+                'semestreAsignado': perfilData['semestreAsignado'],
+                'fechaNacimientoDocente': perfilData['fechaNacimientoDocente'],
+                'fechaIngresoDocente': perfilData['fechaIngresoDocente'],
+                'rol': data['rol'],
+                'estadoDocente': true,
+                'confirmEmail': true,
+                'isOAuth': false,
+              },
+            );
+          }
+
+          // Retornar con flag de cambio obligatorio
+          return {
+            ...data,
+            'requiresPasswordChange': true,
+          };
+        }
+
+        // LOGIN NORMAL - Sin cambio obligatorio
         // Guardar token temporalmente
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_keyToken, data['token']);
@@ -198,6 +249,52 @@ class AuthService {
       }
     } catch (e) {
       print('Error en registrarEstudiante: $e');
+      return {'error': 'Error de conexión. Verifica tu internet.'};
+    }
+  }
+
+  // ========== CAMBIO DE CONTRASEÑA OBLIGATORIO ==========
+
+  /// Cambia la contraseña temporal del docente recién creado
+  /// Este método se llama cuando requiresPasswordChange = true
+  static Future<Map<String, dynamic>?> cambiarPasswordObligatorio({
+    required String email,
+    required String passwordActual,
+    required String passwordNueva,
+  }) async {
+    try {
+      print('🔄 Cambiando contraseña obligatoria para: $email');
+      
+      final token = await getToken();
+      
+      if (token == null) {
+        return {'error': 'No hay sesión activa'};
+      }
+
+      final response = await http.post(
+        Uri.parse(ApiConfig.cambiarPasswordObligatorioDocente),
+        headers: ApiConfig.getHeaders(token: token),
+        body: jsonEncode({
+          'email': email.trim().toLowerCase(),
+          'passwordActual': passwordActual,
+          'passwordNueva': passwordNueva,
+        }),
+      );
+
+      print('📬 Código de estado: ${response.statusCode}');
+      print('📝 Respuesta: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('✅ Contraseña cambiada exitosamente');
+        return {'msg': data['msg'] ?? 'Contraseña actualizada', 'success': true};
+      } else {
+        final error = jsonDecode(response.body);
+        print('❌ Error: ${error['msg']}');
+        return {'error': error['msg'] ?? 'Error al cambiar la contraseña'};
+      }
+    } catch (e) {
+      print('❌ Error en cambiarPasswordObligatorio: $e');
       return {'error': 'Error de conexión. Verifica tu internet.'};
     }
   }

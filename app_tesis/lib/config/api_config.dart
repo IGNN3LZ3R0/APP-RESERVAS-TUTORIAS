@@ -35,6 +35,11 @@ class ApiConfig {
   static String comprobarTokenAdmin(String token) => '$baseUrl/administrador/recuperarpassword/$token';
   static String nuevoPasswordAdmin(String token) => '$baseUrl/administrador/nuevopassword/$token';
   
+  // ========== CAMBIO DE CONTRASEÑA OBLIGATORIO ==========
+  
+  // ⭐ NUEVO: Para docentes recién creados con contraseña temporal
+  static const String cambiarPasswordObligatorioDocente = '$baseUrl/docente/cambiar-password-obligatorio';
+  
   // ========== ENDPOINTS DE PERFIL ==========
   
   static const String perfilAdministrador = '$baseUrl/perfil';
