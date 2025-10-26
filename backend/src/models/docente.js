@@ -254,5 +254,22 @@ docenteSchema.methods.matchPassword = async function (password) {
   return bcrypt.compare(password, this.passwordDocente)
 }
 
-export default model('Docente', docenteSchema)
+// ✅ Método para crear token de recuperación de contraseña
+docenteSchema.methods.crearToken = function () {
+  const tokenGenerado = this.token = Math.random().toString(36).slice(2)
+  return tokenGenerado
+}
 
+// ✅ Middleware para normalizar emails antes de guardar
+docenteSchema.pre('save', function(next) {
+  // Normalizar email antes de guardar
+  if (this.emailDocente) {
+    this.emailDocente = this.emailDocente.trim().toLowerCase();
+  }
+  if (this.emailAlternativoDocente) {
+    this.emailAlternativoDocente = this.emailAlternativoDocente.trim().toLowerCase();
+  }
+  next();
+});
+
+export default model('Docente', docenteSchema)

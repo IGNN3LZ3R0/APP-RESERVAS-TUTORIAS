@@ -325,7 +325,7 @@ class AuthService {
     }
   }
 
-  // ========== RECUPERAR CONTRASEÑA ==========
+// ========== RECUPERAR CONTRASEÑA ==========
 
   /// Solicita recuperación de contraseña
   /// Detecta automáticamente el rol según el formato del email
@@ -335,19 +335,21 @@ class AuthService {
     try {
       print('📧 Enviando solicitud de recuperación para: $email');
       
+      // ✅ NORMALIZAR EMAIL DESDE LA APP
+      final emailNormalizado = email.trim().toLowerCase();
+      
       // Detectar rol por email
       String endpoint;
       Map<String, String> body;
       
-      if (email.toLowerCase().endsWith('@epn.edu.ec')) {
+      if (emailNormalizado.endsWith('@epn.edu.ec')) {
         // Email institucional - puede ser docente o admin
-        // Intentar primero como docente, luego admin
         endpoint = ApiConfig.recuperarPasswordDocente;
-        body = {'emailDocente': email};
+        body = {'emailDocente': emailNormalizado}; // ✅ Enviar normalizado
       } else {
         // Email normal - estudiante
         endpoint = ApiConfig.recuperarPasswordEstudiante;
-        body = {'emailEstudiante': email};
+        body = {'emailEstudiante': emailNormalizado}; // ✅ Enviar normalizado
       }
 
       final response = await http.post(
@@ -371,14 +373,14 @@ class AuthService {
         }
       } 
       
-      // Si falla con docente y es institucional, intentar como admin
-      if (response.statusCode == 404 && email.toLowerCase().endsWith('@epn.edu.ec')) {
+      // ✅ Si falla con docente y es institucional, intentar como admin
+      if (response.statusCode == 404 && emailNormalizado.endsWith('@epn.edu.ec')) {
         print('🔄 Reintentando como administrador...');
         
         final adminResponse = await http.post(
           Uri.parse(ApiConfig.recuperarPasswordAdmin),
           headers: ApiConfig.getHeaders(),
-          body: jsonEncode({'email': email}),
+          body: jsonEncode({'email': emailNormalizado}), // ✅ Enviar normalizado
         );
         
         final adminData = jsonDecode(adminResponse.body);
