@@ -401,7 +401,7 @@ class _DashboardAdministrador extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // ✅ CORRECCIÓN: Tarjeta de Gestión de Usuarios con navegación real
+            // ✅ Tarjeta de Gestión de Usuarios con navegación real
             Card(
               elevation: 2,
               child: InkWell(

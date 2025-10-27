@@ -217,7 +217,7 @@ class _DetalleDocenteScreenState extends State<DetalleDocenteScreen> {
       materias = asignaturas.map((e) => e.toString()).toList();
     } else if (asignaturas is String) {
       try {
-        materias = (asignaturas as String).split(',').map((e) => e.trim()).toList();
+        materias = asignaturas.split(',').map((e) => e.trim()).toList();
       } catch (e) {
         materias = [asignaturas];
       }

@@ -78,8 +78,8 @@ class PerfilService {
     String? email,
     String? emailAlternativo,
     String? celular,
-    String? semestreAsignado,
-    List<String>? asignaturas,
+    String? semestreAsignado,    // ⭐ Agregado para gestión de materias
+    List<String>? asignaturas,   // ⭐ Agregado para gestión de materias
     File? imagen,
   }) async {
     try {
@@ -88,30 +88,40 @@ class PerfilService {
 
       var request = http.MultipartRequest(
         'PUT',
-        Uri.parse('${ApiConfig.baseUrl}/docente/actualizar/$id'), // ✅ CORRECTO
+        Uri.parse('${ApiConfig.baseUrl}/docente/actualizar/$id'),
       );
 
       request.headers.addAll(ApiConfig.getMultipartHeaders(token: token));
 
-      // Agregar campos - SIN EMAIL porque el backend de docente no permite cambiarlo
-      if (nombre != null) request.fields['nombreDocente'] = nombre;
-      if (cedula != null) request.fields['cedulaDocente'] = cedula;
-      if (fechaNacimiento != null) {
+      // Agregar campos básicos del docente
+      if (nombre != null && nombre.isNotEmpty) {
+        request.fields['nombreDocente'] = nombre;
+      }
+      if (cedula != null && cedula.isNotEmpty) {
+        request.fields['cedulaDocente'] = cedula;
+      }
+      if (fechaNacimiento != null && fechaNacimiento.isNotEmpty) {
         request.fields['fechaNacimientoDocente'] = fechaNacimiento;
       }
-      if (oficina != null) request.fields['oficinaDocente'] = oficina;
-      if (emailAlternativo != null) {
+      if (oficina != null && oficina.isNotEmpty) {
+        request.fields['oficinaDocente'] = oficina;
+      }
+      if (emailAlternativo != null && emailAlternativo.isNotEmpty) {
         request.fields['emailAlternativoDocente'] = emailAlternativo;
       }
-      if (celular != null) request.fields['celularDocente'] = celular;
-      if (semestreAsignado != null) {
+      if (celular != null && celular.isNotEmpty) {
+        request.fields['celularDocente'] = celular;
+      }
+
+      // ⭐ Nuevos campos para gestión de materias
+      if (semestreAsignado != null && semestreAsignado.isNotEmpty) {
         request.fields['semestreAsignado'] = semestreAsignado;
       }
-      if (asignaturas != null) {
+      if (asignaturas != null && asignaturas.isNotEmpty) {
         request.fields['asignaturas'] = jsonEncode(asignaturas);
       }
 
-      // Agregar imagen
+      // Agregar imagen si existe
       if (imagen != null) {
         request.files.add(
           await http.MultipartFile.fromPath('imagen', imagen.path),
@@ -124,6 +134,7 @@ class PerfilService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
+        // Actualizar usuario en SharedPreferences
         if (data['docente'] != null) {
           final usuarioActualizado = Usuario.fromJson(
             data['docente'],
@@ -139,11 +150,11 @@ class PerfilService {
       }
     } catch (e) {
       print('Error en actualizarPerfilDocente: $e');
-      return {'error': 'Error de conexión'};
+      return {'error': 'Error de conexión: $e'};
     }
   }
 
-  /// Actualizar perfil de Estudiante (nombre, teléfono y foto opcional)
+  /// Actualizar perfil de Estudiante (nombre, teléfono, email y foto opcional)
   static Future<Map<String, dynamic>?> actualizarPerfilEstudiante({
     required String id,
     String? nombre,
@@ -157,15 +168,21 @@ class PerfilService {
 
       var request = http.MultipartRequest(
         'PUT',
-        Uri.parse(ApiConfig.actualizarPerfilEstudiante(id)), // ✅ CORRECTO
+        Uri.parse(ApiConfig.actualizarPerfilEstudiante(id)),
       );
 
       request.headers.addAll(ApiConfig.getMultipartHeaders(token: token));
 
       // Agregar campos editables
-      if (nombre != null) request.fields['nombreEstudiante'] = nombre;
-      if (telefono != null) request.fields['telefono'] = telefono;
-      if (email != null) request.fields['emailEstudiante'] = email;
+      if (nombre != null && nombre.isNotEmpty) {
+        request.fields['nombreEstudiante'] = nombre;
+      }
+      if (telefono != null && telefono.isNotEmpty) {
+        request.fields['telefono'] = telefono;
+      }
+      if (email != null && email.isNotEmpty) {
+        request.fields['emailEstudiante'] = email;
+      }
 
       // Agregar imagen si existe
       if (imagen != null) {
@@ -180,6 +197,7 @@ class PerfilService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
+        // Actualizar usuario en SharedPreferences
         if (data['estudiante'] != null) {
           final usuarioActualizado = Usuario.fromJson(
             data['estudiante'],
@@ -191,11 +209,11 @@ class PerfilService {
         return data;
       } else {
         final error = jsonDecode(response.body);
-        return {'error': error['msg'] ?? 'Error al actualizar foto'};
+        return {'error': error['msg'] ?? 'Error al actualizar perfil'};
       }
     } catch (e) {
       print('Error en actualizarPerfilEstudiante: $e');
-      return {'error': 'Error de conexión'};
+      return {'error': 'Error de conexión: $e'};
     }
   }
 
@@ -229,39 +247,7 @@ class PerfilService {
       }
     } catch (e) {
       print('Error en cambiarPasswordAdministrador: $e');
-      return {'error': 'Error de conexión'};
-    }
-  }
-
-  /// Cambiar contraseña de Estudiante
-  static Future<Map<String, dynamic>?> cambiarPasswordEstudiante({
-    required String id,
-    required String passwordActual,
-    required String passwordNuevo,
-  }) async {
-    try {
-      final token = await AuthService.getToken();
-      if (token == null) return {'error': 'No hay sesión activa'};
-
-      final response = await http.put(
-        Uri.parse('${ApiConfig.baseUrl}/estudiante/actualizarpassword/$id'),
-        headers: ApiConfig.getHeaders(token: token),
-        body: jsonEncode({
-          'passwordactual': passwordActual,
-          'passwordnuevo': passwordNuevo,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data;
-      } else {
-        final error = jsonDecode(response.body);
-        return {'error': error['msg'] ?? 'Error al cambiar contraseña'};
-      }
-    } catch (e) {
-      print('Error en cambiarPasswordEstudiante: $e');
-      return {'error': 'Error de conexión'};
+      return {'error': 'Error de conexión: $e'};
     }
   }
 
@@ -293,7 +279,39 @@ class PerfilService {
       }
     } catch (e) {
       print('Error en cambiarPasswordDocente: $e');
-      return {'error': 'Error de conexión'};
+      return {'error': 'Error de conexión: $e'};
+    }
+  }
+
+  /// Cambiar contraseña de Estudiante
+  static Future<Map<String, dynamic>?> cambiarPasswordEstudiante({
+    required String id,
+    required String passwordActual,
+    required String passwordNuevo,
+  }) async {
+    try {
+      final token = await AuthService.getToken();
+      if (token == null) return {'error': 'No hay sesión activa'};
+
+      final response = await http.put(
+        Uri.parse('${ApiConfig.baseUrl}/estudiante/actualizarpassword/$id'),
+        headers: ApiConfig.getHeaders(token: token),
+        body: jsonEncode({
+          'passwordactual': passwordActual,
+          'passwordnuevo': passwordNuevo,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        final error = jsonDecode(response.body);
+        return {'error': error['msg'] ?? 'Error al cambiar contraseña'};
+      }
+    } catch (e) {
+      print('Error en cambiarPasswordEstudiante: $e');
+      return {'error': 'Error de conexión: $e'};
     }
   }
 }

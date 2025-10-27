@@ -1,8 +1,10 @@
 // lib/pantallas/admin/gestion_usuarios_screen.dart
 import 'package:flutter/material.dart';
-import '../../../modelos/usuario.dart';
-import '../../../servicios/docente_service.dart';
-import '../admin/crear_docente_screen.dart';
+import '../../modelos/usuario.dart';
+import '../../servicios/docente_service.dart';
+import 'crear_docente_screen.dart';
+import 'detalle_docente_screen.dart';  
+import 'editar_docente_screen.dart';   
 
 class GestionUsuariosScreen extends StatefulWidget {
   final Usuario usuario;
@@ -280,12 +282,28 @@ class _GestionUsuariosScreenState extends State<GestionUsuariosScreen> {
                               onDesabilitar: () =>
                                   _deshabilitarDocente(docente),
                               onVerDetalle: () {
-                                _mostrarError(
-                                    'Pantalla de detalle próximamente');
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DetalleDocenteScreen(
+                                      docenteId: docente['_id'],
+                                    ),
+                                  ),
+                                );
                               },
-                              onEditar: () {
-                                _mostrarError(
-                                    'Pantalla de edición próximamente');
+                              onEditar: () async {
+                                final resultado = await Navigator.push<bool>(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditarDocenteScreen(
+                                      docente: docente,
+                                    ),
+                                  ),
+                                );
+
+                                if (resultado == true && mounted) {
+                                  _cargarDocentes();
+                                }
                               },
                             );
                           },
