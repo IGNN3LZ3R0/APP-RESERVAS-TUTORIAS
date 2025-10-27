@@ -401,15 +401,15 @@ class _DashboardAdministrador extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Tarjeta de Gestión de Usuarios
+            // ✅ CORRECCIÓN: Tarjeta de Gestión de Usuarios con navegación real
             Card(
               elevation: 2,
               child: InkWell(
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Pantalla de Gestión de Usuarios próximamente'),
-                      backgroundColor: Colors.blue,
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => GestionUsuariosScreen(usuario: usuario),
                     ),
                   );
                 },
