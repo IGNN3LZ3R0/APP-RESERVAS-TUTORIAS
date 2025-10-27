@@ -5,6 +5,7 @@ import '../config/routes.dart';
 import 'perfil/editar_perfil_screen.dart';
 import 'auth/cambiar_password_screen.dart';
 import 'admin/gestion_usuarios_screen.dart';
+import 'docente/gestion_materias_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Usuario usuario;
@@ -345,6 +346,78 @@ class _DashboardDocente extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
+            // ⭐ SECCIÓN NUEVA: Acciones rápidas
+            const Text(
+              'Acciones rápidas',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+
+            // ⭐ Tarjeta de Gestión de Materias
+            Card(
+              elevation: 2,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => GestionMateriasScreen(usuario: usuario),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1565C0).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.book,
+                          size: 32,
+                          color: Color(0xFF1565C0),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Mis Materias',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Gestionar materias y horarios',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 18,
+                        color: Colors.grey,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            // ⭐ FIN DE SECCIÓN NUEVA
+
             const Text(
               'Solicitudes pendientes',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -401,7 +474,7 @@ class _DashboardAdministrador extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // ✅ Tarjeta de Gestión de Usuarios con navegación real
+            // Tarjeta de Gestión de Usuarios
             Card(
               elevation: 2,
               child: InkWell(
