@@ -1,8 +1,8 @@
 // lib/pantallas/cambio_password_obligatorio_screen.dart
 import 'package:flutter/material.dart';
-import '../modelos/usuario.dart';
-import '../servicios/auth_service.dart';
-import '../config/routes.dart';
+import '../../modelos/usuario.dart';
+import '../../servicios/auth_service.dart';
+import '../../config/routes.dart';
 
 class CambioPasswordObligatorioScreen extends StatefulWidget {
   final Usuario usuario;

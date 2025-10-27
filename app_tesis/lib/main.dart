@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'config/theme.dart';
 import 'config/routes.dart';
 import 'servicios/deep_link_service.dart';
-import 'pantallas/nueva_password_screen.dart';
+import 'pantallas/auth/nueva_password_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'pantallas/confirmar_codigo_screen.dart';
-import 'pantallas/ingresar_codigo_screen.dart';
+import 'pantallas/auth/confirmar_codigo_screen.dart';
+import 'pantallas/auth/ingresar_codigo_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

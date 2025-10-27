@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../modelos/usuario.dart';
-import '../servicios/perfil_service.dart';
+import '../../modelos/usuario.dart';
+import '../../servicios/perfil_service.dart';
 
 class CambiarPasswordScreen extends StatefulWidget {
   final Usuario usuario;

@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../modelos/usuario.dart';
-import '../servicios/perfil_service.dart';
-import '../servicios/auth_service.dart';
+import '../../modelos/usuario.dart';
+import '../../servicios/perfil_service.dart';
+import '../../servicios/auth_service.dart';
 
 class EditarPerfilScreen extends StatefulWidget {
   final Usuario usuario;

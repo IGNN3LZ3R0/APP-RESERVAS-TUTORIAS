@@ -1,7 +1,7 @@
 // lib/pantallas/nueva_password_screen.dart
 import 'package:flutter/material.dart';
-import '../servicios/auth_service.dart';
-import '../config/routes.dart';
+import '../../servicios/auth_service.dart';
+import '../../config/routes.dart';
 
 class NuevaPasswordScreen extends StatefulWidget {
   const NuevaPasswordScreen({super.key});

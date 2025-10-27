@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../servicios/auth_service.dart';
+import '../../servicios/auth_service.dart';
 
 class IngresarCodigoScreen extends StatefulWidget {
   const IngresarCodigoScreen({super.key});

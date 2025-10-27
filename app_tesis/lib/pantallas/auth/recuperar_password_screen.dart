@@ -1,6 +1,6 @@
 // lib/pantallas/recuperar_password_screen.dart
 import 'package:flutter/material.dart';
-import '../servicios/auth_service.dart';
+import '../../servicios/auth_service.dart';
 
 class RecuperarPasswordScreen extends StatefulWidget {
   const RecuperarPasswordScreen({super.key});

@@ -1,7 +1,7 @@
 // lib/pantallas/login_screen.dart
 import 'package:flutter/material.dart';
-import '../servicios/auth_service.dart';
-import '../config/routes.dart';
+import '../../servicios/auth_service.dart';
+import '../../config/routes.dart';
 import 'cambio_password_obligatorio_screen.dart';  // ← NUEVO
 
 class LoginScreen extends StatefulWidget {
