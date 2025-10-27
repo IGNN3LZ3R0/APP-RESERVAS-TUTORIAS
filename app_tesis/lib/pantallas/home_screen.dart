@@ -4,6 +4,7 @@ import '../servicios/auth_service.dart';
 import '../config/routes.dart';
 import 'editar_perfil_screen.dart';
 import 'cambiar_password_screen.dart';
+import 'admin/gestion_usuarios_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Usuario usuario;
