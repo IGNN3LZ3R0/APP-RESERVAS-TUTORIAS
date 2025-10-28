@@ -600,6 +600,24 @@ class _PerfilScreenState extends State<_PerfilScreen> {
 
   // ✅ MÉTODO CORREGIDO: Navega y actualiza el perfil
   Future<void> _navegarAEditarPerfil() async {
+    // ✅ VALIDAR QUE EL USUARIO TIENE ID
+    if (_usuario.id.isEmpty) {
+      print('❌ ERROR: Usuario sin ID válido');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: Sesión inválida. Inicia sesión nuevamente.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
+    print('🔹 Navegando a editar perfil con usuario:');
+    print('   ID: ${_usuario.id}');
+    print('   Nombre: ${_usuario.nombre}');
+    print('   Email: ${_usuario.email}');
+    print('   Rol: ${_usuario.rol}');
+    
     final usuarioActualizado = await Navigator.push<Usuario>(
       context,
       MaterialPageRoute(
@@ -608,12 +626,15 @@ class _PerfilScreenState extends State<_PerfilScreen> {
     );
 
     if (usuarioActualizado != null && mounted) {
+      print('✅ Usuario actualizado recibido: ${usuarioActualizado.nombre}');
       setState(() {
         _usuario = usuarioActualizado;
       });
       
       // ✅ ESTA LÍNEA ES LA CLAVE - Notifica al HomeScreen
       widget.onUserUpdated?.call(usuarioActualizado);
+    } else {
+      print('⚠️ No se recibió usuario actualizado');
     }
   }
 

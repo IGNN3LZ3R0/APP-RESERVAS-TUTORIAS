@@ -209,9 +209,20 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     }
   }
 
-  // ✅ MÉTODO MEJORADO: Obtiene perfil actualizado del servidor
+  // 🆕 MÉTODO MEJORADO CON VALIDACIÓN DE ID Y LOGS
   Future<void> _guardarCambios() async {
     if (!_formKey.currentState!.validate()) return;
+
+    // 🆕 VALIDAR QUE EL ID EXISTE
+    if (widget.usuario.id.isEmpty) {
+      _mostrarError('Error: ID de usuario no válido');
+      print('❌ ERROR: widget.usuario.id está vacío');
+      return;
+    }
+
+    print('🆔 ID del usuario: ${widget.usuario.id}');
+    print('📧 Email del usuario: ${widget.usuario.email}');
+    print('👤 Rol del usuario: ${widget.usuario.rol}');
 
     setState(() => _isLoading = true);
 
@@ -219,6 +230,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
 
     try {
       if (widget.usuario.esAdministrador) {
+        print('🔹 Actualizando perfil de ADMINISTRADOR');
         resultado = await PerfilService.actualizarPerfilAdministrador(
           id: widget.usuario.id,
           nombre: _nombreController.text.trim(),
@@ -226,6 +238,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
           imagen: _imagenSeleccionada,
         );
       } else if (widget.usuario.esDocente) {
+        print('🔹 Actualizando perfil de DOCENTE');
         resultado = await PerfilService.actualizarPerfilDocente(
           id: widget.usuario.id,
           nombre: _nombreController.text.trim(),
@@ -237,6 +250,11 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
           imagen: _imagenSeleccionada,
         );
       } else if (widget.usuario.esEstudiante) {
+        print('🔹 Actualizando perfil de ESTUDIANTE');
+        print('📝 Nombre: ${_nombreController.text.trim()}');
+        print('📞 Teléfono: ${_telefonoController.text.trim()}');
+        print('📧 Email: ${_emailController.text.trim()}');
+
         resultado = await PerfilService.actualizarPerfilEstudiante(
           id: widget.usuario.id,
           nombre: _nombreController.text.trim(),
@@ -246,6 +264,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
         );
       }
     } catch (e) {
+      print('❌ Error en try-catch: $e');
       resultado = {'error': 'Error inesperado: $e'};
     }
 
@@ -414,7 +433,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   prefixIcon: Icon(Icons.email),
                 ),
                 keyboardType: TextInputType.emailAddress,
-                enabled: false, // El backend de docente no permite cambiar email
+                enabled: false,
               ),
               const SizedBox(height: 16),
               TextFormField(

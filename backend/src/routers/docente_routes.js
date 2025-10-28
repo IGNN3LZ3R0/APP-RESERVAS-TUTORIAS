@@ -33,13 +33,14 @@ routerDocente.post('/docente/recuperarpassword', recuperarPasswordDocente)
 routerDocente.get('/docente/recuperarpassword/:token', comprobarTokenPasswordDocente)
 routerDocente.post('/docente/nuevopassword/:token', crearNuevoPasswordDocente)
 routerDocente.post('/docente/cambiar-password-obligatorio',verificarTokenJWT,cambiarPasswordObligatorio)
+
 // ========== RUTAS PRIVADAS - DOCENTE ==========
 
 // Perfil del docente autenticado
 routerDocente.get('/docente/perfil', verificarTokenJWT, verificarRol(["Docente"]), perfilDocente)
 
-// Actualizar perfil del docente autenticado (ÉL MISMO)
-routerDocente.put('/docente/perfil/:id', verificarTokenJWT, verificarRol(["Docente"]), actualizarPerfilDocente)
+// ✅ CAMBIO AQUÍ: Actualizar perfil del docente (ÉL MISMO O ADMIN)
+routerDocente.put('/docente/perfil/:id', verificarTokenJWT, verificarRol(["Docente", "Administrador"]), actualizarPerfilDocente)
 
 // Actualizar contraseña del docente autenticado (ÉL MISMO)
 routerDocente.put('/docente/actualizarpassword/:id', verificarTokenJWT, verificarRol(["Docente"]), actualizarPasswordDocente)

@@ -155,6 +155,8 @@ class PerfilService {
   }
 
   /// Actualizar perfil de Estudiante (nombre, teléfono, email y foto opcional)
+
+/// Actualizar perfil de Estudiante (nombre, teléfono, email y foto opcional)
   static Future<Map<String, dynamic>?> actualizarPerfilEstudiante({
     required String id,
     String? nombre,
@@ -166,9 +168,13 @@ class PerfilService {
       final token = await AuthService.getToken();
       if (token == null) return {'error': 'No hay sesión activa'};
 
+      // ✅ LOG: Ver qué URL se está usando
+      final url = ApiConfig.actualizarPerfilEstudiante(id);
+      print('🔗 URL de actualización: $url');
+
       var request = http.MultipartRequest(
         'PUT',
-        Uri.parse(ApiConfig.actualizarPerfilEstudiante(id)),
+        Uri.parse(url),
       );
 
       request.headers.addAll(ApiConfig.getMultipartHeaders(token: token));
@@ -176,12 +182,15 @@ class PerfilService {
       // Agregar campos editables
       if (nombre != null && nombre.isNotEmpty) {
         request.fields['nombreEstudiante'] = nombre;
+        print('📝 Enviando nombre: $nombre');
       }
       if (telefono != null && telefono.isNotEmpty) {
         request.fields['telefono'] = telefono;
+        print('📞 Enviando teléfono: $telefono');
       }
       if (email != null && email.isNotEmpty) {
         request.fields['emailEstudiante'] = email;
+        print('📧 Enviando email: $email');
       }
 
       // Agregar imagen si existe
@@ -189,10 +198,15 @@ class PerfilService {
         request.files.add(
           await http.MultipartFile.fromPath('imagen', imagen.path),
         );
+        print('📸 Enviando imagen');
       }
 
+      print('🚀 Enviando request...');
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
+
+      print('📬 Status code: ${response.statusCode}');
+      print('📄 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -204,15 +218,17 @@ class PerfilService {
             'Estudiante',
           );
           await AuthService.actualizarUsuario(usuarioActualizado);
+          print('✅ Usuario actualizado en cache');
         }
 
         return data;
       } else {
         final error = jsonDecode(response.body);
+        print('❌ Error del servidor: ${error['msg']}');
         return {'error': error['msg'] ?? 'Error al actualizar perfil'};
       }
     } catch (e) {
-      print('Error en actualizarPerfilEstudiante: $e');
+      print('❌ Error en actualizarPerfilEstudiante: $e');
       return {'error': 'Error de conexión: $e'};
     }
   }

@@ -590,9 +590,11 @@ const perfilDocente = (req, res) => {
 const actualizarPerfilDocente = async (req, res) => {
   try {
     const { id } = req.params;
+    // ✅ PERMITIR: Docente edita su propio perfil O Admin edita cualquier perfil
+    const esDocente = req.docenteBDD && req.docenteBDD._id.toString() === id;
+    const esAdmin = req.administradorBDD; // Si existe, es admin
     
-    // Validar que el docente solo pueda actualizar su propio perfil
-    if (req.docenteBDD._id.toString() !== id) {
+    if (!esDocente && !esAdmin) {
       return res.status(403).json({ 
         msg: "No tienes permiso para modificar este perfil" 
       });

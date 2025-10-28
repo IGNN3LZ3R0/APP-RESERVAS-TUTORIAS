@@ -47,10 +47,18 @@ class Usuario {
 
   // Convierte JSON del backend a objeto Usuario
   factory Usuario.fromJson(Map<String, dynamic> json, String rol) {
+    print('🔍 Usuario.fromJson llamado');
+    print('   Rol recibido: $rol');
+    print('   JSON keys: ${json.keys.join(", ")}');
+    print('   _id: ${json['_id']}');
+    print('   id: ${json['id']}');
+    
     switch (rol) {
       case 'Administrador':
+        final id = json['_id'] ?? json['id'] ?? '';
+        print('✅ Admin ID extraído: $id');
         return Usuario(
-          id: json['_id'] ?? json['id'] ?? '',
+          id: id,
           nombre: json['nombreAdministrador'] ?? '',
           email: json['email'] ?? '',
           rol: 'Administrador',
@@ -62,8 +70,10 @@ class Usuario {
         );
 
       case 'Docente':
+        final id = json['_id'] ?? json['id'] ?? '';
+        print('✅ Docente ID extraído: $id');
         return Usuario(
-          id: json['_id'] ?? json['id'] ?? '',
+          id: id,
           nombre: json['nombreDocente'] ?? '',
           email: json['emailDocente'] ?? '',
           rol: 'Docente',
@@ -90,8 +100,16 @@ class Usuario {
 
       case 'Estudiante':
       default:
+        final id = json['_id'] ?? json['id'] ?? '';
+        print('✅ Estudiante ID extraído: $id');
+        
+        if (id.isEmpty) {
+          print('⚠️ ADVERTENCIA: ID de estudiante está vacío');
+          print('   JSON completo: $json');
+        }
+        
         return Usuario(
-          id: json['_id'] ?? json['id'] ?? '',
+          id: id,
           nombre: json['nombreEstudiante'] ?? '',
           email: json['emailEstudiante'] ?? '',
           rol: 'Estudiante',

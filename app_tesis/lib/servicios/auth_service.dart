@@ -175,7 +175,7 @@ class AuthService {
     }
   }
 
-  /// Login para Estudiante
+/// Login para Estudiante
   /// Backend devuelve: { token, rol, nombreEstudiante, telefono, _id, emailEstudiante, fotoPerfil }
   static Future<Map<String, dynamic>?> loginEstudiante({
     required String email,
@@ -191,22 +191,50 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
+        print('🔍 RESPUESTA DEL BACKEND:');
+        print('   Token: ${data['token']?.substring(0, 20)}...');
+        print('   Rol: ${data['rol']}');
+        print('   _id: ${data['_id']}');
+        print('   usuario._id: ${data['usuario']?['_id']}');
+        print('   nombreEstudiante: ${data['nombreEstudiante']}');
+        print('   usuario.nombreEstudiante: ${data['usuario']?['nombreEstudiante']}');
+
+        // ✅ EXTRAER ID CORRECTAMENTE (puede venir en data o en data.usuario)
+        final userId = data['_id'] ?? data['usuario']?['_id'] ?? '';
+        final userName = data['nombreEstudiante'] ?? data['usuario']?['nombreEstudiante'] ?? '';
+        final userEmail = data['emailEstudiante'] ?? data['usuario']?['emailEstudiante'] ?? email;
+        final userPhone = data['telefono'] ?? data['usuario']?['telefono'];
+        final userPhoto = data['fotoPerfil'] ?? data['usuario']?['fotoPerfil'];
+        final userRol = data['rol'] ?? data['usuario']?['rol'] ?? 'Estudiante';
+
+        print('🔹 DATOS EXTRAÍDOS:');
+        print('   userId: $userId');
+        print('   userName: $userName');
+        print('   userEmail: $userEmail');
+
+        if (userId.isEmpty) {
+          print('❌ ERROR: No se pudo obtener el ID del usuario');
+          return {'error': 'Error al obtener datos del usuario'};
+        }
+
         // Guardar datos en SharedPreferences
         await _guardarSesion(
           token: data['token'],
-          rol: 'Estudiante',
+          rol: userRol,
           usuarioJson: {
-            '_id': data['_id'],
-            'nombreEstudiante': data['nombreEstudiante'] ?? '',
-            'emailEstudiante': data['emailEstudiante'] ?? email,
-            'telefono': data['telefono'],
-            'fotoPerfil': data['fotoPerfil'],
-            'rol': data['rol'],
+            '_id': userId,
+            'nombreEstudiante': userName,
+            'emailEstudiante': userEmail,
+            'telefono': userPhone,
+            'fotoPerfil': userPhoto,
+            'rol': userRol,
             'status': true,
             'confirmEmail': true,
             'isOAuth': false,
           },
         );
+
+        print('✅ Sesión guardada correctamente');
 
         return data;
       } else {
