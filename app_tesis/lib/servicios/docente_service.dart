@@ -14,8 +14,6 @@ class DocenteService {
     required String emailAlternativoDocente,
     required String fechaNacimientoDocente,
     required String fechaIngresoDocente,
-    required String semestreAsignado,
-    required List<String> asignaturas,
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -36,8 +34,6 @@ class DocenteService {
           'emailAlternativoDocente': emailAlternativoDocente,
           'fechaNacimientoDocente': fechaNacimientoDocente,
           'fechaIngresoDocente': fechaIngresoDocente,
-          'semestreAsignado': semestreAsignado,
-          'asignaturas': asignaturas,
         }),
       );
 
@@ -151,8 +147,6 @@ class DocenteService {
     required String emailAlternativoDocente,
     required String fechaNacimientoDocente,
     required String fechaIngresoDocente,
-    required String semestreAsignado,
-    required List<String> asignaturas,
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -173,8 +167,6 @@ class DocenteService {
           'emailAlternativoDocente': emailAlternativoDocente,
           'fechaNacimientoDocente': fechaNacimientoDocente,
           'fechaIngresoDocente': fechaIngresoDocente,
-          'semestreAsignado': semestreAsignado,
-          'asignaturas': asignaturas,
         }),
       );
 

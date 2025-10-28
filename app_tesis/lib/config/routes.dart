@@ -2,9 +2,9 @@
 import 'package:flutter/material.dart';
 import '../pantallas/splash_screen.dart';
 import '../pantallas/bienvenida_screen.dart';
-import '../pantallas/login_screen.dart';
-import '../pantallas/registro_screen.dart';
-import '../pantallas/recuperar_password_screen.dart';
+import '../pantallas/auth/login_screen.dart';
+import '../pantallas/auth/registro_screen.dart';
+import '../pantallas/auth/recuperar_password_screen.dart';
 import '../pantallas/home_screen.dart';
 import '../modelos/usuario.dart';
 
@@ -34,9 +34,7 @@ class AppRoutes {
       case home:
         final usuario = settings.arguments as Usuario?;
         if (usuario == null) {
-          return MaterialPageRoute(
-            builder: (context) => const LoginScreen(),
-          );
+          return MaterialPageRoute(builder: (context) => const LoginScreen());
         }
         return MaterialPageRoute(
           builder: (context) => HomeScreen(usuario: usuario),
@@ -68,11 +66,7 @@ class AppRoutes {
     String routeName, {
     Object? arguments,
   }) {
-    return Navigator.pushNamed<T>(
-      context,
-      routeName,
-      arguments: arguments,
-    );
+    return Navigator.pushNamed<T>(context, routeName, arguments: arguments);
   }
 
   /// Navega eliminando todas las rutas anteriores
@@ -100,10 +94,7 @@ class AppRoutes {
   }
 
   /// Navega al home según el rol del usuario
-  static Future<void> navigateToHome(
-    BuildContext context,
-    Usuario usuario,
-  ) {
+  static Future<void> navigateToHome(BuildContext context, Usuario usuario) {
     return pushAndRemoveUntil(context, home, arguments: usuario);
   }
 

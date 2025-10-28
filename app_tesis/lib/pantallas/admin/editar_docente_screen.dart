@@ -1,27 +1,60 @@
 import 'package:flutter/material.dart';
 import '../../servicios/docente_service.dart';
 
-class CrearDocenteScreen extends StatefulWidget {
-  const CrearDocenteScreen({super.key});
+class EditarDocenteScreen extends StatefulWidget {
+  final Map<String, dynamic> docente;
+
+  const EditarDocenteScreen({super.key, required this.docente});
 
   @override
-  State<CrearDocenteScreen> createState() => _CrearDocenteScreenState();
+  State<EditarDocenteScreen> createState() => _EditarDocenteScreenState();
 }
 
-class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
+class _EditarDocenteScreenState extends State<EditarDocenteScreen> {
   final _formKey = GlobalKey<FormState>();
   
-  // Controladores
-  final _nombreController = TextEditingController();
-  final _cedulaController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _celularController = TextEditingController();
-  final _oficinaController = TextEditingController();
-  final _emailAlternativoController = TextEditingController();
+  late TextEditingController _nombreController;
+  late TextEditingController _cedulaController;
+  late TextEditingController _emailController;
+  late TextEditingController _celularController;
+  late TextEditingController _oficinaController;
+  late TextEditingController _emailAlternativoController;
   
   bool _isLoading = false;
   DateTime? _fechaNacimiento;
   DateTime? _fechaIngreso;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarDatosIniciales();
+  }
+
+  void _cargarDatosIniciales() {
+    _nombreController = TextEditingController(text: widget.docente['nombreDocente']);
+    _cedulaController = TextEditingController(text: widget.docente['cedulaDocente']);
+    _emailController = TextEditingController(text: widget.docente['emailDocente']);
+    _celularController = TextEditingController(text: widget.docente['celularDocente']);
+    _oficinaController = TextEditingController(text: widget.docente['oficinaDocente']);
+    _emailAlternativoController = TextEditingController(text: widget.docente['emailAlternativoDocente']);
+
+    // Parsear fechas
+    if (widget.docente['fechaNacimientoDocente'] != null) {
+      try {
+        _fechaNacimiento = DateTime.parse(widget.docente['fechaNacimientoDocente']);
+      } catch (e) {
+        _fechaNacimiento = null;
+      }
+    }
+
+    if (widget.docente['fechaIngresoDocente'] != null) {
+      try {
+        _fechaIngreso = DateTime.parse(widget.docente['fechaIngresoDocente']);
+      } catch (e) {
+        _fechaIngreso = null;
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -78,7 +111,9 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
   Future<void> _seleccionarFecha(BuildContext context, bool esNacimiento) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: esNacimiento 
+          ? (_fechaNacimiento ?? DateTime.now().subtract(const Duration(days: 365 * 25)))
+          : (_fechaIngreso ?? DateTime.now()),
       firstDate: DateTime(1950),
       lastDate: DateTime.now(),
       locale: const Locale('es', 'ES'),
@@ -105,7 +140,7 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
     }
   }
 
-  Future<void> _registrarDocente() async {
+  Future<void> _actualizarDocente() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -115,31 +150,27 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
       return;
     }
 
-    // ⭐ NUEVO: Validar edad mínima (18 años) y año mínimo (1960)
+    // Validar edad mínima (18 años) y año mínimo (1960)
     final fechaActual = DateTime.now();
     final edad = fechaActual.year - _fechaNacimiento!.year;
     final mesActual = fechaActual.month;
     final diaActual = fechaActual.day;
 
-    // Ajustar edad si aún no ha cumplido años este año
     int edadReal = edad;
     if (mesActual < _fechaNacimiento!.month ||
         (mesActual == _fechaNacimiento!.month && diaActual < _fechaNacimiento!.day)) {
       edadReal = edad - 1;
     }
 
-    // Validar año mínimo
     if (_fechaNacimiento!.year < 1960) {
       _mostrarError('El año de nacimiento debe ser 1960 o posterior');
       return;
     }
 
-    // Validar edad mínima
     if (edadReal < 18) {
       _mostrarError('El docente debe tener al menos 18 años');
       return;
     }
-    // ⭐ FIN NUEVO
 
     if (_fechaIngreso == null) {
       _mostrarError('Por favor selecciona la fecha de ingreso');
@@ -148,7 +179,8 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
 
     setState(() => _isLoading = true);
 
-    final resultado = await DocenteService.registrarDocente(
+    final resultado = await DocenteService.actualizarDocente(
+      id: widget.docente['_id'],
       nombreDocente: _nombreController.text.trim(),
       cedulaDocente: _cedulaController.text.trim(),
       emailDocente: _emailController.text.trim(),
@@ -166,9 +198,9 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
     if (resultado != null && resultado.containsKey('error')) {
       _mostrarError(resultado['error']);
     } else {
-      _mostrarExito('Docente registrado exitosamente. Se envió un correo con las credenciales.');
+      _mostrarExito('Docente actualizado exitosamente');
       
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
       
       if (!mounted) return;
       Navigator.pop(context, true);
@@ -191,7 +223,7 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
         content: Text(mensaje),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -200,8 +232,9 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Crear Docente'),
+        title: const Text('Editar Docente'),
         elevation: 0,
+        backgroundColor: const Color(0xFF1565C0),
       ),
       body: Form(
         key: _formKey,
@@ -219,7 +252,7 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'El sistema generará automáticamente una contraseña y la enviará por correo al docente.',
+                        'Actualiza la información del docente.',
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.blue[900],
@@ -238,7 +271,6 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
               decoration: InputDecoration(
                 labelText: 'Nombre Completo',
                 prefixIcon: const Icon(Icons.person),
-                hintText: 'Dr. Juan Pérez',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -255,7 +287,6 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
               decoration: InputDecoration(
                 labelText: 'Cédula',
                 prefixIcon: const Icon(Icons.badge),
-                hintText: '1234567890',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -264,19 +295,19 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Email institucional
+            // Email institucional (solo lectura)
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
+              enabled: false,
               decoration: InputDecoration(
                 labelText: 'Correo Institucional',
                 prefixIcon: const Icon(Icons.email),
-                hintText: 'docente@epn.edu.ec',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                helperText: 'No se puede modificar el email institucional',
               ),
-              validator: _validarEmail,
             ),
             const SizedBox(height: 16),
 
@@ -287,7 +318,6 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
               decoration: InputDecoration(
                 labelText: 'Correo Alternativo',
                 prefixIcon: const Icon(Icons.alternate_email),
-                hintText: 'docente@gmail.com',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -303,7 +333,6 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
               decoration: InputDecoration(
                 labelText: 'Celular',
                 prefixIcon: const Icon(Icons.phone),
-                hintText: '0987654321',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -318,7 +347,6 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
               decoration: InputDecoration(
                 labelText: 'Oficina',
                 prefixIcon: const Icon(Icons.meeting_room),
-                hintText: 'Edificio A - Oficina 101',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -373,11 +401,11 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
             ),
             const SizedBox(height: 32),
 
-            // Botón registrar
+            // Botón actualizar
             SizedBox(
               height: 50,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _registrarDocente,
+                onPressed: _isLoading ? null : _actualizarDocente,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1565C0),
                   shape: RoundedRectangleBorder(
@@ -394,7 +422,7 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
                         ),
                       )
                     : const Text(
-                        'Registrar Docente',
+                        'Actualizar Docente',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

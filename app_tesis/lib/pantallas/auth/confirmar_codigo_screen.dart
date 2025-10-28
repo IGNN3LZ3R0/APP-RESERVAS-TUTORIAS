@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../servicios/auth_service.dart';
-import '../config/routes.dart';
+import '../../servicios/auth_service.dart';
+import '../../config/routes.dart';
 
 class ConfirmarCodigoScreen extends StatefulWidget {
   const ConfirmarCodigoScreen({super.key});

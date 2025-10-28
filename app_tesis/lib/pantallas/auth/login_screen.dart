@@ -1,10 +1,11 @@
 // lib/pantallas/login_screen.dart
 import 'package:flutter/material.dart';
-import '../servicios/auth_service.dart';
-import '../config/routes.dart';
+import '../../servicios/auth_service.dart';
+import '../../config/routes.dart';
+import 'cambio_password_obligatorio_screen.dart';  // ← NUEVO
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -70,10 +71,28 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    // ⭐ CÓDIGO MODIFICADO AQUÍ
     if (resultado != null && resultado.containsKey('token')) {
       final usuario = await AuthService.getUsuarioActual();
       
       if (usuario != null) {
+        // ⭐ NUEVO: Verificar si requiere cambio de contraseña
+        if (resultado['requiresPasswordChange'] == true) {
+          // Navegar a pantalla de cambio obligatorio
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CambioPasswordObligatorioScreen(
+                usuario: usuario,
+                email: _emailController.text.trim(),
+              ),
+            ),
+          );
+          return;
+        }
+        
+        // Login normal - navegar al home
         AppRoutes.navigateToHome(context, usuario);
       } else {
         _mostrarError('Error al obtener datos del usuario');

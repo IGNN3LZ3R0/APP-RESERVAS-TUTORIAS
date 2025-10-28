@@ -132,7 +132,7 @@ class DeepLinkService {
 
   static Future<void> _handleResetPassword(BuildContext context, String token) async {
     print('🔐 [DeepLink] Restableciendo contraseña...');
-
+    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -152,16 +152,17 @@ class DeepLinkService {
         ),
       ),
     );
-
+    
     try {
       final resultado = await AuthService.comprobarTokenPassword(token);
-
+      
       if (!context.mounted) return;
       Navigator.pop(context);
-
+      
       if (resultado != null && resultado.containsKey('error')) {
         _mostrarError(context, resultado['error']);
       } else {
+        // Token válido, navegar a crear nueva contraseña
         Navigator.pushNamed(context, '/nueva-password', arguments: token);
       }
     } catch (e) {

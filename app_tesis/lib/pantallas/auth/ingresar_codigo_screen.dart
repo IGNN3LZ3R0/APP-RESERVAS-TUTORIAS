@@ -1,34 +1,33 @@
-// lib/pantallas/recuperar_password_screen.dart
 import 'package:flutter/material.dart';
-import '../servicios/auth_service.dart';
+import '../../servicios/auth_service.dart';
 
-class RecuperarPasswordScreen extends StatefulWidget {
-  const RecuperarPasswordScreen({super.key});
+class IngresarCodigoScreen extends StatefulWidget {
+  const IngresarCodigoScreen({super.key});
 
   @override
-  State<RecuperarPasswordScreen> createState() =>
-      _RecuperarPasswordScreenState();
+  State<IngresarCodigoScreen> createState() => _IngresarCodigoScreenState();
 }
 
-class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
+class _IngresarCodigoScreenState extends State<IngresarCodigoScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _codigoController = TextEditingController();
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _codigoController.dispose();
     super.dispose();
   }
 
-  Future<void> _recuperarPassword() async {
+  Future<void> _validarCodigo() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
-    final resultado = await AuthService.recuperarPassword(
-      email: _emailController.text.trim(),
-    );
+    final token = _codigoController.text.trim();
+
+    // Verificar si el token es válido
+    final resultado = await AuthService.comprobarTokenPassword(token);
 
     setState(() => _isLoading = false);
 
@@ -36,17 +35,13 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
 
     if (resultado != null && resultado.containsKey('error')) {
       _mostrarError(resultado['error']);
-    } else if (resultado != null && resultado.containsKey('msg')) {
-      _mostrarExito(resultado['msg']);
-
-      // Limpiar el campo de email
-      _emailController.clear();
-
-      // Esperar antes de cerrar la pantalla
-      await Future.delayed(const Duration(seconds: 3));
-
-      if (!mounted) return;
-      Navigator.pop(context);
+    } else {
+      // Token válido, navegar a crear nueva contraseña
+      Navigator.pushNamed(
+        context,
+        '/nueva-password',
+        arguments: token,
+      );
     }
   }
 
@@ -66,28 +61,11 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
     );
   }
 
-  void _mostrarExito(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_outline, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(child: Text(mensaje)),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Recuperar Contraseña'),
+        title: const Text('Ingresar Código'),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -108,7 +86,7 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
-                      Icons.lock_reset,
+                      Icons.vpn_key,
                       size: 80,
                       color: Color(0xFF1565C0),
                     ),
@@ -117,7 +95,7 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
 
                   // Título
                   const Text(
-                    '¿Olvidaste tu Contraseña?',
+                    'Código de Recuperación',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 24,
@@ -127,39 +105,41 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Descripción
+                  // Instrucciones
                   Text(
-                    'No te preocupes. Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.',
+                    'Ingresa el código que recibiste en tu correo electrónico.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
                   ),
                   const SizedBox(height: 32),
 
-                  // Campo de email
+                  // Campo de código
                   TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
+                    controller: _codigoController,
                     decoration: InputDecoration(
-                      labelText: 'Correo Electrónico',
-                      hintText: 'ejemplo@epn.edu.ec',
-                      prefixIcon: const Icon(Icons.email),
+                      labelText: 'Código de Recuperación',
+                      hintText: 'Pega aquí el código',
+                      prefixIcon: const Icon(Icons.lock_reset),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Por favor ingresa tu correo';
+                        return 'Por favor ingresa el código';
                       }
-                      if (!value.contains('@')) {
-                        return 'Ingresa un correo válido';
+                      if (value.length < 8) {
+                        return 'El código debe tener al menos 8 caracteres';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 24),
 
-                  // Información
+                  // Info
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -173,7 +153,7 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Recibirás un correo con un enlace que abrirá automáticamente la aplicación',
+                            'Copia el código desde tu correo y pégalo aquí.',
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.blue[900],
@@ -185,11 +165,11 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Botón enviar
+                  // Botón validar
                   SizedBox(
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : _recuperarPassword,
+                      onPressed: _isLoading ? null : _validarCodigo,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1565C0),
                         shape: RoundedRectangleBorder(
@@ -206,7 +186,7 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                               ),
                             )
                           : const Text(
-                              'Enviar Enlace',
+                              'Validar Código',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -216,10 +196,10 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Volver al login
+                  // Volver
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Volver al inicio de sesión'),
+                    child: const Text('Volver'),
                   ),
                 ],
               ),
