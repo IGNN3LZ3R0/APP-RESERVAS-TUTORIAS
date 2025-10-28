@@ -32,6 +32,7 @@ const registrarDocente = async (req, res) => {
       asignaturas,
       passwordDocente: await Docente.prototype.encrypPassword("ESFOT" + password),
       administrador: req.administradorBDD._id,
+      requiresPasswordChange: true // Obligado a cambiar contraseña en primer login 
     });
 
     if (req.files?.imagen) {
@@ -59,19 +60,91 @@ const registrarDocente = async (req, res) => {
   }
 };
 
-// ========== RECUPERACIÓN DE CONTRASEÑA ==========
+const cambiarPasswordObligatorio = async (req, res) => {
+  try {
+    const { email, passwordActual, passwordNueva } = req.body;
 
-/**
- * Etapa 1: Solicitar recuperación de contraseña
- * POST /api/docente/recuperarpassword
- */
+    console.log('🔐 Cambio obligatorio para:', email);
 
-// ========== RECUPERACIÓN DE CONTRASEÑA ==========
+    // Validaciones
+    if (!email || !passwordActual || !passwordNueva) {
+      return res.status(400).json({
+        msg: "Todos los campos son obligatorios"
+      });
+    }
 
-/**
- * Etapa 1: Solicitar recuperación de contraseña (DOCENTE)
- * POST /api/docente/recuperarpassword
- */
+    if (passwordNueva.length < 8) {
+      return res.status(400).json({
+        msg: "La nueva contraseña debe tener al menos 8 caracteres"
+      });
+    }
+
+    // Validación de complejidad
+    if (!/[A-Z]/.test(passwordNueva)) {
+      return res.status(400).json({
+        msg: "La contraseña debe incluir al menos una mayúscula"
+      });
+    }
+    if (!/[a-z]/.test(passwordNueva)) {
+      return res.status(400).json({
+        msg: "La contraseña debe incluir al menos una minúscula"
+      });
+    }
+    if (!/[0-9]/.test(passwordNueva)) {
+      return res.status(400).json({
+        msg: "La contraseña debe incluir al menos un número"
+      });
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(passwordNueva)) {
+      return res.status(400).json({
+        msg: "La contraseña debe incluir al menos un carácter especial"
+      });
+    }
+
+    // Normalizar email
+    const emailNormalizado = email.trim().toLowerCase();
+
+    // Buscar docente
+    const docenteBDD = await Docente.findOne({ 
+      emailDocente: emailNormalizado 
+    });
+
+    if (!docenteBDD) {
+      return res.status(404).json({
+        msg: "Docente no encontrado"
+      });
+    }
+
+    // Verificar contraseña temporal
+    const verificarPassword = await docenteBDD.matchPassword(passwordActual);
+    if (!verificarPassword) {
+      return res.status(401).json({
+        msg: "La contraseña temporal es incorrecta"
+      });
+    }
+
+    // Actualizar contraseña
+    docenteBDD.passwordDocente = await docenteBDD.encrypPassword(passwordNueva);
+    docenteBDD.requiresPasswordChange = false;  // Ya cambió la contraseña
+    
+    await docenteBDD.save();
+
+    console.log(`✅ Contraseña cambiada exitosamente: ${emailNormalizado}`);
+
+    res.status(200).json({
+      success: true,
+      msg: "Contraseña actualizada correctamente"
+    });
+  } catch (error) {
+    console.error("❌ Error en cambio obligatorio:", error);
+    res.status(500).json({
+      msg: "Error al cambiar contraseña",
+      error: error.message
+    });
+  }
+};
+
+
 const recuperarPasswordDocente = async (req, res) => {
   try {
     const { emailDocente } = req.body;
@@ -170,10 +243,39 @@ const comprobarTokenPasswordDocente = async (req, res) => {
   }
 };
 
-/**
- * Etapa 3: Crear nueva contraseña (DOCENTE)
- * POST /api/docente/nuevopassword/:token
- */
+const verificarEmailBDD = await Docente.findOne({ emailDocente });
+if (verificarEmailBDD)
+  return res.status(400).json({ msg: "Email ya registrado" });
+
+// ⭐ VALIDAR FECHA DE NACIMIENTO
+if (req.body.fechaNacimientoDocente) {
+  const fechaNac = new Date(req.body.fechaNacimientoDocente);
+  const hoy = new Date();
+  
+  // Validar año mínimo 1960
+  if (fechaNac.getFullYear() < 1960) {
+    return res.status(400).json({
+      msg: "El año de nacimiento debe ser 1960 o posterior"
+    });
+  }
+  
+  // Calcular edad
+  let edad = hoy.getFullYear() - fechaNac.getFullYear();
+  const mesActual = hoy.getMonth();
+  const mesNac = fechaNac.getMonth();
+  
+  if (mesActual < mesNac || 
+      (mesActual === mesNac && hoy.getDate() < fechaNac.getDate())) {
+    edad--;
+  }
+  
+  // Validar edad mínima 18 años
+  if (edad < 18) {
+    return res.status(400).json({
+      msg: "El docente debe tener al menos 18 años"
+    });
+  }
+}
   const crearNuevoPasswordDocente = async (req, res) => {
 
     try {
@@ -686,5 +788,6 @@ export {
   comprobarTokenPasswordDocente,
   crearNuevoPasswordDocente,
   actualizarPerfilDocente,      
-  actualizarPasswordDocente      
+  actualizarPasswordDocente,
+  cambiarPasswordObligatorio    
 };  

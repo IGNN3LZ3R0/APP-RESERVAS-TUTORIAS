@@ -11,7 +11,8 @@ import {
   comprobarTokenPasswordDocente,
   recuperarPasswordDocente,
   actualizarPerfilDocente,      
-  actualizarPasswordDocente      
+  actualizarPasswordDocente,
+  cambiarPasswordObligatorio      
 } from '../controllers/docente_controller.js'
 import { loginOAuthDocente } from "../controllers/sesion_google_correo_controller.js";
 import { verificarTokenJWT } from '../middlewares/JWT.js'
@@ -31,7 +32,7 @@ routerDocente.post('/docente/login-oauth', loginOAuthDocente)
 routerDocente.post('/docente/recuperarpassword', recuperarPasswordDocente)
 routerDocente.get('/docente/recuperarpassword/:token', comprobarTokenPasswordDocente)
 routerDocente.post('/docente/nuevopassword/:token', crearNuevoPasswordDocente)
-
+routerDocente.post('/docente/cambiar-password-obligatorio',verificarTokenJWT,cambiarPasswordObligatorio)
 // ========== RUTAS PRIVADAS - DOCENTE ==========
 
 // Perfil del docente autenticado

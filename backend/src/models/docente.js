@@ -166,6 +166,7 @@ const docenteSchema = new Schema({
       return !this.isOAuth
     }
   },
+
   celularDocente: {
     type: String,
     required: function () {
@@ -227,6 +228,11 @@ const docenteSchema = new Schema({
   administrador: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Administrador'
+  },
+
+    requiresPasswordChange: {
+    type: Boolean,
+    default: false  // Se marca true cuando admin crea docente
   },
 
   // Campos nuevos para login con OAuth
