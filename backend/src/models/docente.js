@@ -196,7 +196,7 @@ const docenteSchema = new Schema({
     trim: true,
     default: null
   },
-  semestreAsignado: {
+  /*semestreAsignado: {
     type: String,
     enum: ['Nivelacion', 'Primer Semestre'],
     required: function () {
@@ -208,7 +208,7 @@ const docenteSchema = new Schema({
     required: function () {
       return !this.isOAuth
     }
-  },
+  },*/
   confirmEmail: {
     type: Boolean,
     default: false

@@ -105,7 +105,6 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     }
   }
 
-  // ✅ VALIDACIONES EN FRONTEND
   String? _validarNombre(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'El nombre es obligatorio';
@@ -209,11 +208,10 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     }
   }
 
-  // 🆕 MÉTODO MEJORADO CON VALIDACIÓN DE ID Y LOGS
+  // ✅ NUEVO MÉTODO _guardarCambios CON LOGS Y ACTUALIZACIÓN LOCAL
   Future<void> _guardarCambios() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // 🆕 VALIDAR QUE EL ID EXISTE
     if (widget.usuario.id.isEmpty) {
       _mostrarError('Error: ID de usuario no válido');
       print('❌ ERROR: widget.usuario.id está vacío');
@@ -279,10 +277,32 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
 
     _mostrarExito('Perfil actualizado correctamente');
 
-    // ✅ CLAVE: Obtener perfil actualizado desde el servidor
-    final usuarioActualizado = await AuthService.obtenerPerfil();
+    // ✅ EXTRAER EL USUARIO DEL RESULTADO
+    Usuario? usuarioActualizado;
+    
+    if (resultado != null && resultado.containsKey('estudiante')) {
+      usuarioActualizado = Usuario.fromJson(
+        resultado['estudiante'], 
+        widget.usuario.rol
+      );
+    } else if (resultado != null && resultado.containsKey('docente')) {
+      usuarioActualizado = Usuario.fromJson(
+        resultado['docente'], 
+        widget.usuario.rol
+      );
+    } else if (resultado != null && resultado.containsKey('administrador')) {
+      usuarioActualizado = Usuario.fromJson(
+        resultado['administrador'], 
+        widget.usuario.rol
+      );
+    }
+    
+    // ✅ Actualizar en SharedPreferences
+    if (usuarioActualizado != null) {
+      await AuthService.actualizarUsuario(usuarioActualizado);
+    }
 
-    // Actualizar estado local
+    // ✅ Actualizar estado local
     setState(() {
       _imagenSeleccionada = null;
       _hasChanges = false;
@@ -311,6 +331,8 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     await Future.delayed(const Duration(milliseconds: 300));
 
     if (!mounted) return;
+    
+    print('🚀 Retornando usuario actualizado: ${usuarioActualizado?.nombre}');
     Navigator.pop(context, usuarioActualizado);
   }
 
