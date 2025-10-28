@@ -78,24 +78,31 @@ class PerfilService {
     String? email,
     String? emailAlternativo,
     String? celular,
-    String? semestreAsignado,    // ⭐ Agregado para gestión de materias
-    List<String>? asignaturas,   // ⭐ Agregado para gestión de materias
+    String? semestreAsignado,
+    List<String>? asignaturas,
     File? imagen,
   }) async {
     try {
       final token = await AuthService.getToken();
       if (token == null) return {'error': 'No hay sesión activa'};
 
-      var request = http.MultipartRequest(
-        'PUT',
-        Uri.parse('${ApiConfig.baseUrl}/docente/actualizar/$id'),
-      );
+      print('🔑 Token obtenido: ${token.substring(0, 20)}...');
+      print('🆔 Actualizando perfil del docente ID: $id');
 
-      request.headers.addAll(ApiConfig.getMultipartHeaders(token: token));
+      // ✅ USAR LA URL CORRECTA - /docente/perfil/:id
+      final url = '${ApiConfig.baseUrl}/docente/perfil/$id';
+      print('🔗 URL de actualización: $url');
+
+      var request = http.MultipartRequest('PUT', Uri.parse(url));
+
+      // ✅ HEADERS CON TOKEN
+      request.headers['Authorization'] = 'Bearer $token';
+      print('📋 Headers configurados con Authorization');
 
       // Agregar campos básicos del docente
       if (nombre != null && nombre.isNotEmpty) {
         request.fields['nombreDocente'] = nombre;
+        print('📝 Campo agregado: nombreDocente = $nombre');
       }
       if (cedula != null && cedula.isNotEmpty) {
         request.fields['cedulaDocente'] = cedula;
@@ -113,7 +120,7 @@ class PerfilService {
         request.fields['celularDocente'] = celular;
       }
 
-      // ⭐ Nuevos campos para gestión de materias
+      // Nuevos campos para gestión de materias
       if (semestreAsignado != null && semestreAsignado.isNotEmpty) {
         request.fields['semestreAsignado'] = semestreAsignado;
       }
@@ -128,8 +135,12 @@ class PerfilService {
         );
       }
 
+      print('🚀 Enviando request...');
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
+
+      print('📬 Status code: ${response.statusCode}');
+      print('📄 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -144,19 +155,23 @@ class PerfilService {
         }
 
         return data;
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        // Error de autenticación/autorización
+        final error = jsonDecode(response.body);
+        print('❌ Error de autorización: ${error['msg']}');
+        return {'error': 'Acceso denegado. Por favor inicia sesión nuevamente.'};
       } else {
         final error = jsonDecode(response.body);
+        print('❌ Error del servidor: ${error['msg']}');
         return {'error': error['msg'] ?? 'Error al actualizar perfil'};
       }
     } catch (e) {
-      print('Error en actualizarPerfilDocente: $e');
+      print('❌ Error en actualizarPerfilDocente: $e');
       return {'error': 'Error de conexión: $e'};
     }
   }
 
-  /// Actualizar perfil de Estudiante (nombre, teléfono, email y foto opcional)
-
-/// Actualizar perfil de Estudiante (nombre, teléfono, email y foto opcional)
+  /// Actualizar perfil de Estudiante
   static Future<Map<String, dynamic>?> actualizarPerfilEstudiante({
     required String id,
     String? nombre,
@@ -168,14 +183,10 @@ class PerfilService {
       final token = await AuthService.getToken();
       if (token == null) return {'error': 'No hay sesión activa'};
 
-      // ✅ LOG: Ver qué URL se está usando
       final url = ApiConfig.actualizarPerfilEstudiante(id);
       print('🔗 URL de actualización: $url');
 
-      var request = http.MultipartRequest(
-        'PUT',
-        Uri.parse(url),
-      );
+      var request = http.MultipartRequest('PUT', Uri.parse(url));
 
       request.headers.addAll(ApiConfig.getMultipartHeaders(token: token));
 
