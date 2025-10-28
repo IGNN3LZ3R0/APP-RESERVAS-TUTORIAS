@@ -115,14 +115,8 @@ const loginAdministrador = async (req, res) => {
 
   const { nombreAdministrador, _id, rol, fotoPerfilAdmin } = administradorBDD;
   const token = crearTokenJWT(administradorBDD._id, administradorBDD.rol);
-  // ⭐ CONSTRUIR RESPUESTA CON FLAG CONDICIONAL
-const response = { token, rol, _id, avatarDocente };
-
-if (docenteBDD.requiresPasswordChange === true) {
-  response.requiresPasswordChange = true;
-}
-
-res.status(200).json(response);
+  
+  // ✅ RESPUESTA CORRECTA
   res.status(200).json({
     token,
     rol,

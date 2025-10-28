@@ -8,13 +8,44 @@ import { crearTokenJWT } from "../middlewares/JWT.js";
 // ========== REGISTRO DE DOCENTE (POR ADMINISTRADOR) ==========
 const registrarDocente = async (req, res) => {
   try {
-    const { emailDocente } = req.body;
+    const { emailDocente, fechaNacimientoDocente } = req.body;
+    
     if (Object.values(req.body).includes(""))
       return res.status(400).json({ msg: "Lo sentimos, debes llenar todos los campos" });
 
     const verificarEmailBDD = await Docente.findOne({ emailDocente });
     if (verificarEmailBDD)
       return res.status(400).json({ msg: "Lo sentimos, el email ya se encuentra registrado" });
+
+    // ⭐ VALIDAR FECHA DE NACIMIENTO
+    if (fechaNacimientoDocente) {
+      const fechaNac = new Date(fechaNacimientoDocente);
+      const hoy = new Date();
+      
+      // Validar año mínimo 1960
+      if (fechaNac.getFullYear() < 1960) {
+        return res.status(400).json({
+          msg: "El año de nacimiento debe ser 1960 o posterior"
+        });
+      }
+      
+      // Calcular edad
+      let edad = hoy.getFullYear() - fechaNac.getFullYear();
+      const mesActual = hoy.getMonth();
+      const mesNac = fechaNac.getMonth();
+      
+      if (mesActual < mesNac || 
+          (mesActual === mesNac && hoy.getDate() < fechaNac.getDate())) {
+        edad--;
+      }
+      
+      // Validar edad mínima 18 años
+      if (edad < 18) {
+        return res.status(400).json({
+          msg: "El docente debe tener al menos 18 años"
+        });
+      }
+    }
 
     let asignaturas = req.body.asignaturas;
     if (typeof asignaturas === "string") {
@@ -60,6 +91,7 @@ const registrarDocente = async (req, res) => {
   }
 };
 
+// ========== CAMBIO DE CONTRASEÑA OBLIGATORIO ==========
 const cambiarPasswordObligatorio = async (req, res) => {
   try {
     const { email, passwordActual, passwordNueva } = req.body;
@@ -144,7 +176,7 @@ const cambiarPasswordObligatorio = async (req, res) => {
   }
 };
 
-
+// ========== RECUPERACIÓN DE CONTRASEÑA ==========
 const recuperarPasswordDocente = async (req, res) => {
   try {
     const { emailDocente } = req.body;
@@ -201,10 +233,6 @@ const recuperarPasswordDocente = async (req, res) => {
   }
 };
 
-/**
- * Etapa 2: Comprobar validez del token (DOCENTE)
- * GET /api/docente/recuperarpassword/:token
- */
 const comprobarTokenPasswordDocente = async (req, res) => {
   try {
     const { token } = req.params;
@@ -243,99 +271,64 @@ const comprobarTokenPasswordDocente = async (req, res) => {
   }
 };
 
-const verificarEmailBDD = await Docente.findOne({ emailDocente });
-if (verificarEmailBDD)
-  return res.status(400).json({ msg: "Email ya registrado" });
+const crearNuevoPasswordDocente = async (req, res) => {
+  try {
+    const { password, confirmpassword } = req.body;
+    const { token } = req.params;
 
-// ⭐ VALIDAR FECHA DE NACIMIENTO
-if (req.body.fechaNacimientoDocente) {
-  const fechaNac = new Date(req.body.fechaNacimientoDocente);
-  const hoy = new Date();
-  
-  // Validar año mínimo 1960
-  if (fechaNac.getFullYear() < 1960) {
-    return res.status(400).json({
-      msg: "El año de nacimiento debe ser 1960 o posterior"
-    });
-  }
-  
-  // Calcular edad
-  let edad = hoy.getFullYear() - fechaNac.getFullYear();
-  const mesActual = hoy.getMonth();
-  const mesNac = fechaNac.getMonth();
-  
-  if (mesActual < mesNac || 
-      (mesActual === mesNac && hoy.getDate() < fechaNac.getDate())) {
-    edad--;
-  }
-  
-  // Validar edad mínima 18 años
-  if (edad < 18) {
-    return res.status(400).json({
-      msg: "El docente debe tener al menos 18 años"
-    });
-  }
-}
-  const crearNuevoPasswordDocente = async (req, res) => {
+    console.log('🔐 Creando nueva contraseña para docente con token:', token);
 
-    try {
-      const { password, confirmpassword } = req.body;
-      const { token } = req.params;
-
-      console.log('🔐 Creando nueva contraseña para docente con token:', token);
-
-      if (!password || !confirmpassword) {
-        return res.status(400).json({ 
-          success: false,
-          msg: "Lo sentimos, debes llenar todos los campos" 
-        });
-      }
-
-      if (password !== confirmpassword) {
-        return res.status(400).json({ 
-          success: false,
-          msg: "Lo sentimos, los passwords no coinciden" 
-        });
-      }
-
-      if (password.length < 8) {
-        return res.status(400).json({ 
-          success: false,
-          msg: "La contraseña debe tener al menos 8 caracteres" 
-        });
-      }
-
-      const docenteBDD = await Docente.findOne({ token });
-
-      if (!docenteBDD || docenteBDD.token !== token) {
-        console.log('❌ Token de docente no encontrado');
-        return res.status(404).json({ 
-          success: false,
-          msg: "Lo sentimos, no se puede validar su cuenta" 
-        });
-      }
-
-      console.log('✅ Actualizando contraseña de docente:', docenteBDD.emailDocente);
-
-      docenteBDD.token = null;
-      docenteBDD.passwordDocente = await docenteBDD.encrypPassword(password);
-      await docenteBDD.save();
-
-      console.log(`✅ Contraseña de docente actualizada exitosamente`);
-
-      res.status(200).json({ 
-        success: true,
-        msg: "Ya puede iniciar sesión con su nueva contraseña.",
-        email: docenteBDD.emailDocente
-      });
-    } catch (error) {
-      console.error("❌ Error creando nueva contraseña docente:", error);
-      res.status(500).json({ 
+    if (!password || !confirmpassword) {
+      return res.status(400).json({ 
         success: false,
-        msg: "Error al actualizar contraseña" 
+        msg: "Lo sentimos, debes llenar todos los campos" 
       });
     }
 
+    if (password !== confirmpassword) {
+      return res.status(400).json({ 
+        success: false,
+        msg: "Lo sentimos, los passwords no coinciden" 
+      });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ 
+        success: false,
+        msg: "La contraseña debe tener al menos 8 caracteres" 
+      });
+    }
+
+    const docenteBDD = await Docente.findOne({ token });
+
+    if (!docenteBDD || docenteBDD.token !== token) {
+      console.log('❌ Token de docente no encontrado');
+      return res.status(404).json({ 
+        success: false,
+        msg: "Lo sentimos, no se puede validar su cuenta" 
+      });
+    }
+
+    console.log('✅ Actualizando contraseña de docente:', docenteBDD.emailDocente);
+
+    docenteBDD.token = null;
+    docenteBDD.passwordDocente = await docenteBDD.encrypPassword(password);
+    await docenteBDD.save();
+
+    console.log(`✅ Contraseña de docente actualizada exitosamente`);
+
+    res.status(200).json({ 
+      success: true,
+      msg: "Ya puede iniciar sesión con su nueva contraseña.",
+      email: docenteBDD.emailDocente
+    });
+  } catch (error) {
+    console.error("❌ Error creando nueva contraseña docente:", error);
+    res.status(500).json({ 
+      success: false,
+      msg: "Error al actualizar contraseña" 
+    });
+  }
 };
 
 // ========== LISTAR DOCENTES ==========
@@ -536,9 +529,22 @@ const loginDocente = async (req, res) => {
     }
     
     const token = crearTokenJWT(docenteBDD._id, docenteBDD.rol);
-    const { _id, rol, avatarDocente } = docenteBDD;
+    const { _id, rol, avatarDocente, requiresPasswordChange } = docenteBDD;
     
-    res.status(200).json({ token, rol, _id, avatarDocente });
+    // ✅ CONSTRUIR RESPUESTA CON FLAG CONDICIONAL
+    const response = { 
+      token, 
+      rol, 
+      _id, 
+      avatarDocente 
+    };
+
+    // Solo agregar requiresPasswordChange si es true
+    if (requiresPasswordChange === true) {
+      response.requiresPasswordChange = true;
+    }
+
+    res.status(200).json(response);
   } catch (error) {
     res.status(500).json({ 
       msg: "Error al iniciar sesión", 
@@ -790,4 +796,4 @@ export {
   actualizarPerfilDocente,      
   actualizarPasswordDocente,
   cambiarPasswordObligatorio    
-};  
+};
