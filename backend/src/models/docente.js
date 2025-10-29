@@ -196,19 +196,16 @@ const docenteSchema = new Schema({
     trim: true,
     default: null
   },
-  /*semestreAsignado: {
-    type: String,
-    enum: ['Nivelacion', 'Primer Semestre'],
-    required: function () {
-      return !this.isOAuth
-    }
-  },
-  asignaturas: {
-    type: [String],
-    required: function () {
-      return !this.isOAuth
-    }
-  },*/
+  semestreAsignado: {
+  type: String,
+  enum: ['Nivelacion', 'Primer Semestre'],
+  required: false,
+},
+asignaturas: {
+  type: [String],
+  required: false,
+},
+
   confirmEmail: {
     type: Boolean,
     default: false
