@@ -6,7 +6,8 @@ class RecuperarPasswordScreen extends StatefulWidget {
   const RecuperarPasswordScreen({super.key});
 
   @override
-  State<RecuperarPasswordScreen> createState() => _RecuperarPasswordScreenState();
+  State<RecuperarPasswordScreen> createState() =>
+      _RecuperarPasswordScreenState();
 }
 
 class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
@@ -106,7 +107,7 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ResponsiveHelper.verticalSpace(context),
-                  
+
                   // Icono header
                   Container(
                     padding: EdgeInsets.all(padding * 1.3),
@@ -128,7 +129,7 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                     ),
                   ),
                   ResponsiveHelper.verticalSpace(context, multiplier: 2.5),
-                  
+
                   // Título y descripción
                   Text(
                     '¿Olvidaste tu Contraseña?',
@@ -142,7 +143,7 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                   ),
                   SizedBox(height: spacing),
                   Text(
-                    'No te preocupes. Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.',
+                    'No te preocupes. Ingresa tu correo electrónico y te enviaremos un código de verificación que deberás ingresar manualmente para restablecer tu contraseña.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: context.responsiveFontSize(14.5),
@@ -152,7 +153,7 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                     ),
                   ),
                   ResponsiveHelper.verticalSpace(context, multiplier: 2.5),
-                  
+
                   // Campo email
                   Container(
                     decoration: BoxDecoration(
@@ -169,7 +170,9 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                     child: TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      style: TextStyle(fontSize: context.responsiveFontSize(15)),
+                      style: TextStyle(
+                        fontSize: context.responsiveFontSize(15),
+                      ),
                       decoration: InputDecoration(
                         labelText: 'Correo Electrónico',
                         labelStyle: TextStyle(
@@ -205,21 +208,21 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                     ),
                   ),
                   ResponsiveHelper.verticalSpace(context, multiplier: 1.5),
-                  
+
                   // Info box
                   Container(
                     padding: EdgeInsets.all(spacing),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.blue[50]!, Colors.blue[100]!],
+                        colors: [Colors.amber[50]!, Colors.amber[100]!],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(borderRadius),
-                      border: Border.all(color: Colors.blue[200]!, width: 1.5),
+                      border: Border.all(color: Colors.amber[300]!, width: 1.5),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.blue.withOpacity(0.1),
+                          color: Colors.amber.withOpacity(0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -234,19 +237,19 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Icon(
-                            Icons.mail_outline,
-                            color: Colors.blue[700],
+                            Icons.info_outline,
+                            color: Colors.amber[800],
                             size: context.responsiveIconSize(24),
                           ),
                         ),
                         SizedBox(width: spacing),
                         Expanded(
                           child: Text(
-                            'Recibirás un correo con un enlace que abrirá automáticamente la aplicación.',
+                            'Importante: Recibirás un correo con un código de 6 dígitos. Debes ingresarlo manualmente usando la opción de abajo.',
                             style: TextStyle(
                               fontSize: context.responsiveFontSize(13.5),
-                              color: Colors.blue[900],
-                              fontWeight: FontWeight.w500,
+                              color: Colors.amber[900],
+                              fontWeight: FontWeight.w600,
                               height: 1.4,
                             ),
                           ),
@@ -255,7 +258,7 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                     ),
                   ),
                   ResponsiveHelper.verticalSpace(context, multiplier: 2.5),
-                  
+
                   // Botón enviar
                   Container(
                     height: buttonHeight,
@@ -304,15 +307,17 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                     ),
                   ),
                   ResponsiveHelper.verticalSpace(context, multiplier: 2),
-                  
+
                   // Separador
                   Row(
                     children: [
-                      Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+                      Expanded(
+                        child: Divider(color: Colors.grey[300], thickness: 1),
+                      ),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: spacing),
                         child: Text(
-                          '¿No recibiste el enlace?',
+                          'Ingreso de código',
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: context.responsiveFontSize(13),
@@ -320,29 +325,49 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                           ),
                         ),
                       ),
-                      Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+                      Expanded(
+                        child: Divider(color: Colors.grey[300], thickness: 1),
+                      ),
                     ],
                   ),
                   ResponsiveHelper.verticalSpace(context, multiplier: 1.5),
-                  
+
                   // Botón código manual
                   Container(
                     height: buttonHeight * 0.9,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(borderRadius),
-                      border: Border.all(color: const Color(0xFF1565C0), width: 1.5),
-                      color: Colors.white,
-                    ),
-                    child: OutlinedButton.icon(
-                      onPressed: () => Navigator.pushNamed(context, '/ingresar-codigo'),
-                      icon: Icon(Icons.vpn_key, size: context.responsiveIconSize(20)),
-                      label: Text(
-                        'Ingresar código manualmente',
-                        style: TextStyle(fontSize: context.responsiveFontSize(15)),
+                      gradient: LinearGradient(
+                        colors: [Colors.amber[700]!, Colors.amber[800]!],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
                       ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF1565C0),
-                        side: BorderSide.none,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.amber.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: () =>
+                          Navigator.pushNamed(context, '/ingresar-codigo'),
+                      icon: Icon(
+                        Icons.vpn_key,
+                        size: context.responsiveIconSize(20),
+                      ),
+                      label: Text(
+                        'Ingresar código de verificación',
+                        style: TextStyle(
+                          fontSize: context.responsiveFontSize(15),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
                         padding: EdgeInsets.symmetric(vertical: spacing),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(borderRadius),
@@ -351,7 +376,7 @@ class _RecuperarPasswordScreenState extends State<RecuperarPasswordScreen> {
                     ),
                   ),
                   ResponsiveHelper.verticalSpace(context, multiplier: 1.2),
-                  
+
                   // Volver al login
                   TextButton(
                     onPressed: () => Navigator.pop(context),
