@@ -1,16 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     
-    <!-- Permisos -->
+    <!-- ========== PERMISOS ========== -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
+                     android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                     android:maxSdkVersion="29"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     
-<application
-    android:label="ESFOT Tutorías"
-    android:name="${applicationName}"
-    android:icon="@mipmap/ic_launcher"
-    android:usesCleartextTraffic="true">
+    <application
+        android:label="ESFOT Tutorías"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher">
         
         <activity
             android:name=".MainActivity"
@@ -25,12 +27,16 @@
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme"/>
             
+            <!-- Intent principal -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             
-            <intent-filter android:autoVerify="true">
+            <!-- ========== DEEP LINKS (SIN autoVerify) ========== -->
+            
+            <!-- Deep Link: Confirmación de email -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -38,7 +44,8 @@
                 <data android:host="confirm" />
             </intent-filter>
             
-            <intent-filter android:autoVerify="true">
+            <!-- Deep Link: Restablecer contraseña -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -54,6 +61,7 @@
             
     </application>
     
+    <!-- Queries para compatibilidad -->
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
