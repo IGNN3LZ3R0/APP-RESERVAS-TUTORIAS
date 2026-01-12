@@ -28,10 +28,28 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
   ];
 
   final List<String> _horasDisponibles = [
-    '07:00', '07:40', '08:20', '09:00', '09:40', '10:20',
-    '11:00', '11:40', '12:20', '13:00', '13:40', '14:20',
-    '15:00', '15:40', '16:20', '17:00', '17:40', '18:20',
-    '19:00', '19:40', '20:20', '21:00',
+    '07:00',
+    '07:40',
+    '08:20',
+    '09:00',
+    '09:40',
+    '10:20',
+    '11:00',
+    '11:40',
+    '12:20',
+    '13:00',
+    '13:40',
+    '14:20',
+    '15:00',
+    '15:40',
+    '16:20',
+    '17:00',
+    '17:40',
+    '18:20',
+    '19:00',
+    '19:40',
+    '20:20',
+    '21:00',
   ];
 
   final Map<String, List<Map<String, dynamic>>> _horariosPorMateria = {};
@@ -57,7 +75,9 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
   void initState() {
     super.initState();
     _cargarMateriasDocente();
-    _materiasSubscription = notificationService.materiasActualizadas.listen((_, ) {
+    _materiasSubscription = notificationService.materiasActualizadas.listen((
+      _,
+    ) {
       if (mounted) _cargarMateriasDocente();
     });
   }
@@ -82,16 +102,21 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
     if (usuarioActualizado != null && mounted) {
       setState(() {
         _materiasDocente = List.from(usuarioActualizado.asignaturas ?? []);
-        _horariosPorMateria.removeWhere((m, _) => !_materiasDocente.contains(m));
-        
+        _horariosPorMateria.removeWhere(
+          (m, _) => !_materiasDocente.contains(m),
+        );
+
         for (var materia in _materiasDocente) {
           if (!_horariosPorMateria.containsKey(materia)) {
             _horariosPorMateria[materia] = [];
           }
         }
 
-        if (_materiaSeleccionada != null && !_materiasDocente.contains(_materiaSeleccionada)) {
-          _materiaSeleccionada = _materiasDocente.isNotEmpty ? _materiasDocente.first : null;
+        if (_materiaSeleccionada != null &&
+            !_materiasDocente.contains(_materiaSeleccionada)) {
+          _materiaSeleccionada = _materiasDocente.isNotEmpty
+              ? _materiasDocente.first
+              : null;
           _hasChanges = false;
         }
 
@@ -137,7 +162,10 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
         horasDisponibles: _horasDisponibles,
         onAgregar: (dia, horaInicio, horaFin) {
           final yaExiste = _horariosPorMateria[_materiaSeleccionada!]!.any(
-            (b) => b['dia'] == dia && b['horaInicio'] == horaInicio && b['horaFin'] == horaFin,
+            (b) =>
+                b['dia'] == dia &&
+                b['horaInicio'] == horaInicio &&
+                b['horaFin'] == horaFin,
           );
 
           if (yaExiste) {
@@ -166,7 +194,9 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Eliminar bloque'),
-        content: Text('¿Eliminar ${bloque['dia']} ${bloque['horaInicio']}-${bloque['horaFin']}?'),
+        content: Text(
+          '¿Eliminar ${bloque['dia']} ${bloque['horaInicio']}-${bloque['horaFin']}?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -224,9 +254,12 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
     }
   }
 
-  void _mostrarError(String m) => _mostrarSnackBar(m, Colors.red, Icons.error_outline_rounded);
-  void _mostrarExito(String m) => _mostrarSnackBar(m, Colors.green, Icons.check_circle_outline_rounded);
-  void _mostrarInfo(String m) => _mostrarSnackBar(m, Colors.blue, Icons.info_outline_rounded);
+  void _mostrarError(String m) =>
+      _mostrarSnackBar(m, Colors.red, Icons.error_outline_rounded);
+  void _mostrarExito(String m) =>
+      _mostrarSnackBar(m, Colors.green, Icons.check_circle_outline_rounded);
+  void _mostrarInfo(String m) =>
+      _mostrarSnackBar(m, Colors.blue, Icons.info_outline_rounded);
 
   void _mostrarSnackBar(String mensaje, Color color, IconData icon) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -235,7 +268,12 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
           children: [
             Icon(icon, color: Colors.white, size: 24),
             SizedBox(width: context.responsiveSpacing),
-            Expanded(child: Text(mensaje, style: const TextStyle(fontWeight: FontWeight.w600))),
+            Expanded(
+              child: Text(
+                mensaje,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
           ],
         ),
         backgroundColor: color,
@@ -249,18 +287,20 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    
+
     final isMobile = context.isMobile;
     final padding = context.responsivePadding;
-    
+
     if (_materiasDocente.isEmpty) {
       return Scaffold(
         backgroundColor: const Color(0xFFF5F7FA),
         appBar: _buildAppBar(),
-        body: _buildEmptyState('No has seleccionado materias', 
+        body: _buildEmptyState(
+          'No has seleccionado materias',
           'Ve a "Mis Materias" para seleccionar asignaturas',
           Icons.warning_amber_rounded,
-          Colors.orange),
+          Colors.orange,
+        ),
       );
     }
 
@@ -309,7 +349,10 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1565C0).withOpacity(0.12),
                         borderRadius: BorderRadius.circular(10),
@@ -368,9 +411,11 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.warning_amber_rounded, 
+                        Icon(
+                          Icons.warning_amber_rounded,
                           color: Colors.orange[700],
-                          size: context.responsiveIconSize(20)),
+                          size: context.responsiveIconSize(20),
+                        ),
                         SizedBox(width: context.responsiveSpacing * 0.75),
                         Expanded(
                           child: Text(
@@ -400,7 +445,10 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
                 children: _diasSemana.map((dia) {
                   final isSelected = _diaSeleccionado == dia;
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8,
+                    ),
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
@@ -414,15 +462,24 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
                           ),
                           decoration: BoxDecoration(
                             gradient: isSelected
-                                ? const LinearGradient(colors: [Color(0xFF42A5F5), Color(0xFF1565C0)])
+                                ? const LinearGradient(
+                                    colors: [
+                                      Color(0xFF42A5F5),
+                                      Color(0xFF1565C0),
+                                    ],
+                                  )
                                 : null,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             isMobile ? dia.substring(0, 3) : dia,
                             style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.grey[600],
-                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.grey[600],
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w600,
                               fontSize: context.responsiveFontSize(14),
                             ),
                           ),
@@ -440,8 +497,13 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
             child: _isLoading
                 ? Center(child: CircularProgressIndicator())
                 : _materiaSeleccionada == null
-                    ? _buildEmptyState('Selecciona una materia', '', Icons.school_outlined, Colors.grey)
-                    : _buildBloquesList(),
+                ? _buildEmptyState(
+                    'Selecciona una materia',
+                    '',
+                    Icons.school_outlined,
+                    Colors.grey,
+                  )
+                : _buildBloquesList(),
           ),
         ],
       ),
@@ -450,7 +512,10 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
           : FloatingActionButton(
               onPressed: _agregarBloque,
               backgroundColor: const Color(0xFF1565C0),
-              child: Icon(Icons.add_rounded, size: context.responsiveIconSize(28)),
+              child: Icon(
+                Icons.add_rounded,
+                size: context.responsiveIconSize(28),
+              ),
             ),
     );
   }
@@ -482,7 +547,12 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
     );
   }
 
-  Widget _buildEmptyState(String title, String subtitle, IconData icon, Color color) {
+  Widget _buildEmptyState(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+  ) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(context.responsivePadding * 2),
@@ -519,7 +589,7 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
   Widget _buildBloquesList() {
     final bloques = _obtenerBloquesPorDia(_diaSeleccionado);
     final padding = context.responsivePadding;
-    
+
     if (bloques.isEmpty) {
       return _buildEmptyState(
         'No hay horarios para $_diaSeleccionado',
@@ -534,7 +604,9 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
       itemCount: bloques.length,
       itemBuilder: (context, index) {
         final bloque = bloques[index];
-        final indexGlobal = _horariosPorMateria[_materiaSeleccionada!]!.indexOf(bloque);
+        final indexGlobal = _horariosPorMateria[_materiaSeleccionada!]!.indexOf(
+          bloque,
+        );
 
         return Container(
           margin: EdgeInsets.only(bottom: context.responsiveSpacing),
@@ -624,8 +696,14 @@ class _DialogAgregarBloqueState extends State<_DialogAgregarBloque> {
       return;
     }
 
-    final inicioMinutos = _horaInicio!.split(':').map(int.parse).fold(0, (a, b) => a * 60 + b);
-    final finMinutos = _horaFin!.split(':').map(int.parse).fold(0, (a, b) => a * 60 + b);
+    final inicioMinutos = _horaInicio!
+        .split(':')
+        .map(int.parse)
+        .fold(0, (a, b) => a * 60 + b);
+    final finMinutos = _horaFin!
+        .split(':')
+        .map(int.parse)
+        .fold(0, (a, b) => a * 60 + b);
 
     if (finMinutos <= inicioMinutos) {
       setState(() => _error = 'Hora de fin debe ser mayor que hora de inicio');
@@ -638,7 +716,6 @@ class _DialogAgregarBloqueState extends State<_DialogAgregarBloque> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = context.isMobile;
     final padding = context.responsivePadding;
 
     return AlertDialog(
@@ -667,9 +744,13 @@ class _DialogAgregarBloqueState extends State<_DialogAgregarBloque> {
               value: _diaSeleccionado,
               decoration: InputDecoration(
                 labelText: 'Día',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              items: widget.diasDisponibles.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+              items: widget.diasDisponibles
+                  .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                  .toList(),
               onChanged: (v) => setState(() => _diaSeleccionado = v),
             ),
             SizedBox(height: context.responsiveSpacing),
@@ -677,9 +758,13 @@ class _DialogAgregarBloqueState extends State<_DialogAgregarBloque> {
               value: _horaInicio,
               decoration: InputDecoration(
                 labelText: 'Hora inicio',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              items: widget.horasDisponibles.map((h) => DropdownMenuItem(value: h, child: Text(h))).toList(),
+              items: widget.horasDisponibles
+                  .map((h) => DropdownMenuItem(value: h, child: Text(h)))
+                  .toList(),
               onChanged: (v) => setState(() => _horaInicio = v),
             ),
             SizedBox(height: context.responsiveSpacing),
@@ -687,9 +772,13 @@ class _DialogAgregarBloqueState extends State<_DialogAgregarBloque> {
               value: _horaFin,
               decoration: InputDecoration(
                 labelText: 'Hora fin',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              items: widget.horasDisponibles.map((h) => DropdownMenuItem(value: h, child: Text(h))).toList(),
+              items: widget.horasDisponibles
+                  .map((h) => DropdownMenuItem(value: h, child: Text(h)))
+                  .toList(),
               onChanged: (v) => setState(() => _horaFin = v),
             ),
           ],

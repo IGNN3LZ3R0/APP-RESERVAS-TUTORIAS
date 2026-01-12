@@ -16,8 +16,8 @@ dependencies:
   http: ^1.1.0
   shared_preferences: ^2.2.2
   image_picker: ^1.0.7
-  permission_handler: ^11.3.0
-  app_links: ^6.3.2  # ← Cambiado aquí
+  permission_handler: ^12.0.1
+  app_links: ^6.3.2
 
 dev_dependencies:
   flutter_test:
