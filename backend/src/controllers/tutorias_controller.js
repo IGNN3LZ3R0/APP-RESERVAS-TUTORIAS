@@ -2,10 +2,10 @@ import Tutoria from '../models/tutorias.js';
 import disponibilidadDocente from '../models/disponibilidadDocente.js';
 import Docente from '../models/docente.js';
 import moment from 'moment';
-import { 
-  sendMailReagendamientoDocente, 
-  sendMailReagendamientoEstudiante 
-} from '../config/nodemailer.js';
+const { 
+  sendMailCancelacionParaDocente,
+  sendMailCancelacionParaEstudiante 
+} = await import('../config/sendgrid_mailer.js');
 
 // =====================================================
 // ✅ NUEVA FUNCIÓN: Calcular turnos disponibles de 20 minutos
