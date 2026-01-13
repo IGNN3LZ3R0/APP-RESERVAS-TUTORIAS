@@ -3,13 +3,13 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Configuración del transportador de correo
-let transporter = nodemailer.createTransport({
-  service: "gmail",
-  host: process.env.HOST_MAILTRAP,
-  port: process.env.PORT_MAILTRAP,
+let transporter = nodemailer. createTransport({
+  host:  process.env.HOST_MAILTRAP || "smtp.gmail.com",
+  port: parseInt(process.env.PORT_MAILTRAP) || 465,
+  secure: true,  // SSL/TLS directo (requerido para puerto 465)
   auth: {
     user: process.env.USER_MAILTRAP,
-    pass: process.env.PASS_MAILTRAP,
+    pass:  process.env. PASS_MAILTRAP,
   },
 });
 
