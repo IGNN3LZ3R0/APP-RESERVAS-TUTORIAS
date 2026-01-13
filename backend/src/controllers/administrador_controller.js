@@ -1,5 +1,5 @@
 import Administrador from "../models/administrador.js";
-import { sendMailToRecoveryPassword, sendMailWithCredentials } from "../config/nodemailer.js";
+import { sendMailWithCredentials, sendMailToRecoveryPassword } from '../config/sendgrid_mailer.js';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from "fs-extra";
 import { crearTokenJWT } from "../middlewares/JWT.js";

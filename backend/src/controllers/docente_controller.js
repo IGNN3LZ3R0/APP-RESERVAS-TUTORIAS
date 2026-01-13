@@ -1,5 +1,5 @@
 import Docente from "../models/docente.js";
-import { sendMailToOwner, sendMailToRecoveryPassword } from "../config/nodemailer.js";
+import { sendMailToOwner, sendMailToRecoveryPassword } from '../config/sendgrid_mailer.js';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from "fs-extra";
 import mongoose from "mongoose";

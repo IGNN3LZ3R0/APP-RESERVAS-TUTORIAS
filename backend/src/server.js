@@ -26,6 +26,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
+// Middleware para manejar preflight
+app.options('*', cors())
+
 app.use(fileUpload({
   useTempFiles: true,
   tempFileDir: './uploads'

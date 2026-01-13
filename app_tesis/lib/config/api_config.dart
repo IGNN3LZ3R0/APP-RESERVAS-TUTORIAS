@@ -1,9 +1,9 @@
 class ApiConfig {
   // ========== CONFIGURACIÓN BASE ==========
   // ✅ Configuración dinámica para producción y desarrollo
-  static const String baseUrl = String.fromEnvironment(
+  static const String baseUrl = String. fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://app-reservas-tutorias.vercel.app/api',
+    defaultValue: 'https://app-reservas-tutorias-backend.onrender.com/api',
   );
 
   // ========== ENDPOINTS DE AUTENTICACIÓN ==========

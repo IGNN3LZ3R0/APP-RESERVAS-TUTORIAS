@@ -1,5 +1,5 @@
 import Estudiante from "../models/estudiante.js";
-import { sendMailToRegister, sendMailToRecoveryPassword } from "../config/nodemailer.js";
+import { sendMailToRegister, sendMailToRecoveryPassword } from '../config/sendgrid_mailer.js';
 import { crearTokenJWT } from "../middlewares/JWT.js";
 import mongoose from "mongoose";
 import cloudinary from "cloudinary";
