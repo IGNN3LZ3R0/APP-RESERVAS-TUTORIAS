@@ -1,7 +1,7 @@
 // backend/src/utils/recordatorios.js
 import moment from 'moment';
 import Tutoria from '../models/tutorias.js';
-import { sendMailRecordatorioTutoria } from '../config/nodemailer.js';
+import { sendMailRecordatorioTutoria } from '../config/sendgrid_mailer.js';
 
 /**
  * Enviar recordatorios de tutorías próximas
