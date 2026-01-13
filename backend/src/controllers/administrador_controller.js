@@ -115,7 +115,7 @@ const loginAdministrador = async (req, res) => {
 
   const { nombreAdministrador, _id, rol, fotoPerfilAdmin } = administradorBDD;
   const token = crearTokenJWT(administradorBDD._id, administradorBDD.rol);
-  
+
   // ✅ RESPUESTA CORRECTA
   res.status(200).json({
     token,
