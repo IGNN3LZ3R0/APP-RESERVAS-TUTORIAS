@@ -10,7 +10,7 @@ const SENDER = {
   email: 'maehdros863@gmail.com',  // YA ESTÁ VERIFICADO
   name: 'Tutorias ESFOT'
 };
-const REPLY_TO = 'maehdros863@gmail. com';
+const REPLY_TO = 'maehdros863@gmail.com';
 
 // ========== EMAIL DE CONFIRMACIÓN DE CUENTA (ESTUDIANTE) ==========
 const sendMailToRegister = async (userMail, token) => {
