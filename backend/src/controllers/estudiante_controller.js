@@ -532,8 +532,20 @@ const actualizarPerfilEstudiante = async (req, res) => {
           console.log(`🗑️ Imagen anterior eliminada de Cloudinary`);
         }
 
+        // ✅ Validar tipo de archivo (mimetype + extensión)
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-        if (!allowedTypes.includes(req.files.imagen.mimetype)) {
+        const fileExtension = req.files.imagen.name.split('.').pop().toLowerCase();
+        const allowedExtensions = ['jpg', 'jpeg', 'png'];
+
+        const isValidMimetype = allowedTypes.includes(req.files.imagen.mimetype);
+        const isValidExtension = allowedExtensions.includes(fileExtension);
+
+        console.log('📸 Validando imagen:');
+        console.log('   Mimetype:', req.files.imagen.mimetype);
+        console.log('   Extensión:', fileExtension);
+
+        // Rechazar si alguno no es válido
+        if (!isValidMimetype || !isValidExtension) {
           await fs.unlink(req.files.imagen.tempFilePath);
           return res.status(400).json({
             msg: "Solo se permiten imágenes en formato JPG, JPEG o PNG"
@@ -654,8 +666,8 @@ const listarEstudiantes = async (req, res) => {
   try {
     // Solo admin puede listar todos los estudiantes
     if (!req.administradorBDD) {
-      return res.status(403).json({ 
-        msg: "No autorizado para ver estudiantes" 
+      return res.status(403).json({
+        msg: "No autorizado para ver estudiantes"
       });
     }
 
@@ -663,15 +675,15 @@ const listarEstudiantes = async (req, res) => {
       .select("-password -token -__v")
       .sort({ confirmEmail: -1, nombreEstudiante: 1 });
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       total: estudiantes.length,
-      estudiantes 
+      estudiantes
     });
   } catch (error) {
     console.error("Error al listar estudiantes:", error);
-    return res.status(500).json({ 
-      msg: "Error al listar estudiantes", 
-      error: error.message 
+    return res.status(500).json({
+      msg: "Error al listar estudiantes",
+      error: error.message
     });
   }
 };
@@ -680,27 +692,27 @@ const listarEstudiantes = async (req, res) => {
 const detalleEstudiante = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ 
-        msg: `ID de estudiante inválido` 
+      return res.status(404).json({
+        msg: `ID de estudiante inválido`
       });
     }
-    
+
     const estudiante = await Estudiante.findById(id)
       .select('-password -token -__v');
 
     if (!estudiante) {
-      return res.status(404).json({ 
-        msg: "Estudiante no encontrado" 
+      return res.status(404).json({
+        msg: "Estudiante no encontrado"
       });
     }
 
     res.status(200).json(estudiante);
   } catch (error) {
-    res.status(500).json({ 
-      msg: "Error al obtener detalle", 
-      error: error.message 
+    res.status(500).json({
+      msg: "Error al obtener detalle",
+      error: error.message
     });
   }
 };
@@ -712,16 +724,16 @@ const actualizarEstudianteAdmin = async (req, res) => {
     const { nombreEstudiante, telefono, emailEstudiante } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ 
-        msg: "ID de estudiante inválido" 
+      return res.status(400).json({
+        msg: "ID de estudiante inválido"
       });
     }
 
     const estudianteBDD = await Estudiante.findById(id);
 
     if (!estudianteBDD) {
-      return res.status(404).json({ 
-        msg: "Estudiante no encontrado" 
+      return res.status(404).json({
+        msg: "Estudiante no encontrado"
       });
     }
 
@@ -738,17 +750,17 @@ const actualizarEstudianteAdmin = async (req, res) => {
     if (emailEstudiante && emailEstudiante.trim() !== '') {
       const emailNormalizado = emailEstudiante.trim().toLowerCase();
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      
+
       if (!emailRegex.test(emailNormalizado)) {
         return res.status(400).json({
           msg: "Por favor ingresa un email válido"
         });
       }
 
-      const emailExistente = await Estudiante.findOne({ 
-        emailEstudiante: emailNormalizado 
+      const emailExistente = await Estudiante.findOne({
+        emailEstudiante: emailNormalizado
       });
-      
+
       if (emailExistente && emailExistente._id.toString() !== id) {
         return res.status(400).json({
           msg: "El email ya está en uso por otro estudiante"
@@ -811,9 +823,9 @@ const actualizarEstudianteAdmin = async (req, res) => {
     });
   } catch (error) {
     console.error("Error actualizando estudiante:", error);
-    res.status(500).json({ 
-      msg: "Error al actualizar estudiante", 
-      error: error.message 
+    res.status(500).json({
+      msg: "Error al actualizar estudiante",
+      error: error.message
     });
   }
 };
@@ -822,24 +834,24 @@ const actualizarEstudianteAdmin = async (req, res) => {
 const eliminarEstudiante = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ 
-        msg: `ID de estudiante inválido` 
+      return res.status(404).json({
+        msg: `ID de estudiante inválido`
       });
     }
-    
+
     await Estudiante.findByIdAndUpdate(id, {
       status: false
     });
-    
-    res.status(200).json({ 
-      msg: "Estudiante deshabilitado con éxito" 
+
+    res.status(200).json({
+      msg: "Estudiante deshabilitado con éxito"
     });
   } catch (error) {
-    res.status(500).json({ 
-      msg: "Error al deshabilitar estudiante", 
-      error: error.message 
+    res.status(500).json({
+      msg: "Error al deshabilitar estudiante",
+      error: error.message
     });
   }
 };
