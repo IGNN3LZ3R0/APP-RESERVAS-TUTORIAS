@@ -107,7 +107,7 @@ const obtenerTurnosDisponibles = async (req, res) => {
 };
 
 // =====================================================
-// ✅ NUEVA FUNCIÓN: Registrar Tutoría con Sistema de Turnos
+// ✅ REGISTRAR TUTORÍA CON VALIDACIÓN DE FECHA Y HORA
 // =====================================================
 const registrarTutoriaConTurnos = async (req, res) => {
   try {
@@ -144,10 +144,38 @@ const registrarTutoriaConTurnos = async (req, res) => {
 
     console.log(`📝 Agendando turno: ${horaInicio}-${horaFin} (${duracion} min)`);
 
+    // ✅ NUEVA VALIDACIÓN: No permitir agendar en fechas/horas pasadas
+    const ahora = moment();
+
+    // Parseado robusto de fecha
+    let fechaStr;
+    if (fecha instanceof Date) {
+      fechaStr = moment(fecha).format('YYYY-MM-DD');
+    } else {
+      fechaStr = moment(fecha, 'YYYY-MM-DD').format('YYYY-MM-DD');
+    }
+
+    // Construir fecha-hora completa del inicio de la tutoría
+    const fechaHoraTutoria = moment(`${fechaStr} ${horaInicio}`, 'YYYY-MM-DD HH:mm');
+
+    // 🔍 LOGS DE DEPURACIÓN
+    console.log('📊 Validación de agendamiento:');
+    console.log(`   Ahora: ${ahora.format('YYYY-MM-DD HH:mm')}`);
+    console.log(`   Tutoría solicitada: ${fechaHoraTutoria.format('YYYY-MM-DD HH:mm')}`);
+    console.log(`   Diferencia: ${fechaHoraTutoria.diff(ahora, 'minutes')} minutos`);
+
+    // Validar que la tutoría no sea en el pasado
+    if (fechaHoraTutoria.isSameOrBefore(ahora)) {
+      return res.status(400).json({
+        success: false,
+        msg: "No puedes agendar tutorías en fechas u horarios que ya pasaron."
+      });
+    }
+
     // ✅ VALIDACIÓN 2: Verificar solapamiento EXACTO
     const turnoOcupado = await Tutoria.findOne({
       docente,
-      fecha,
+      fecha: fechaStr,
       estado: { $in: ['pendiente', 'confirmada'] },
       $or: [
         {
@@ -172,7 +200,7 @@ const registrarTutoriaConTurnos = async (req, res) => {
     }
 
     // ✅ VALIDACIÓN 3: Verificar que el turno esté dentro de un bloque disponible
-    const fechaUTC = new Date(fecha + 'T05:00:00Z');
+    const fechaUTC = new Date(fechaStr + 'T05:00:00Z');
     const diaSemana = fechaUTC.toLocaleDateString('es-EC', { weekday: 'long' }).toLowerCase();
 
     const bloquesDisponibles = await disponibilidadDocente.find({
@@ -210,21 +238,10 @@ const registrarTutoriaConTurnos = async (req, res) => {
       });
     }
 
-    // ✅ VALIDACIÓN 4: No permitir agendar en el pasado
-    const hoy = moment().startOf('day');
-    const fechaTutoria = moment(fecha, 'YYYY-MM-DD').startOf('day');
-
-    if (fechaTutoria.isBefore(hoy)) {
-      return res.status(400).json({
-        success: false,
-        msg: "No puedes agendar tutorías en fechas pasadas."
-      });
-    }
-
-    // ✅ VALIDACIÓN 5: Verificar que el estudiante no tenga otro turno en ese horario
+    // ✅ VALIDACIÓN 4: Verificar que el estudiante no tenga otro turno en ese horario
     const turnoEstudianteExistente = await Tutoria.findOne({
       estudiante,
-      fecha,
+      fecha: fechaStr,
       estado: { $in: ['pendiente', 'confirmada'] },
       $or: [
         {
@@ -247,7 +264,7 @@ const registrarTutoriaConTurnos = async (req, res) => {
     const nuevaTutoria = new Tutoria({
       estudiante,
       docente,
-      fecha,
+      fecha: fechaStr,
       horaInicio,
       horaFin,
       bloqueDocenteId: bloqueValido,
