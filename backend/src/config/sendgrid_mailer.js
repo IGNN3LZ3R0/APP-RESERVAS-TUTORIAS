@@ -449,7 +449,7 @@ const sendMailCancelacionParaEstudiante = async (emailEstudiante, nombreEstudian
   try {
     const msg = {
       to: emailEstudiante,
-      from: 'maehdros863@gmail. com',
+      from: 'maehdros863@gmail.com',
       subject: '❌ Tutoría cancelada - Tutorías ESFOT',
       html: `<p>Hola ${nombreEstudiante}, el docente ${nombreDocente} ha cancelado la tutoría.</p>
              <p>Fecha:  ${datosTutoria.fecha} (${datosTutoria.horaInicio} - ${datosTutoria.horaFin})</p>
