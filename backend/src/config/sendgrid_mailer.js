@@ -5,13 +5,21 @@ dotenv.config();
 // Configurar SendGrid con API Key
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+// ✅ CONFIGURACIÓN DEL REMITENTE
+const SENDER = {
+  email: 'noreply@sendgrid.net',  // Dominio autenticado de SendGrid
+  name: 'Tutorías ESFOT'
+};
+const REPLY_TO = 'maehdros863@gmail.com';  // Tu Gmail para respuestas
+
 // ========== EMAIL DE CONFIRMACIÓN DE CUENTA (ESTUDIANTE) ==========
 const sendMailToRegister = async (userMail, token) => {
   try {
     const msg = {
       to: userMail,
-      from: 'maehdros863@gmail.com',
-      subject: '✅ Confirma tu cuenta - Tutorías ESFOT',
+      from: SENDER,
+      replyTo: REPLY_TO,
+      subject: 'Confirma tu cuenta - Tutorías ESFOT',
       html: `
         <!DOCTYPE html>
         <html>
@@ -25,7 +33,7 @@ const sendMailToRegister = async (userMail, token) => {
               <div style="background-color: white; width: 80px; height: 80px; margin: 0 auto 20px; border-radius: 50%; display: flex; align-items:  center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
                 <span style="font-size: 40px;">🎓</span>
               </div>
-              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">¡Bienvenido/a!</h1>
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">Bienvenido/a</h1>
               <p style="color: #E3F2FD; margin: 10px 0 0; font-size: 16px;">Tutorías ESFOT</p>
             </div>
             <div style="padding: 40px 30px;">
@@ -56,8 +64,8 @@ const sendMailToRegister = async (userMail, token) => {
               </p>
             </div>
             <div style="background-color: #F5F5F5; padding: 20px 30px; border-top: 1px solid #E0E0E0;">
-              <p style="color:  #999999; font-size:  12px; margin: 0; text-align: center; line-height: 1.5;">
-                Este enlace expirará cuando actives tu cuenta. <br>
+              <p style="color: #999999; font-size: 12px; margin: 0; text-align: center; line-height: 1.5;">
+                Este código expirará cuando actives tu cuenta. <br>
                 © 2025 <strong>ESFOT Tutorías</strong>.  Todos los derechos reservados.
               </p>
             </div>
@@ -83,8 +91,9 @@ const sendMailToRecoveryPassword = async (userMail, token) => {
   try {
     const msg = {
       to: userMail,
-      from: 'maehdros863@gmail.com',
-      subject: '🔐 Restablecer tu contraseña - Tutorías ESFOT',
+      from: SENDER,
+      replyTo: REPLY_TO,
+      subject: 'Restablecer tu contraseña - Tutorías ESFOT',
       html: `
         <!DOCTYPE html>
         <html>
@@ -128,9 +137,9 @@ const sendMailToRecoveryPassword = async (userMail, token) => {
                 </p>
               </div>
             </div>
-            <div style="background-color: #F5F5F5; padding: 20px 30px; border-top: 1px solid #E0E0E0;">
+            <div style="background-color: #F5F5F5; padding: 20px 30px; border-top:  1px solid #E0E0E0;">
               <p style="color: #999999; font-size: 12px; margin: 0; text-align: center; line-height: 1.5;">
-                Si tienes problemas, contacta a soporte. <br>
+                Si tienes problemas, contacta a soporte.  <br>
                 © 2025 <strong>ESFOT Tutorías</strong>.  Todos los derechos reservados.
               </p>
             </div>
@@ -156,23 +165,24 @@ const sendMailToOwner = async (userMail, password) => {
   try {
     const msg = {
       to: userMail,
-      from: 'maehdros863@gmail.com',
-      subject: '✅ Bienvenido/a al equipo docente - Tutorías ESFOT',
+      from:  SENDER,
+      replyTo:  REPLY_TO,
+      subject: 'Bienvenido/a al equipo docente - Tutorías ESFOT',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f9f9f9;">
           <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <h1 style="color: #1565C0; text-align: center;">¡Bienvenido/a! </h1>
+            <h1 style="color: #1565C0; text-align: center;">Bienvenido/a</h1>
             <hr style="border: none; border-top: 2px solid #1565C0;">
             <p style="font-size: 16px; color: #333;">El administrador te ha registrado en la plataforma de Tutorías ESFOT. </p>
             <p style="font-size: 16px; color: #333;">Tus credenciales de acceso son:</p>
-            <div style="background-color:  #E3F2FD; padding: 15px; border-radius: 6px; margin: 20px 0;">
+            <div style="background-color: #E3F2FD; padding: 15px; border-radius: 6px; margin: 20px 0;">
               <p style="margin: 5px 0;"><strong>📧 Correo:</strong> ${userMail}</p>
-              <p style="margin: 5px 0;"><strong>🔑 Contraseña:</strong> <code style="background-color: white; padding: 4px 8px; border-radius: 4px; color: #D32F2F;">${password}</code></p>
+              <p style="margin: 5px 0;"><strong>🔑 Contraseña: </strong> <code style="background-color: white; padding: 4px 8px; border-radius: 4px; color: #D32F2F;">${password}</code></p>
             </div>
-            <p style="font-size: 14px; color: #666;">⚠️ <strong>Importante:</strong> Por seguridad, cambia tu contraseña en tu primer inicio de sesión.</p>
-            <hr style="margin: 30px 0; border: none; border-top:  1px solid #ddd;">
+            <p style="font-size:  14px; color: #666;">⚠️ <strong>Importante:</strong> Por seguridad, cambia tu contraseña en tu primer inicio de sesión.</p>
+            <hr style="margin:  30px 0; border: none; border-top: 1px solid #ddd;">
             <footer style="text-align: center; font-size: 12px; color: #999;">
-              <p>2025 - TUTORÍAS ESFOT - Todos los derechos reservados. </p>
+              <p>2025 - TUTORÍAS ESFOT - Todos los derechos reservados.  </p>
             </footer>
           </div>
         </div>
@@ -195,8 +205,9 @@ const sendMailWithCredentials = async (email, nombreAdministrador, passwordGener
   try {
     const msg = {
       to: email,
-      from: 'maehdros863@gmail.com',
-      subject: '🔐 Credenciales de Administrador - Tutorías ESFOT',
+      from: SENDER,
+      replyTo: REPLY_TO,
+      subject: 'Bienvenido/a - Credenciales de Administrador - Tutorías ESFOT',
       html: `
         <div style="font-family:  Verdana, sans-serif; max-width: 600px; margin:  auto; border: 1px solid #e0e0e0; padding:  20px; text-align: center; background-color: #fafafa;">
           <h2 style="color: #81180aff; font-weight: bold;">¡Bienvenido/a, ${nombreAdministrador}!</h2>
@@ -234,8 +245,9 @@ const sendMailReagendamientoDocente = async (emailEstudiante, nombreEstudiante, 
 
     const msg = {
       to: emailEstudiante,
-      from: 'maehdros863@gmail.com',
-      subject: '📅 Tu tutoría ha sido reagendada - Tutorías ESFOT',
+      from: SENDER,
+      replyTo: REPLY_TO,
+      subject: 'Tutoría reagendada - Tutorías ESFOT',
       html: `
         <!DOCTYPE html>
         <html>
@@ -333,8 +345,9 @@ const sendMailReagendamientoEstudiante = async (emailDocente, nombreDocente, nom
 
     const msg = {
       to: emailDocente,
-      from: 'maehdros863@gmail.com',
-      subject: '📅 Un estudiante ha reagendado una tutoría - Tutorías ESFOT',
+      from: SENDER,
+      replyTo: REPLY_TO,
+      subject: 'Un estudiante ha reagendado una tutoría - Tutorías ESFOT',
       html: `
         <!DOCTYPE html>
         <html>
@@ -430,8 +443,9 @@ const sendMailCancelacionParaDocente = async (emailDocente, nombreDocente, nombr
   try {
     const msg = {
       to: emailDocente,
-      from: 'maehdros863@gmail.com',
-      subject: '❌ Tutoría cancelada - Tutorías ESFOT',
+      from: SENDER,
+      replyTo: REPLY_TO,
+      subject: 'Tutoría cancelada - Tutorías ESFOT',
       html: `<p>Hola ${nombreDocente}, el estudiante ${nombreEstudiante} ha cancelado la tutoría.</p>
              <p>Fecha: ${datosTutoria.fecha} (${datosTutoria.horaInicio} - ${datosTutoria.horaFin})</p>
              ${motivo ? `<p>Motivo: ${motivo}</p>` : ''}`,
@@ -449,8 +463,9 @@ const sendMailCancelacionParaEstudiante = async (emailEstudiante, nombreEstudian
   try {
     const msg = {
       to: emailEstudiante,
-      from: 'maehdros863@gmail.com',
-      subject: '❌ Tutoría cancelada - Tutorías ESFOT',
+      from: SENDER,
+      replyTo: REPLY_TO,
+      subject: 'Tutoría cancelada - Tutorías ESFOT',
       html: `<p>Hola ${nombreEstudiante}, el docente ${nombreDocente} ha cancelado la tutoría.</p>
              <p>Fecha:  ${datosTutoria.fecha} (${datosTutoria.horaInicio} - ${datosTutoria.horaFin})</p>
              ${motivo ? `<p>Motivo: ${motivo}</p>` : ''}`,
@@ -470,8 +485,9 @@ const sendMailRecordatorioTutoria = async (emailDestinatario, nombreDestinatario
 
     const msg = {
       to: emailDestinatario,
-      from: 'maehdros863@gmail.com',
-      subject: '⏰ Recordatorio de tutoría - Tutorías ESFOT',
+      from: SENDER,
+      replyTo: REPLY_TO,
+      subject: 'Recordatorio de tutoría - Tutorías ESFOT',
       html: `<p>Hola ${nombreDestinatario}, te recordamos que tienes una tutoría ${datosTutoria.tiempoRestante} con ${nombreOtraParte}.</p>
              <p>Fecha: ${datosTutoria.fecha} (${datosTutoria.horaInicio} - ${datosTutoria.horaFin})</p>`,
     };
@@ -483,6 +499,8 @@ const sendMailRecordatorioTutoria = async (emailDestinatario, nombreDestinatario
     throw error;
   }
 };
+
+// ...  (continúa con las demás funciones usando SENDER y REPLY_TO)
 
 export {
   sendMailToRegister,
