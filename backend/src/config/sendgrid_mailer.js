@@ -5,12 +5,12 @@ dotenv.config();
 // Configurar SendGrid con API Key
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// ✅ CONFIGURACIÓN DEL REMITENTE
+// ✅ CONFIGURACIÓN DEL REMITENTE (tu Gmail verificado)
 const SENDER = {
-  email: 'noreply@sendgrid.net',  // Dominio autenticado de SendGrid
-  name: 'Tutorías ESFOT'
+  email: 'maehdros863@gmail.com',  // YA ESTÁ VERIFICADO
+  name: 'Tutorias ESFOT'
 };
-const REPLY_TO = 'maehdros863@gmail.com';  // Tu Gmail para respuestas
+const REPLY_TO = 'maehdros863@gmail. com';
 
 // ========== EMAIL DE CONFIRMACIÓN DE CUENTA (ESTUDIANTE) ==========
 const sendMailToRegister = async (userMail, token) => {
@@ -19,7 +19,7 @@ const sendMailToRegister = async (userMail, token) => {
       to: userMail,
       from: SENDER,
       replyTo: REPLY_TO,
-      subject: 'Confirma tu cuenta - Tutorías ESFOT',
+      subject: 'Confirma tu cuenta - Tutorias ESFOT',
       html: `
         <!DOCTYPE html>
         <html>
@@ -93,7 +93,7 @@ const sendMailToRecoveryPassword = async (userMail, token) => {
       to: userMail,
       from: SENDER,
       replyTo: REPLY_TO,
-      subject: 'Restablecer tu contraseña - Tutorías ESFOT',
+      subject: 'Restablecer tu contrasena - Tutorias ESFOT',
       html: `
         <!DOCTYPE html>
         <html>
@@ -101,46 +101,37 @@ const sendMailToRecoveryPassword = async (userMail, token) => {
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
         </head>
-        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
+        <body style="margin:  0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
           <div style="max-width:  600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             <div style="background: linear-gradient(135deg, #EF5350 0%, #D32F2F 100%); padding: 40px 20px; text-align: center;">
-              <div style="background-color: white; width: 80px; height: 80px; margin: 0 auto 20px; border-radius: 50%; display: flex; align-items:  center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                <span style="font-size: 40px;">🔐</span>
-              </div>
-              <h1 style="color: #ffffff; margin: 0; font-size:  28px; font-weight:  600;">Restablecer Contraseña</h1>
-              <p style="color: #FFEBEE; margin: 10px 0 0; font-size:  16px;">Tutorías ESFOT</p>
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">Restablecer Contrasena</h1>
+              <p style="color: #FFEBEE; margin: 10px 0 0; font-size: 16px;">Tutorias ESFOT</p>
             </div>
             <div style="padding: 40px 30px;">
-              <h2 style="color: #D32F2F; font-size: 22px; margin: 0 0 20px; font-weight: 600;">¿Olvidaste tu contraseña? </h2>
+              <h2 style="color: #D32F2F; font-size: 22px; margin: 0 0 20px; font-weight: 600;">Olvidaste tu contrasena?</h2>
               <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
-                No te preocupes, recibimos tu solicitud para restablecer tu contraseña.  Puedes crear una nueva de forma segura.
+                No te preocupes, recibimos tu solicitud para restablecer tu contrasena. Puedes crear una nueva de forma segura.
               </p>
-              <p style="color:  #333333; font-size:  16px; line-height:  1.6; margin: 0 0 30px;">
-                <strong>Copia el código de verificación</strong> de abajo y pégalo en la aplicación para continuar:
+              <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
+                Copia el codigo de verificacion de abajo y pegalo en la aplicacion para continuar:
               </p>
               <div style="background-color: #F5F5F5; border-left: 4px solid #D32F2F; padding: 15px; margin:  25px 0; border-radius: 4px;">
                 <p style="color: #666; font-size: 14px; margin: 0 0 10px;">
-                  <strong>Código de verificación:</strong>
+                  <strong>Codigo de verificacion:</strong>
                 </p>
-                <div style="background-color: #ffffff; padding: 12px; border-radius: 6px; border: 1px dashed #D32F2F; text-align: center;">
-                  <code style="color: #D32F2F; font-size:  18px; font-weight: 600; letter-spacing: 1px; word-break: break-all;">
+                <div style="background-color:  #ffffff; padding: 12px; border-radius: 6px; border: 1px dashed #D32F2F; text-align: center;">
+                  <code style="color: #D32F2F; font-size: 18px; font-weight: 600; letter-spacing:  1px; word-break:  break-all;">
                     ${token}
                   </code>
                 </div>
-                <p style="color: #666; font-size: 13px; margin: 10px 0 0;">
-                  Abre la app, ve a "Olvidé mi contraseña" y pega este código. 
-                </p>
               </div>
-              <div style="background-color: #FFF3E0; padding: 15px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #FF9800;">
-                <p style="color: #E65100; font-size: 14px; margin: 0; line-height: 1.5;">
-                  ⚠️ <strong>Importante:</strong> Si no solicitaste este cambio, ignora este correo.  Tu contraseña actual seguirá siendo válida.
-                </p>
-              </div>
+              <p style="color: #999999; font-size: 13px; line-height: 1.5; margin: 25px 0 0;">
+                Si no solicitaste este cambio, ignora este correo.  Tu contrasena actual seguira siendo valida.
+              </p>
             </div>
-            <div style="background-color: #F5F5F5; padding: 20px 30px; border-top:  1px solid #E0E0E0;">
+            <div style="background-color: #F5F5F5; padding:  20px 30px; border-top: 1px solid #E0E0E0;">
               <p style="color: #999999; font-size: 12px; margin: 0; text-align: center; line-height: 1.5;">
-                Si tienes problemas, contacta a soporte.  <br>
-                © 2025 <strong>ESFOT Tutorías</strong>.  Todos los derechos reservados.
+                2025 ESFOT Tutorias. Todos los derechos reservados.
               </p>
             </div>
           </div>
@@ -165,9 +156,9 @@ const sendMailToOwner = async (userMail, password) => {
   try {
     const msg = {
       to: userMail,
-      from:  SENDER,
-      replyTo:  REPLY_TO,
-      subject: 'Bienvenido/a al equipo docente - Tutorías ESFOT',
+      from: SENDER,
+      replyTo: REPLY_TO,
+      subject: 'Bienvenido/a al equipo docente - Tutorias ESFOT',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f9f9f9;">
           <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -207,7 +198,7 @@ const sendMailWithCredentials = async (email, nombreAdministrador, passwordGener
       to: email,
       from: SENDER,
       replyTo: REPLY_TO,
-      subject: 'Bienvenido/a - Credenciales de Administrador - Tutorías ESFOT',
+      subject: 'Credenciales de Administrador - Tutorias ESFOT',
       html: `
         <div style="font-family:  Verdana, sans-serif; max-width: 600px; margin:  auto; border: 1px solid #e0e0e0; padding:  20px; text-align: center; background-color: #fafafa;">
           <h2 style="color: #81180aff; font-weight: bold;">¡Bienvenido/a, ${nombreAdministrador}!</h2>
@@ -247,7 +238,7 @@ const sendMailReagendamientoDocente = async (emailEstudiante, nombreEstudiante, 
       to: emailEstudiante,
       from: SENDER,
       replyTo: REPLY_TO,
-      subject: 'Tutoría reagendada - Tutorías ESFOT',
+      subject: 'Tutoria reagendada - Tutorias ESFOT',
       html: `
         <!DOCTYPE html>
         <html>
@@ -347,87 +338,41 @@ const sendMailReagendamientoEstudiante = async (emailDocente, nombreDocente, nom
       to: emailDocente,
       from: SENDER,
       replyTo: REPLY_TO,
-      subject: 'Un estudiante ha reagendado una tutoría - Tutorías ESFOT',
+      subject: 'Un estudiante ha reagendado una tutoria - Tutorias ESFOT',
       html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
-          <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            
-            <!-- Header -->
-            <div style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); padding: 40px 20px; text-align: center;">
-              <div style="background-color: white; width: 80px; height: 80px; margin: 0 auto 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-                <span style="font-size: 40px;">📅</span>
-              </div>
-              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">Tutoría Reagendada</h1>
-              <p style="color: #FFF3E0; margin: 10px 0 0; font-size: 16px;">Tutorías ESFOT</p>
-            </div>
-
-            <!-- Body -->
-            <div style="padding: 40px 30px;">
-              <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
-                Hola <strong>${nombreDocente}</strong>,
-              </p>
-              <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
-                El estudiante <strong>${nombreEstudiante}</strong> ha reagendado su tutoría a un nuevo horario.
-              </p>
-
-              <!-- Horario Anterior -->
-              <div style="background-color: #FFEBEE; border-left: 4px solid #EF5350; padding: 20px; margin: 20px 0; border-radius: 8px;">
-                <p style="color: #C62828; font-size: 14px; margin: 0 0 10px; font-weight: 600;">
-                  ❌ HORARIO ANTERIOR (cancelado)
-                </p>
-                <p style="color: #666; font-size: 16px; margin: 5px 0;">
-                  <strong>📅 Fecha:</strong> ${fechaAnterior}
-                </p>
-                <p style="color: #666; font-size: 16px; margin: 5px 0;">
-                  <strong>⏰ Hora:</strong> ${horaInicioAnterior} - ${horaFinAnterior}
-                </p>
-              </div>
-
-              <!-- Nuevo Horario -->
-              <div style="background-color: #E8F5E9; border-left: 4px solid #4CAF50; padding: 20px; margin: 20px 0; border-radius: 8px;">
-                <p style="color: #2E7D32; font-size: 14px; margin: 0 0 10px; font-weight: 600;">
-                  ✅ NUEVO HORARIO (pendiente tu confirmación)
-                </p>
-                <p style="color: #666; font-size: 16px; margin: 5px 0;">
-                  <strong>📅 Fecha:</strong> ${fechaNueva}
-                </p>
-                <p style="color: #666; font-size: 16px; margin: 5px 0;">
-                  <strong>⏰ Hora:</strong> ${horaInicioNueva} - ${horaFinNueva}
-                </p>
-              </div>
-
-              ${motivo ? `
-              <!-- Motivo -->
-              <div style="background-color: #FFF3E0; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #FF9800;">
-                <p style="color: #E65100; font-size: 14px; margin: 0 0 5px; font-weight: 600;">
-                  💬 Motivo del reagendamiento:
-                </p>
-                <p style="color: #666; font-size: 15px; margin: 5px 0; line-height: 1.5;">
-                  ${motivo}
-                </p>
-              </div>
-              ` : ''}
-
-              <p style="color: #999999; font-size: 13px; line-height: 1.5; margin: 25px 0 0;">
-                Por favor, confirma o rechaza esta solicitud en la aplicación web.
-              </p>
-            </div>
-
-            <!-- Footer -->
-            <div style="background-color: #F5F5F5; padding: 20px 30px; border-top: 1px solid #E0E0E0;">
-              <p style="color: #999999; font-size: 12px; margin: 0; text-align: center; line-height: 1.5;">
-                © 2025 <strong>ESFOT Tutorías</strong>. Todos los derechos reservados.
-              </p>
-            </div>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <div style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); padding: 40px 20px; text-align:  center;">
+            <h1 style="color: #ffffff; margin: 0; font-size:  28px; font-weight:  600;">Tutoria Reagendada</h1>
+            <p style="color: #FFF3E0; margin: 10px 0 0; font-size: 16px;">Tutorias ESFOT</p>
           </div>
-        </body>
-        </html>
+          <div style="padding: 40px 30px;">
+            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+              Hola <strong>${nombreDocente}</strong>,
+            </p>
+            <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
+              El estudiante <strong>${nombreEstudiante}</strong> ha reagendado su tutoria a un nuevo horario. 
+            </p>
+            <div style="background-color: #FFEBEE; border-left: 4px solid #EF5350; padding: 20px; margin: 20px 0; border-radius: 8px;">
+              <p style="color: #C62828; font-size: 14px; margin:  0 0 10px; font-weight: 600;">HORARIO ANTERIOR (cancelado)</p>
+              <p style="color: #666; font-size: 16px; margin: 5px 0;"><strong>Fecha:</strong> ${fechaAnterior}</p>
+              <p style="color: #666; font-size: 16px; margin: 5px 0;"><strong>Hora:</strong> ${horaInicioAnterior} - ${horaFinAnterior}</p>
+            </div>
+            <div style="background-color: #E8F5E9; border-left: 4px solid #4CAF50; padding: 20px; margin: 20px 0; border-radius: 8px;">
+              <p style="color: #2E7D32; font-size: 14px; margin: 0 0 10px; font-weight: 600;">NUEVO HORARIO (pendiente tu confirmacion)</p>
+              <p style="color: #666; font-size: 16px; margin:  5px 0;"><strong>Fecha:</strong> ${fechaNueva}</p>
+              <p style="color: #666; font-size: 16px; margin: 5px 0;"><strong>Hora:</strong> ${horaInicioNueva} - ${horaFinNueva}</p>
+            </div>
+            ${motivo ? `<div style="background-color: #FFF3E0; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #FF9800;">
+              <p style="color: #E65100; font-size: 14px; margin: 0 0 5px; font-weight: 600;">Motivo del reagendamiento:</p>
+              <p style="color: #666; font-size: 15px; margin: 5px 0; line-height: 1.5;">${motivo}</p>
+            </div>` : ''}
+          </div>
+          <div style="background-color: #F5F5F5; padding:  20px 30px; border-top: 1px solid #E0E0E0;">
+            <p style="color: #999999; font-size: 12px; margin: 0; text-align: center; line-height: 1.5;">
+              2025 ESFOT Tutorias. Todos los derechos reservados.
+            </p>
+          </div>
+        </div>
       `,
     };
 
@@ -445,8 +390,8 @@ const sendMailCancelacionParaDocente = async (emailDocente, nombreDocente, nombr
       to: emailDocente,
       from: SENDER,
       replyTo: REPLY_TO,
-      subject: 'Tutoría cancelada - Tutorías ESFOT',
-      html: `<p>Hola ${nombreDocente}, el estudiante ${nombreEstudiante} ha cancelado la tutoría.</p>
+      subject: 'Tutoria cancelada - Tutorias ESFOT',
+      html: `<p>Hola ${nombreDocente}, el estudiante ${nombreEstudiante} ha cancelado la tutoria.</p>
              <p>Fecha: ${datosTutoria.fecha} (${datosTutoria.horaInicio} - ${datosTutoria.horaFin})</p>
              ${motivo ? `<p>Motivo: ${motivo}</p>` : ''}`,
     };
@@ -465,9 +410,9 @@ const sendMailCancelacionParaEstudiante = async (emailEstudiante, nombreEstudian
       to: emailEstudiante,
       from: SENDER,
       replyTo: REPLY_TO,
-      subject: 'Tutoría cancelada - Tutorías ESFOT',
-      html: `<p>Hola ${nombreEstudiante}, el docente ${nombreDocente} ha cancelado la tutoría.</p>
-             <p>Fecha:  ${datosTutoria.fecha} (${datosTutoria.horaInicio} - ${datosTutoria.horaFin})</p>
+      subject: 'Tutoria cancelada - Tutorias ESFOT',
+      html: `<p>Hola ${nombreEstudiante}, el docente ${nombreDocente} ha cancelado la tutoria.</p>
+             <p>Fecha: ${datosTutoria.fecha} (${datosTutoria.horaInicio} - ${datosTutoria.horaFin})</p>
              ${motivo ? `<p>Motivo: ${motivo}</p>` : ''}`,
     };
 
