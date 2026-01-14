@@ -67,7 +67,7 @@ const sendMailToRegister = async (userMail, token) => {
       `,
     };
 
-    await sgMail. send(msg);
+    await sgMail.send(msg);
     console.log('✅ Correo de confirmación enviado a:', userMail);
   } catch (error) {
     console.error('❌ Error enviando correo de confirmación:', error);
@@ -140,7 +140,7 @@ const sendMailToRecoveryPassword = async (userMail, token) => {
       `,
     };
 
-    await sgMail. send(msg);
+    await sgMail.send(msg);
     console.log('✅ Correo de recuperación enviado correctamente a:', userMail);
   } catch (error) {
     console.error('❌ Error enviando correo de recuperación:', error);
@@ -195,7 +195,7 @@ const sendMailWithCredentials = async (email, nombreAdministrador, passwordGener
   try {
     const msg = {
       to: email,
-      from:  'maehdros863@gmail.com',
+      from: 'maehdros863@gmail.com',
       subject: '🔐 Credenciales de Administrador - Tutorías ESFOT',
       html: `
         <div style="font-family:  Verdana, sans-serif; max-width: 600px; margin:  auto; border: 1px solid #e0e0e0; padding:  20px; text-align: center; background-color: #fafafa;">
@@ -221,13 +221,13 @@ const sendMailWithCredentials = async (email, nombreAdministrador, passwordGener
   } catch (error) {
     console.error('❌ Error enviando correo con credenciales:', error);
     if (error.response) {
-      console.error('Detalles del error:', error.response. body);
+      console.error('Detalles del error:', error.response.body);
     }
     throw error;
   }
 };
 
-// ========== EMAILS REAGENDAMIENTO ==========
+// ========== EMAILS REAGENDAMIENTO (VERSIÓN MEJORADA) ==========
 const sendMailReagendamientoDocente = async (emailEstudiante, nombreEstudiante, nombreDocente, datosReagendamiento) => {
   try {
     const { fechaAnterior, horaInicioAnterior, horaFinAnterior, fechaNueva, horaInicioNueva, horaFinNueva, motivo } = datosReagendamiento;
@@ -236,10 +236,87 @@ const sendMailReagendamientoDocente = async (emailEstudiante, nombreEstudiante, 
       to: emailEstudiante,
       from: 'maehdros863@gmail.com',
       subject: '📅 Tu tutoría ha sido reagendada - Tutorías ESFOT',
-      html:  `<p>Hola ${nombreEstudiante}, el docente ${nombreDocente} ha reagendado tu tutoría.</p>
-             <p>Fecha anterior: ${fechaAnterior} (${horaInicioAnterior} - ${horaFinAnterior})</p>
-             <p>Nueva fecha: ${fechaNueva} (${horaInicioNueva} - ${horaFinNueva})</p>
-             ${motivo ? `<p>Motivo: ${motivo}</p>` : ''}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
+          <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); padding: 40px 20px; text-align: center;">
+              <div style="background-color: white; width: 80px; height: 80px; margin: 0 auto 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <span style="font-size: 40px;">📅</span>
+              </div>
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">Tutoría Reagendada</h1>
+              <p style="color: #FFF3E0; margin: 10px 0 0; font-size: 16px;">Tutorías ESFOT</p>
+            </div>
+
+            <!-- Body -->
+            <div style="padding: 40px 30px;">
+              <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                Hola <strong>${nombreEstudiante}</strong>,
+              </p>
+              <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
+                El docente <strong>${nombreDocente}</strong> ha reagendado tu tutoría a un nuevo horario.
+              </p>
+
+              <!-- Horario Anterior -->
+              <div style="background-color: #FFEBEE; border-left: 4px solid #EF5350; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                <p style="color: #C62828; font-size: 14px; margin: 0 0 10px; font-weight: 600;">
+                  ❌ HORARIO ANTERIOR (cancelado)
+                </p>
+                <p style="color: #666; font-size: 16px; margin: 5px 0;">
+                  <strong>📅 Fecha:</strong> ${fechaAnterior}
+                </p>
+                <p style="color: #666; font-size: 16px; margin: 5px 0;">
+                  <strong>⏰ Hora:</strong> ${horaInicioAnterior} - ${horaFinAnterior}
+                </p>
+              </div>
+
+              <!-- Nuevo Horario -->
+              <div style="background-color: #E8F5E9; border-left: 4px solid #4CAF50; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                <p style="color: #2E7D32; font-size: 14px; margin: 0 0 10px; font-weight: 600;">
+                  ✅ NUEVO HORARIO (confirmado)
+                </p>
+                <p style="color: #666; font-size: 16px; margin: 5px 0;">
+                  <strong>📅 Fecha:</strong> ${fechaNueva}
+                </p>
+                <p style="color: #666; font-size: 16px; margin: 5px 0;">
+                  <strong>⏰ Hora:</strong> ${horaInicioNueva} - ${horaFinNueva}
+                </p>
+              </div>
+
+              ${motivo ? `
+              <!-- Motivo -->
+              <div style="background-color: #FFF3E0; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #FF9800;">
+                <p style="color: #E65100; font-size: 14px; margin: 0 0 5px; font-weight: 600;">
+                  💬 Motivo del reagendamiento:
+                </p>
+                <p style="color: #666; font-size: 15px; margin: 5px 0; line-height: 1.5;">
+                  ${motivo}
+                </p>
+              </div>
+              ` : ''}
+
+              <p style="color: #999999; font-size: 13px; line-height: 1.5; margin: 25px 0 0;">
+                Por favor, confirma tu asistencia en la aplicación móvil. 
+              </p>
+            </div>
+
+            <!-- Footer -->
+            <div style="background-color: #F5F5F5; padding: 20px 30px; border-top: 1px solid #E0E0E0;">
+              <p style="color: #999999; font-size: 12px; margin: 0; text-align: center; line-height: 1.5;">
+                © 2025 <strong>ESFOT Tutorías</strong>. Todos los derechos reservados.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
     };
 
     await sgMail.send(msg);
@@ -258,10 +335,87 @@ const sendMailReagendamientoEstudiante = async (emailDocente, nombreDocente, nom
       to: emailDocente,
       from: 'maehdros863@gmail.com',
       subject: '📅 Un estudiante ha reagendado una tutoría - Tutorías ESFOT',
-      html: `<p>Hola ${nombreDocente}, el estudiante ${nombreEstudiante} ha reagendado su tutoría.</p>
-             <p>Fecha anterior: ${fechaAnterior} (${horaInicioAnterior} - ${horaFinAnterior})</p>
-             <p>Nueva fecha: ${fechaNueva} (${horaInicioNueva} - ${horaFinNueva})</p>
-             ${motivo ?  `<p>Motivo: ${motivo}</p>` : ''}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
+          <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); padding: 40px 20px; text-align: center;">
+              <div style="background-color: white; width: 80px; height: 80px; margin: 0 auto 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <span style="font-size: 40px;">📅</span>
+              </div>
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">Tutoría Reagendada</h1>
+              <p style="color: #FFF3E0; margin: 10px 0 0; font-size: 16px;">Tutorías ESFOT</p>
+            </div>
+
+            <!-- Body -->
+            <div style="padding: 40px 30px;">
+              <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 20px;">
+                Hola <strong>${nombreDocente}</strong>,
+              </p>
+              <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
+                El estudiante <strong>${nombreEstudiante}</strong> ha reagendado su tutoría a un nuevo horario.
+              </p>
+
+              <!-- Horario Anterior -->
+              <div style="background-color: #FFEBEE; border-left: 4px solid #EF5350; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                <p style="color: #C62828; font-size: 14px; margin: 0 0 10px; font-weight: 600;">
+                  ❌ HORARIO ANTERIOR (cancelado)
+                </p>
+                <p style="color: #666; font-size: 16px; margin: 5px 0;">
+                  <strong>📅 Fecha:</strong> ${fechaAnterior}
+                </p>
+                <p style="color: #666; font-size: 16px; margin: 5px 0;">
+                  <strong>⏰ Hora:</strong> ${horaInicioAnterior} - ${horaFinAnterior}
+                </p>
+              </div>
+
+              <!-- Nuevo Horario -->
+              <div style="background-color: #E8F5E9; border-left: 4px solid #4CAF50; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                <p style="color: #2E7D32; font-size: 14px; margin: 0 0 10px; font-weight: 600;">
+                  ✅ NUEVO HORARIO (pendiente tu confirmación)
+                </p>
+                <p style="color: #666; font-size: 16px; margin: 5px 0;">
+                  <strong>📅 Fecha:</strong> ${fechaNueva}
+                </p>
+                <p style="color: #666; font-size: 16px; margin: 5px 0;">
+                  <strong>⏰ Hora:</strong> ${horaInicioNueva} - ${horaFinNueva}
+                </p>
+              </div>
+
+              ${motivo ? `
+              <!-- Motivo -->
+              <div style="background-color: #FFF3E0; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #FF9800;">
+                <p style="color: #E65100; font-size: 14px; margin: 0 0 5px; font-weight: 600;">
+                  💬 Motivo del reagendamiento:
+                </p>
+                <p style="color: #666; font-size: 15px; margin: 5px 0; line-height: 1.5;">
+                  ${motivo}
+                </p>
+              </div>
+              ` : ''}
+
+              <p style="color: #999999; font-size: 13px; line-height: 1.5; margin: 25px 0 0;">
+                Por favor, confirma o rechaza esta solicitud en la aplicación web.
+              </p>
+            </div>
+
+            <!-- Footer -->
+            <div style="background-color: #F5F5F5; padding: 20px 30px; border-top: 1px solid #E0E0E0;">
+              <p style="color: #999999; font-size: 12px; margin: 0; text-align: center; line-height: 1.5;">
+                © 2025 <strong>ESFOT Tutorías</strong>. Todos los derechos reservados.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
     };
 
     await sgMail.send(msg);
@@ -279,11 +433,11 @@ const sendMailCancelacionParaDocente = async (emailDocente, nombreDocente, nombr
       from: 'maehdros863@gmail.com',
       subject: '❌ Tutoría cancelada - Tutorías ESFOT',
       html: `<p>Hola ${nombreDocente}, el estudiante ${nombreEstudiante} ha cancelado la tutoría.</p>
-             <p>Fecha: ${datosTutoria. fecha} (${datosTutoria. horaInicio} - ${datosTutoria.horaFin})</p>
+             <p>Fecha: ${datosTutoria.fecha} (${datosTutoria.horaInicio} - ${datosTutoria.horaFin})</p>
              ${motivo ? `<p>Motivo: ${motivo}</p>` : ''}`,
     };
 
-    await sgMail. send(msg);
+    await sgMail.send(msg);
     console.log(`✅ Email de cancelación enviado al docente: ${emailDocente}`);
   } catch (error) {
     console.error('❌ Error enviando email de cancelación:', error);
@@ -318,8 +472,8 @@ const sendMailRecordatorioTutoria = async (emailDestinatario, nombreDestinatario
       to: emailDestinatario,
       from: 'maehdros863@gmail.com',
       subject: '⏰ Recordatorio de tutoría - Tutorías ESFOT',
-      html:  `<p>Hola ${nombreDestinatario}, te recordamos que tienes una tutoría ${datosTutoria.tiempoRestante} con ${nombreOtraParte}.</p>
-             <p>Fecha: ${datosTutoria. fecha} (${datosTutoria.horaInicio} - ${datosTutoria.horaFin})</p>`,
+      html: `<p>Hola ${nombreDestinatario}, te recordamos que tienes una tutoría ${datosTutoria.tiempoRestante} con ${nombreOtraParte}.</p>
+             <p>Fecha: ${datosTutoria.fecha} (${datosTutoria.horaInicio} - ${datosTutoria.horaFin})</p>`,
     };
 
     await sgMail.send(msg);
