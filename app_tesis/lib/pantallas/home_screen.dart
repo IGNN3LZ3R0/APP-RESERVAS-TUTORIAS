@@ -46,9 +46,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       print('   Nombre: ${_usuario.nombre}');
       print('   Rol: ${_usuario.rol}');
       if (_usuario.esDocente) {
-        print('   Asignaturas: ${_usuario.asignaturas?.join(", ") ?? "ninguna"}');
+        print(
+          '   Asignaturas: ${_usuario.asignaturas?.join(", ") ?? "ninguna"}',
+        );
       }
     }
+  }
+
+  // 🆕 NUEVO MÉTODO:  Navegar a perfil y actualizar al regresar
+  Future<void> _navegarAPerfil() async {
+    // Navegar a la pantalla de perfil
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PerfilScreen(usuario: _usuario)),
+    );
+
+    // Al regresar, recargar el usuario actualizado
+    await _cargarUsuarioActualizado();
   }
 
   List<Widget> _buildScreens() {
@@ -57,27 +71,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _buildDashboardAdmin(),
         GestionUsuariosScreen(usuario: _usuario),
         GestionEstudiantesScreen(usuario: _usuario),
-        PerfilScreen(usuario: _usuario),
+        // 🔄 Ya no retorna PerfilScreen directamente, se maneja por navegación
+        Container(), // Placeholder, no se usa porque navegamos manualmente
       ];
     } else if (_usuario.esDocente) {
       return [
         _buildDashboardDocente(),
         DocenteMaterias.GestionMateriasScreen(usuario: _usuario),
         GestionHorariosScreen(usuario: _usuario),
-        PerfilScreen(usuario: _usuario),
+        Container(), // Placeholder
       ];
     } else {
       return [
         _buildDashboardEstudiante(),
         VerDisponibilidadDocentesScreen(usuario: _usuario),
-        PerfilScreen(usuario: _usuario),
+        Container(), // Placeholder
       ];
     }
   }
 
   List<BottomNavigationBarItem> _buildNavItems() {
     final iconSize = context.isMobile ? 24.0 : 28.0;
-    
+
     if (_usuario.esAdministrador) {
       return [
         BottomNavigationBarItem(
@@ -152,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         physics: const BouncingScrollPhysics(),
         slivers: [
           _buildSliverAppBar('Panel Administrativo'),
-          
+
           SliverToBoxAdapter(
             child: ResponsiveHelper.centerConstrainedBox(
               context: context,
@@ -163,10 +178,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   children: [
                     _buildWelcomeCard(),
                     SizedBox(height: context.responsiveSpacing * 2),
-                    
-                    _buildSectionTitle('Gestión del Sistema', Icons.settings_rounded),
+
+                    _buildSectionTitle(
+                      'Gestión del Sistema',
+                      Icons.settings_rounded,
+                    ),
                     SizedBox(height: context.responsiveSpacing),
-                    
+
                     _buildActionCard(
                       title: 'Gestión de Docentes',
                       subtitle: 'Administrar docentes del sistema',
@@ -177,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       onTap: () => setState(() => _selectedIndex = 1),
                     ),
                     SizedBox(height: context.responsiveSpacing * 0.75),
-                    
+
                     _buildActionCard(
                       title: 'Gestión de Estudiantes',
                       subtitle: 'Administrar estudiantes',
@@ -188,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       onTap: () => setState(() => _selectedIndex = 2),
                     ),
                     SizedBox(height: context.responsiveSpacing * 0.75),
-                    
+
                     _buildActionCard(
                       title: 'Gestión de Materias',
                       subtitle: 'Administrar catálogo de materias',
@@ -200,16 +218,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => AdminMaterias.GestionMateriasScreen(usuario: _usuario),
+                            builder: (context) =>
+                                AdminMaterias.GestionMateriasScreen(
+                                  usuario: _usuario,
+                                ),
                           ),
                         );
                       },
                     ),
-                    
+
                     SizedBox(height: context.responsiveSpacing * 2),
-                    _buildSectionTitle('Reportes y Análisis', Icons.analytics_rounded),
+                    _buildSectionTitle(
+                      'Reportes y Análisis',
+                      Icons.analytics_rounded,
+                    ),
                     SizedBox(height: context.responsiveSpacing),
-                    
+
                     _buildActionCard(
                       title: 'Reportes Generales',
                       subtitle: 'Ver estadísticas del sistema',
@@ -221,13 +245,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ReportesAdminScreen(usuario: _usuario),
+                            builder: (context) =>
+                                ReportesAdminScreen(usuario: _usuario),
                           ),
                         );
                       },
                     ),
                     SizedBox(height: context.responsiveSpacing * 0.75),
-                    
+
                     _buildActionCard(
                       title: 'Historial de Tutorías',
                       subtitle: 'Ver todas las tutorías del sistema',
@@ -239,7 +264,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => HistorialTutoriasAdminScreen(usuario: _usuario),
+                            builder: (context) =>
+                                HistorialTutoriasAdminScreen(usuario: _usuario),
                           ),
                         );
                       },
@@ -255,14 +281,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-Widget _buildDashboardDocente() {
+  Widget _buildDashboardDocente() {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFB),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           _buildSliverAppBar('Panel Docente'),
-          
+
           SliverToBoxAdapter(
             child: ResponsiveHelper.centerConstrainedBox(
               context: context,
@@ -273,10 +299,10 @@ Widget _buildDashboardDocente() {
                   children: [
                     _buildWelcomeCard(),
                     SizedBox(height: context.responsiveSpacing * 2),
-                    
+
                     _buildSectionTitle('Configuración', Icons.tune_rounded),
                     SizedBox(height: context.responsiveSpacing),
-                    
+
                     _buildActionCard(
                       title: 'Mis Materias',
                       subtitle: 'Gestionar materias asignadas',
@@ -287,7 +313,7 @@ Widget _buildDashboardDocente() {
                       onTap: () => setState(() => _selectedIndex = 1),
                     ),
                     SizedBox(height: context.responsiveSpacing * 0.75),
-                    
+
                     _buildActionCard(
                       title: 'Horarios de Atención',
                       subtitle: 'Configurar disponibilidad',
@@ -297,11 +323,11 @@ Widget _buildDashboardDocente() {
                       ),
                       onTap: () => setState(() => _selectedIndex = 2),
                     ),
-                    
+
                     SizedBox(height: context.responsiveSpacing * 2),
                     _buildSectionTitle('Tutorías', Icons.event_note_rounded),
                     SizedBox(height: context.responsiveSpacing),
-                    
+
                     _buildActionCard(
                       title: 'Solicitudes Pendientes',
                       subtitle: 'Gestionar tutorías solicitadas',
@@ -313,13 +339,14 @@ Widget _buildDashboardDocente() {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => SolicitudesTutoriasScreen(usuario: _usuario),
+                            builder: (context) =>
+                                SolicitudesTutoriasScreen(usuario: _usuario),
                           ),
                         );
                       },
                     ),
                     SizedBox(height: context.responsiveSpacing * 0.75),
-                    
+
                     _buildActionCard(
                       title: 'Reportes de Tutorías',
                       subtitle: 'Ver estadísticas por materia',
@@ -331,7 +358,8 @@ Widget _buildDashboardDocente() {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ReportesScreen(usuario: _usuario),
+                            builder: (context) =>
+                                ReportesScreen(usuario: _usuario),
                           ),
                         );
                       },
@@ -354,7 +382,7 @@ Widget _buildDashboardDocente() {
         physics: const BouncingScrollPhysics(),
         slivers: [
           _buildSliverAppBar('Panel Estudiante'),
-          
+
           SliverToBoxAdapter(
             child: ResponsiveHelper.centerConstrainedBox(
               context: context,
@@ -365,10 +393,10 @@ Widget _buildDashboardDocente() {
                   children: [
                     _buildWelcomeCard(),
                     SizedBox(height: context.responsiveSpacing * 2),
-                    
+
                     _buildSectionTitle('Mis Tutorías', Icons.school_rounded),
                     SizedBox(height: context.responsiveSpacing),
-                    
+
                     _buildActionCard(
                       title: 'Agendar Tutoría',
                       subtitle: 'Solicitar nueva tutoría con un docente',
@@ -379,7 +407,7 @@ Widget _buildDashboardDocente() {
                       onTap: () => setState(() => _selectedIndex = 1),
                     ),
                     SizedBox(height: context.responsiveSpacing * 0.75),
-                    
+
                     _buildActionCard(
                       title: 'Mis Tutorías',
                       subtitle: 'Ver tutorías agendadas',
@@ -391,7 +419,8 @@ Widget _buildDashboardDocente() {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => MisTutoriasScreen(usuario: _usuario),
+                            builder: (context) =>
+                                MisTutoriasScreen(usuario: _usuario),
                           ),
                         );
                       },
@@ -409,7 +438,7 @@ Widget _buildDashboardDocente() {
 
   Widget _buildSliverAppBar(String title) {
     final expandedHeight = context.isMobile ? 120.0 : 140.0;
-    
+
     return SliverAppBar(
       expandedHeight: expandedHeight,
       floating: false,
@@ -506,7 +535,9 @@ Widget _buildDashboardDocente() {
             const Color(0xFF42A5F5).withOpacity(0.05),
           ],
         ),
-        borderRadius: BorderRadius.circular(ResponsiveHelper.getBorderRadius(context)),
+        borderRadius: BorderRadius.circular(
+          ResponsiveHelper.getBorderRadius(context),
+        ),
         border: Border.all(
           color: const Color(0xFF1565C0).withOpacity(0.1),
           width: 1,
@@ -543,20 +574,18 @@ Widget _buildDashboardDocente() {
 
   Widget _buildWelcomeCard() {
     final avatarRadius = context.isMobile ? 35.0 : 40.0;
-    
+
     return Container(
       padding: EdgeInsets.all(context.isMobile ? 20 : 24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF42A5F5),
-            Color(0xFF1E88E5),
-            Color(0xFF1565C0),
-          ],
+          colors: [Color(0xFF42A5F5), Color(0xFF1E88E5), Color(0xFF1565C0)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(ResponsiveHelper.getBorderRadius(context)),
+        borderRadius: BorderRadius.circular(
+          ResponsiveHelper.getBorderRadius(context),
+        ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF1565C0).withOpacity(0.3),
@@ -613,10 +642,12 @@ Widget _buildDashboardDocente() {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '¡Hola!',
+                  '¡Hola! ',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.9),
-                    fontSize: context.responsiveFontSize(context.isMobile ? 13 : 14),
+                    fontSize: context.responsiveFontSize(
+                      context.isMobile ? 13 : 14,
+                    ),
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.5,
                   ),
@@ -626,7 +657,9 @@ Widget _buildDashboardDocente() {
                   _usuario.nombre,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: context.responsiveFontSize(context.isMobile ? 18 : 20),
+                    fontSize: context.responsiveFontSize(
+                      context.isMobile ? 18 : 20,
+                    ),
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.3,
                     height: 1.2,
@@ -693,21 +726,22 @@ Widget _buildDashboardDocente() {
   }) {
     final cardPadding = context.isMobile ? 16.0 : 20.0;
     final iconContainerSize = context.isMobile ? 14.0 : 16.0;
-    
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(ResponsiveHelper.getBorderRadius(context)),
+        borderRadius: BorderRadius.circular(
+          ResponsiveHelper.getBorderRadius(context),
+        ),
         child: Container(
           padding: EdgeInsets.all(cardPadding),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(ResponsiveHelper.getBorderRadius(context)),
-            border: Border.all(
-              color: Colors.grey.shade100,
-              width: 1,
+            borderRadius: BorderRadius.circular(
+              ResponsiveHelper.getBorderRadius(context),
             ),
+            border: Border.all(color: Colors.grey.shade100, width: 1),
             boxShadow: [
               BoxShadow(
                 color: Colors.grey.withOpacity(0.08),
@@ -772,7 +806,9 @@ Widget _buildDashboardDocente() {
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: context.responsiveFontSize(context.isMobile ? 15 : 16),
+                        fontSize: context.responsiveFontSize(
+                          context.isMobile ? 15 : 16,
+                        ),
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF1E3A5F),
                         letterSpacing: 0.2,
@@ -782,7 +818,9 @@ Widget _buildDashboardDocente() {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        fontSize: context.responsiveFontSize(context.isMobile ? 12 : 13),
+                        fontSize: context.responsiveFontSize(
+                          context.isMobile ? 12 : 13,
+                        ),
                         color: Colors.grey[600],
                         height: 1.3,
                         letterSpacing: 0.2,
@@ -818,7 +856,9 @@ Widget _buildDashboardDocente() {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ResponsiveHelper.getBorderRadius(context)),
+          borderRadius: BorderRadius.circular(
+            ResponsiveHelper.getBorderRadius(context),
+          ),
         ),
         title: Row(
           children: [
@@ -826,10 +866,7 @@ Widget _buildDashboardDocente() {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Colors.red[400]!,
-                    Colors.red[600]!,
-                  ],
+                  colors: [Colors.red[400]!, Colors.red[600]!],
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -844,7 +881,9 @@ Widget _buildDashboardDocente() {
               child: Text(
                 'Cerrar sesión',
                 style: TextStyle(
-                  fontSize: context.responsiveFontSize(context.isMobile ? 18 : 20),
+                  fontSize: context.responsiveFontSize(
+                    context.isMobile ? 18 : 20,
+                  ),
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -900,7 +939,10 @@ Widget _buildDashboardDocente() {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 shadowColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -927,13 +969,26 @@ Widget _buildDashboardDocente() {
     }
   }
 
+  // 🔄 MODIFICADO: Interceptar el tap en la navegación inferior
+  void _onItemTapped(int index) {
+    // Si selecciona "Perfil" (último índice), navegar manualmente
+    final int perfilIndex = _usuario.esAdministrador
+        ? 3
+        : _usuario.esDocente
+        ? 3
+        : 2;
+
+    if (index == perfilIndex) {
+      _navegarAPerfil();
+    } else {
+      setState(() => _selectedIndex = index);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _buildScreens(),
-      ),
+      body: IndexedStack(index: _selectedIndex, children: _buildScreens()),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -946,7 +1001,7 @@ Widget _buildDashboardDocente() {
         ),
         child: BottomNavigationBar(
           currentIndex: _selectedIndex,
-          onTap: (index) => setState(() => _selectedIndex = index),
+          onTap: _onItemTapped, // 🔄 Usa el nuevo manejador
           items: _buildNavItems(),
           type: BottomNavigationBarType.fixed,
           selectedItemColor: const Color(0xFF1565C0),
@@ -957,9 +1012,7 @@ Widget _buildDashboardDocente() {
             fontWeight: FontWeight.w700,
             letterSpacing: 0.3,
           ),
-          unselectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w500,
-          ),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
           backgroundColor: Colors.white,
           elevation: 0,
         ),
