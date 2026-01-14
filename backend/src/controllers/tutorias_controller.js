@@ -1,7 +1,7 @@
 import Tutoria from '../models/tutorias.js';
 import disponibilidadDocente from '../models/disponibilidadDocente.js';
 import Docente from '../models/docente.js';
-import moment from 'moment';
+import moment from 'moment-timezone';
 const {
   sendMailCancelacionParaDocente,
   sendMailCancelacionParaEstudiante,
@@ -144,8 +144,8 @@ const registrarTutoriaConTurnos = async (req, res) => {
 
     console.log(`📝 Agendando turno: ${horaInicio}-${horaFin} (${duracion} min)`);
 
-    // ✅ NUEVA VALIDACIÓN: No permitir agendar en fechas/horas pasadas
-    const ahora = moment();
+    // ✅ NUEVA VALIDACIÓN: Usar zona horaria de Ecuador (UTC-5)
+    const ahora = moment().tz('America/Guayaquil');
 
     // Parseado robusto de fecha
     let fechaStr;
@@ -155,12 +155,12 @@ const registrarTutoriaConTurnos = async (req, res) => {
       fechaStr = moment(fecha, 'YYYY-MM-DD').format('YYYY-MM-DD');
     }
 
-    // Construir fecha-hora completa del inicio de la tutoría
-    const fechaHoraTutoria = moment(`${fechaStr} ${horaInicio}`, 'YYYY-MM-DD HH:mm');
+    // Construir fecha-hora completa del inicio de la tutoría en zona horaria de Ecuador
+    const fechaHoraTutoria = moment.tz(`${fechaStr} ${horaInicio}`, 'YYYY-MM-DD HH:mm', 'America/Guayaquil');
 
     // 🔍 LOGS DE DEPURACIÓN
     console.log('📊 Validación de agendamiento:');
-    console.log(`   Ahora: ${ahora.format('YYYY-MM-DD HH:mm')}`);
+    console.log(`   Ahora (Ecuador): ${ahora.format('YYYY-MM-DD HH:mm')}`);
     console.log(`   Tutoría solicitada: ${fechaHoraTutoria.format('YYYY-MM-DD HH:mm')}`);
     console.log(`   Diferencia: ${fechaHoraTutoria.diff(ahora, 'minutes')} minutos`);
 
