@@ -11,24 +11,24 @@ import { crearTokenJWT } from "../middlewares/JWT.js";
 const registrarDocente = async (req, res) => {
   try {
     const { emailDocente, fechaNacimientoDocente } = req.body;
-    
+
     // ✅ VALIDAR CAMPOS VACÍOS
     const camposRequeridos = [
-      'nombreDocente', 
-      'cedulaDocente', 
-      'emailDocente', 
-      'celularDocente', 
-      'oficinaDocente', 
+      'nombreDocente',
+      'cedulaDocente',
+      'emailDocente',
+      'celularDocente',
+      'oficinaDocente',
       'emailAlternativoDocente',
       'fechaNacimientoDocente',
       'fechaIngresoDocente'
     ];
 
     const camposFaltantes = camposRequeridos.filter(campo => !req.body[campo]);
-    
+
     if (camposFaltantes.length > 0) {
-      return res.status(400).json({ 
-        msg: `Los siguientes campos son obligatorios: ${camposFaltantes.join(', ')}` 
+      return res.status(400).json({
+        msg: `Los siguientes campos son obligatorios: ${camposFaltantes.join(', ')}`
       });
     }
 
@@ -112,8 +112,8 @@ const registrarDocente = async (req, res) => {
     await sendMailToOwner(emailDocente, "ESFOT" + password);
     console.log(`✅ Docente registrado: ${emailNormalizado}`);
 
-    res.status(201).json({ 
-      msg: "Docente registrado exitosamente. Se envió un correo con las credenciales." 
+    res.status(201).json({
+      msg: "Docente registrado exitosamente. Se envió un correo con las credenciales."
     });
   } catch (error) {
     console.error("❌ Error en registrarDocente:", error);
@@ -121,14 +121,14 @@ const registrarDocente = async (req, res) => {
     // ✅ MANEJAR ERROR DE DUPLICADO DE MONGODB
     if (error.code === 11000) {
       const campo = Object.keys(error.keyPattern)[0];
-      return res.status(400).json({ 
-        msg: `El ${campo} ya está registrado en el sistema` 
+      return res.status(400).json({
+        msg: `El ${campo} ya está registrado en el sistema`
       });
     }
 
-    res.status(500).json({ 
-      msg: "Error interno del servidor", 
-      error: error.message 
+    res.status(500).json({
+      msg: "Error interno del servidor",
+      error: error.message
     });
   }
 };
@@ -178,8 +178,8 @@ const cambiarPasswordObligatorio = async (req, res) => {
     const emailNormalizado = email.trim().toLowerCase();
 
     // Buscar docente
-    const docenteBDD = await Docente.findOne({ 
-      emailDocente: emailNormalizado 
+    const docenteBDD = await Docente.findOne({
+      emailDocente: emailNormalizado
     });
 
     if (!docenteBDD) {
@@ -199,7 +199,7 @@ const cambiarPasswordObligatorio = async (req, res) => {
     // Actualizar contraseña
     docenteBDD.passwordDocente = await docenteBDD.encrypPassword(passwordNueva);
     docenteBDD.requiresPasswordChange = false;  // Ya cambió la contraseña
-    
+
     await docenteBDD.save();
 
     console.log(`✅ Contraseña cambiada exitosamente: ${emailNormalizado}`);
@@ -225,9 +225,9 @@ const recuperarPasswordDocente = async (req, res) => {
     console.log('📨 Solicitud de recuperación docente:', { emailDocente });
 
     if (!emailDocente) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        msg: "El email es obligatorio" 
+        msg: "El email es obligatorio"
       });
     }
 
@@ -236,15 +236,15 @@ const recuperarPasswordDocente = async (req, res) => {
 
     console.log('🔍 Buscando docente con email:', emailNormalizado);
 
-    const docenteBDD = await Docente.findOne({ 
-      emailDocente: emailNormalizado 
+    const docenteBDD = await Docente.findOne({
+      emailDocente: emailNormalizado
     });
 
     if (!docenteBDD) {
       console.log(`ℹ️ Email de docente no encontrado: ${emailNormalizado}`);
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        msg: "Lo sentimos, el usuario no existe" 
+        msg: "Lo sentimos, el usuario no existe"
       });
     }
 
@@ -259,14 +259,14 @@ const recuperarPasswordDocente = async (req, res) => {
 
     console.log(`✅ Email de recuperación enviado a docente: ${emailDocente}`);
 
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
       msg: "Revisa tu correo electrónico para restablecer tu contraseña.",
       email: emailDocente
     });
   } catch (error) {
     console.error("❌ Error en recuperación de password docente:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       msg: "Error al procesar solicitud",
       error: error.message
@@ -281,9 +281,9 @@ const comprobarTokenPasswordDocente = async (req, res) => {
     console.log('🔍 Comprobando token de docente:', token);
 
     if (!token) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        msg: "Token no proporcionado" 
+        msg: "Token no proporcionado"
       });
     }
 
@@ -291,23 +291,23 @@ const comprobarTokenPasswordDocente = async (req, res) => {
 
     if (!docenteBDD || docenteBDD.token !== token) {
       console.log('❌ Token de docente no encontrado o ya usado');
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        msg: "Lo sentimos, no se puede validar la cuenta" 
+        msg: "Lo sentimos, no se puede validar la cuenta"
       });
     }
 
     console.log('✅ Token de docente válido para:', docenteBDD.emailDocente);
 
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
-      msg: "Token confirmado, ya puedes crear tu password" 
+      msg: "Token confirmado, ya puedes crear tu password"
     });
   } catch (error) {
     console.error("❌ Error comprobando token docente:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      msg: "Error al validar token" 
+      msg: "Error al validar token"
     });
   }
 };
@@ -320,23 +320,23 @@ const crearNuevoPasswordDocente = async (req, res) => {
     console.log('🔐 Creando nueva contraseña para docente con token:', token);
 
     if (!password || !confirmpassword) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        msg: "Lo sentimos, debes llenar todos los campos" 
+        msg: "Lo sentimos, debes llenar todos los campos"
       });
     }
 
     if (password !== confirmpassword) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        msg: "Lo sentimos, los passwords no coinciden" 
+        msg: "Lo sentimos, los passwords no coinciden"
       });
     }
 
     if (password.length < 8) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        msg: "La contraseña debe tener al menos 8 caracteres" 
+        msg: "La contraseña debe tener al menos 8 caracteres"
       });
     }
 
@@ -344,9 +344,9 @@ const crearNuevoPasswordDocente = async (req, res) => {
 
     if (!docenteBDD || docenteBDD.token !== token) {
       console.log('❌ Token de docente no encontrado');
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        msg: "Lo sentimos, no se puede validar su cuenta" 
+        msg: "Lo sentimos, no se puede validar su cuenta"
       });
     }
 
@@ -358,16 +358,16 @@ const crearNuevoPasswordDocente = async (req, res) => {
 
     console.log(`✅ Contraseña de docente actualizada exitosamente`);
 
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
       msg: "Ya puede iniciar sesión con su nueva contraseña.",
       email: docenteBDD.emailDocente
     });
   } catch (error) {
     console.error("❌ Error creando nueva contraseña docente:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      msg: "Error al actualizar contraseña" 
+      msg: "Error al actualizar contraseña"
     });
   }
 };
@@ -406,15 +406,15 @@ const listarDocentes = async (req, res) => {
       return docenteObj;
     });
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       total: docentesFormateados.length,
-      docentes: docentesFormateados 
+      docentes: docentesFormateados
     });
   } catch (error) {
     console.error("Error al listar docentes:", error);
-    return res.status(500).json({ 
-      msg: "Error al listar docentes", 
-      error: error.message 
+    return res.status(500).json({
+      msg: "Error al listar docentes",
+      error: error.message
     });
   }
 };
@@ -423,20 +423,20 @@ const listarDocentes = async (req, res) => {
 const detalleDocente = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ 
-        msg: `Lo sentimos, no existe el registro del docente ${id}` 
+      return res.status(404).json({
+        msg: `Lo sentimos, no existe el registro del docente ${id}`
       });
     }
-    
+
     const docente = await Docente.findById(id)
       .select("-createdAt -updatedAt -__v")
       .populate('administrador', '_id nombre apellido');
 
     if (!docente) {
-      return res.status(404).json({ 
-        msg: "Docente no encontrado" 
+      return res.status(404).json({
+        msg: "Docente no encontrado"
       });
     }
 
@@ -451,9 +451,9 @@ const detalleDocente = async (req, res) => {
 
     res.status(200).json(docente);
   } catch (error) {
-    res.status(500).json({ 
-      msg: "Error al obtener detalle", 
-      error 
+    res.status(500).json({
+      msg: "Error al obtener detalle",
+      error
     });
   }
 };
@@ -464,45 +464,45 @@ const eliminarDocente = async (req, res) => {
   try {
     const { id } = req.params;
     const { salidaDocente } = req.body;
-    
+
     // Validar que se proporcione fecha de salida
     if (!salidaDocente) {
-      return res.status(400).json({ 
-        msg: "La fecha de salida es obligatoria" 
+      return res.status(400).json({
+        msg: "La fecha de salida es obligatoria"
       });
     }
-    
+
     // Validar formato de ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ 
-        msg: "ID de docente inválido" 
+      return res.status(404).json({
+        msg: "ID de docente inválido"
       });
     }
-    
+
     // Buscar y actualizar docente (soft delete)
     const docenteActualizado = await Docente.findByIdAndUpdate(
-      id, 
+      id,
       {
         salidaDocente: new Date(salidaDocente),
         estadoDocente: false  // Marcar como inactivo
-      }, 
+      },
       { new: true }
     ).select('-passwordDocente -token');
-    
+
     if (!docenteActualizado) {
-      return res.status(404).json({ 
-        msg: "Docente no encontrado" 
+      return res.status(404).json({
+        msg: "Docente no encontrado"
       });
     }
-    
+
     // Log para debugging
     console.log(`🔒 Docente deshabilitado: ${docenteActualizado.nombreDocente}`);
     console.log(`   ID: ${docenteActualizado._id}`);
     console.log(`   Fecha salida: ${docenteActualizado.salidaDocente}`);
     console.log(`   Estado: ${docenteActualizado.estadoDocente}`);
-    
+
     // Respuesta exitosa
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
       msg: "El docente fue deshabilitado exitosamente.",
       eliminado: false,  // Indica que NO fue eliminación física
@@ -515,13 +515,13 @@ const eliminarDocente = async (req, res) => {
         oficinaDocente: docenteActualizado.oficinaDocente
       }
     });
-    
+
   } catch (error) {
     console.error("❌ Error en eliminarDocente:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      msg: "Error al deshabilitar docente", 
-      error: error.message 
+      msg: "Error al deshabilitar docente",
+      error: error.message
     });
   }
 };
@@ -530,16 +530,16 @@ const eliminarDocente = async (req, res) => {
 const actualizarDocente = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     if (Object.values(req.body).includes("")) {
-      return res.status(400).json({ 
-        msg: "Lo sentimos, debes llenar todos los campos" 
+      return res.status(400).json({
+        msg: "Lo sentimos, debes llenar todos los campos"
       });
     }
-    
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).json({ 
-        msg: `Lo sentimos, no existe el docente ${id}` 
+      return res.status(404).json({
+        msg: `Lo sentimos, no existe el docente ${id}`
       });
     }
 
@@ -548,8 +548,8 @@ const actualizarDocente = async (req, res) => {
       try {
         asignaturas = JSON.parse(asignaturas);
       } catch {
-        return res.status(400).json({ 
-          msg: "Formato inválido en asignaturas" 
+        return res.status(400).json({
+          msg: "Formato inválido en asignaturas"
         });
       }
     }
@@ -568,15 +568,15 @@ const actualizarDocente = async (req, res) => {
       req.body.avatarDocenteID = cloudiResponse.public_id;
       await fs.unlink(req.files.imagen.tempFilePath);
     }
-    
+
     const docenteActualizado = await Docente.findByIdAndUpdate(id, req.body, { new: true })
       .select("-passwordDocente -confirmEmail -createdAt -updatedAt -__v");
-    
+
     res.status(200).json({ docente: docenteActualizado });
   } catch (error) {
-    res.status(500).json({ 
-      msg: "Error al actualizar docente", 
-      error 
+    res.status(500).json({
+      msg: "Error al actualizar docente",
+      error
     });
   }
 };
@@ -585,38 +585,38 @@ const actualizarDocente = async (req, res) => {
 const loginDocente = async (req, res) => {
   try {
     const { email: emailDocente, password: passwordDocente } = req.body;
-    
+
     if (!emailDocente || !passwordDocente) {
-      return res.status(400).json({ 
-        msg: "Lo sentimos, debes llenar todos los campos" 
+      return res.status(400).json({
+        msg: "Lo sentimos, debes llenar todos los campos"
       });
     }
-    
+
     const docenteBDD = await Docente.findOne({ emailDocente });
-    
+
     if (!docenteBDD) {
-      return res.status(404).json({ 
-        msg: "Lo sentimos, el usuario no se encuentra registrado" 
+      return res.status(404).json({
+        msg: "Lo sentimos, el usuario no se encuentra registrado"
       });
     }
-    
+
     const verificarPassword = await docenteBDD.matchPassword(passwordDocente);
-    
+
     if (!verificarPassword) {
-      return res.status(401).json({ 
-        msg: "Lo sentimos, el password no es el correcto" 
+      return res.status(401).json({
+        msg: "Lo sentimos, el password no es el correcto"
       });
     }
-    
+
     const token = crearTokenJWT(docenteBDD._id, docenteBDD.rol);
     const { _id, rol, avatarDocente, requiresPasswordChange } = docenteBDD;
-    
+
     // ✅ CONSTRUIR RESPUESTA CON FLAG CONDICIONAL
-    const response = { 
-      token, 
-      rol, 
-      _id, 
-      avatarDocente 
+    const response = {
+      token,
+      rol,
+      _id,
+      avatarDocente
     };
 
     // Solo agregar requiresPasswordChange si es true
@@ -626,9 +626,9 @@ const loginDocente = async (req, res) => {
 
     res.status(200).json(response);
   } catch (error) {
-    res.status(500).json({ 
-      msg: "Error al iniciar sesión", 
-      error 
+    res.status(500).json({
+      msg: "Error al iniciar sesión",
+      error
     });
   }
 };
@@ -637,31 +637,31 @@ const loginDocente = async (req, res) => {
 const perfilDocente = (req, res) => {
   try {
     const docente = req.docenteBDD;
-    
+
     if (!docente) {
-      return res.status(404).json({ 
-        msg: "Docente no encontrado." 
+      return res.status(404).json({
+        msg: "Docente no encontrado."
       });
     }
-    
+
     const camposAEliminar = [
-      "fechaIngresoDocente", 
+      "fechaIngresoDocente",
       "salidaDocente",
-      "estadoDocente", 
-      "passwordDocente", 
-      "confirmEmail", 
-      "createdAt", 
-      "updatedAt", 
+      "estadoDocente",
+      "passwordDocente",
+      "confirmEmail",
+      "createdAt",
+      "updatedAt",
       "__v"
     ];
-    
+
     camposAEliminar.forEach(campo => delete req.docenteBDD[campo]);
-    
+
     res.status(200).json(req.docenteBDD);
   } catch (error) {
-    res.status(500).json({ 
-      msg: "Error al obtener perfil", 
-      error 
+    res.status(500).json({
+      msg: "Error al obtener perfil",
+      error
     });
   }
 };
@@ -673,41 +673,41 @@ const perfilDocente = (req, res) => {
 const actualizarPerfilDocente = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // ✅ PERMITIR: Docente edita su propio perfil O Admin edita cualquier perfil
     const esDocente = req.docenteBDD && req.docenteBDD._id.toString() === id;
     const esAdmin = req.administradorBDD;
-    
+
     if (!esDocente && !esAdmin) {
-      return res.status(403).json({ 
-        msg: "No tienes permiso para modificar este perfil" 
+      return res.status(403).json({
+        msg: "No tienes permiso para modificar este perfil"
       });
     }
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ 
-        msg: "ID de docente inválido" 
+      return res.status(400).json({
+        msg: "ID de docente inválido"
       });
     }
 
     const docenteBDD = await Docente.findById(id);
-    
+
     if (!docenteBDD) {
-      return res.status(404).json({ 
-        msg: "Docente no encontrado" 
+      return res.status(404).json({
+        msg: "Docente no encontrado"
       });
     }
 
     // ========================================
     // ✅ EXTRAER DATOS DEL REQUEST
     // ========================================
-    const { 
-      nombreDocente, 
-      celularDocente, 
-      oficinaDocente, 
+    const {
+      nombreDocente,
+      celularDocente,
+      oficinaDocente,
       emailAlternativoDocente,
       semestreAsignado,
-      asignaturas 
+      asignaturas
     } = req.body;
 
     console.log('📥 Datos recibidos para actualizar:');
@@ -757,17 +757,17 @@ const actualizarPerfilDocente = async (req, res) => {
           msg: "Por favor ingresa un email alternativo válido"
         });
       }
-      
-      const emailExistente = await Docente.findOne({ 
-        emailAlternativoDocente: emailAlternativoDocente.toLowerCase() 
+
+      const emailExistente = await Docente.findOne({
+        emailAlternativoDocente: emailAlternativoDocente.toLowerCase()
       });
-      
+
       if (emailExistente && emailExistente._id.toString() !== id) {
         return res.status(400).json({
           msg: "El email alternativo ya está en uso por otro docente"
         });
       }
-      
+
       docenteBDD.emailAlternativoDocente = emailAlternativoDocente.toLowerCase();
       console.log('✅ Email alternativo actualizado');
     }
@@ -777,13 +777,13 @@ const actualizarPerfilDocente = async (req, res) => {
     // ========================================
     if (semestreAsignado !== undefined && semestreAsignado !== null) {
       const semestresValidos = ['Nivelacion', 'Primer Semestre'];
-      
+
       if (!semestresValidos.includes(semestreAsignado)) {
         return res.status(400).json({
           msg: "Semestre inválido. Debe ser 'Nivelacion' o 'Primer Semestre'"
         });
       }
-      
+
       docenteBDD.semestreAsignado = semestreAsignado;
       console.log(`✅ Semestre actualizado: ${semestreAsignado}`);
     }
@@ -793,9 +793,9 @@ const actualizarPerfilDocente = async (req, res) => {
     // ========================================
     if (asignaturas !== undefined) {
       console.log('🔄 Procesando asignaturas...');
-      
+
       let asignaturasArray = [];
-      
+
       // ✅ Manejar diferentes formatos
       if (typeof asignaturas === 'string') {
         try {
@@ -814,7 +814,7 @@ const actualizarPerfilDocente = async (req, res) => {
         asignaturasArray = [];
         console.log('   ℹ️ Asignaturas es null, usando array vacío');
       }
-      
+
       // ✅ Validar que todos los elementos sean strings
       if (!Array.isArray(asignaturasArray)) {
         return res.status(400).json({
@@ -823,13 +823,13 @@ const actualizarPerfilDocente = async (req, res) => {
       }
 
       // ✅ Filtrar valores vacíos
-      asignaturasArray = asignaturasArray.filter(a => 
+      asignaturasArray = asignaturasArray.filter(a =>
         a && typeof a === 'string' && a.trim() !== ''
       );
 
       // ✅ GUARDAR DIRECTAMENTE COMO ARRAY (NO COMO STRING)
       docenteBDD.asignaturas = asignaturasArray;
-      
+
       console.log(`✅ Asignaturas actualizadas: ${asignaturasArray.length} materias`);
       console.log(`   Materias: ${asignaturasArray.join(', ')}`);
     }
@@ -843,8 +843,17 @@ const actualizarPerfilDocente = async (req, res) => {
           await cloudinary.uploader.destroy(docenteBDD.avatarDocenteID);
         }
 
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-        if (!allowedTypes.includes(req.files.imagen.mimetype)) {
+        // ✅ Validar tipo de archivo (solo por extensión)
+        const fileExtension = req.files.imagen.name.split('.').pop().toLowerCase();
+        const allowedExtensions = ['jpg', 'jpeg', 'png'];
+
+        console.log('📸 Validando imagen docente:');
+        console.log('   Nombre:', req.files.imagen.name);
+        console.log('   Mimetype:', req.files.imagen.mimetype);
+        console.log('   Extensión:', fileExtension);
+
+        // ✅ VALIDAR SOLO POR EXTENSIÓN (mimetype no es confiable)
+        if (!allowedExtensions.includes(fileExtension)) {
           await fs.unlink(req.files.imagen.tempFilePath);
           return res.status(400).json({
             msg: "Solo se permiten imágenes en formato JPG, JPEG o PNG"
@@ -910,9 +919,9 @@ const actualizarPerfilDocente = async (req, res) => {
 
   } catch (error) {
     console.error("❌ Error actualizando perfil:", error);
-    res.status(500).json({ 
-      msg: "Error al actualizar perfil", 
-      error: error.message 
+    res.status(500).json({
+      msg: "Error al actualizar perfil",
+      error: error.message
     });
   }
 };
@@ -937,16 +946,16 @@ const actualizarPasswordDocente = async (req, res) => {
     const docenteBDD = await Docente.findById(req.docenteBDD._id);
 
     if (!docenteBDD) {
-      return res.status(404).json({ 
-        msg: "Docente no encontrado" 
+      return res.status(404).json({
+        msg: "Docente no encontrado"
       });
     }
 
     const verificarPassword = await docenteBDD.matchPassword(passwordactual);
 
     if (!verificarPassword) {
-      return res.status(401).json({ 
-        msg: "La contraseña actual es incorrecta" 
+      return res.status(401).json({
+        msg: "La contraseña actual es incorrecta"
       });
     }
 
@@ -961,9 +970,9 @@ const actualizarPasswordDocente = async (req, res) => {
     });
   } catch (error) {
     console.error("Error actualizando contraseña:", error);
-    res.status(500).json({ 
-      msg: "Error al actualizar contraseña", 
-      error: error.message 
+    res.status(500).json({
+      msg: "Error al actualizar contraseña",
+      error: error.message
     });
   }
 };
@@ -980,7 +989,7 @@ export {
   recuperarPasswordDocente,
   comprobarTokenPasswordDocente,
   crearNuevoPasswordDocente,
-  actualizarPerfilDocente,      
+  actualizarPerfilDocente,
   actualizarPasswordDocente,
-  cambiarPasswordObligatorio    
+  cambiarPasswordObligatorio
 };

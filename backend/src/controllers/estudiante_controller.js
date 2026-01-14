@@ -532,20 +532,17 @@ const actualizarPerfilEstudiante = async (req, res) => {
           console.log(`🗑️ Imagen anterior eliminada de Cloudinary`);
         }
 
-        // ✅ Validar tipo de archivo (mimetype + extensión)
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        // ✅ Validar tipo de archivo (solo por extensión)
         const fileExtension = req.files.imagen.name.split('.').pop().toLowerCase();
         const allowedExtensions = ['jpg', 'jpeg', 'png'];
 
-        const isValidMimetype = allowedTypes.includes(req.files.imagen.mimetype);
-        const isValidExtension = allowedExtensions.includes(fileExtension);
-
-        console.log('📸 Validando imagen:');
+        console.log('📸 Validando imagen estudiante:');
+        console.log('   Nombre:', req.files.imagen.name);
         console.log('   Mimetype:', req.files.imagen.mimetype);
         console.log('   Extensión:', fileExtension);
 
-        // Rechazar si alguno no es válido
-        if (!isValidMimetype || !isValidExtension) {
+        // ✅ VALIDAR SOLO POR EXTENSIÓN (mimetype no es confiable)
+        if (!allowedExtensions.includes(fileExtension)) {
           await fs.unlink(req.files.imagen.tempFilePath);
           return res.status(400).json({
             msg: "Solo se permiten imágenes en formato JPG, JPEG o PNG"
