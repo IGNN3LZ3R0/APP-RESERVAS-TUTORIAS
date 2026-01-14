@@ -4,7 +4,9 @@ import Docente from '../models/docente.js';
 import moment from 'moment';
 const { 
   sendMailCancelacionParaDocente,
-  sendMailCancelacionParaEstudiante 
+  sendMailCancelacionParaEstudiante,
+  sendMailReagendamientoDocente,      // ← AGREGADO
+  sendMailReagendamientoEstudiante    // ← AGREGADO
 } = await import('../config/sendgrid_mailer.js');
 
 // =====================================================
