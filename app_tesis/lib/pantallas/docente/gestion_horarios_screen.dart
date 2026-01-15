@@ -19,7 +19,13 @@ class GestionHorariosScreen extends StatefulWidget {
 
 class _GestionHorariosScreenState extends State<GestionHorariosScreen>
     with AutomaticKeepAliveClientMixin {
-  final List<String> _diasSemana = ['Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  final List<String> _diasSemana = [
+    'Lunes',
+    'Martes',
+    'Miércoles',
+    'Jueves',
+    'Viernes',
+  ];
 
   final List<String> _horasDisponibles = [
     '07:00',

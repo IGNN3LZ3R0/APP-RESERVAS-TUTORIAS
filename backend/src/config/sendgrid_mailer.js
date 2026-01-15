@@ -7,10 +7,10 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // CONFIGURACIÓN DEL REMITENTE (Gmail verificado)
 const SENDER = {
-  email: 'maehdros863@gmail.com',
+  email: 'lenin.proano01@epn.edu.ec',
   name: 'Tutorias ESFOT'
 };
-const REPLY_TO = 'maehdros863@gmail.com';
+const REPLY_TO = 'ignnel01end@gmail.com';
 
 // ========== EMAIL DE CONFIRMACIÓN DE CUENTA (ESTUDIANTE) ==========
 const sendMailToRegister = async (userMail, token) => {
