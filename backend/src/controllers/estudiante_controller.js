@@ -589,11 +589,28 @@ const actualizarPerfilEstudiante = async (req, res) => {
       .select('-password -token -__v -createdAt -updatedAt');
 
     console.log(`✅ Perfil actualizado exitosamente: ${estudianteBDD.emailEstudiante}`);
+    console.log(`📝 Nombre final: ${estudianteActualizado.nombreEstudiante}`);
+    console.log(`📧 Email final: ${estudianteActualizado.emailEstudiante}`);
+    console.log(`📱 Teléfono final: ${estudianteActualizado.telefono}`);
+    console.log(`📸 Foto final: ${estudianteActualizado.fotoPerfil}`);
+    console.log(`🔑 ID final: ${estudianteActualizado._id}`);
 
     res.status(200).json({
       success: true,
       msg: "Perfil actualizado con éxito",
-      estudiante: estudianteActualizado
+      estudiante: {
+        _id: estudianteActualizado._id,
+        nombreEstudiante: estudianteActualizado.nombreEstudiante,
+        emailEstudiante: estudianteActualizado.emailEstudiante,
+        telefono: estudianteActualizado.telefono,
+        fotoPerfil: estudianteActualizado.fotoPerfil,
+        fotoPerfilID: estudianteActualizado.fotoPerfilID,
+        rol: estudianteActualizado.rol,
+        status: estudianteActualizado.status,
+        confirmEmail: estudianteActualizado.confirmEmail,
+        isOAuth: estudianteActualizado.isOAuth,
+        oauthProvider: estudianteActualizado.oauthProvider,
+      }
     });
   } catch (error) {
     console.error("❌ Error actualizando perfil:", error);

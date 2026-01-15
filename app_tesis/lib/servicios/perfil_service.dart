@@ -101,26 +101,26 @@ class PerfilService {
         request.fields['nombreDocente'] = nombre;
         print('📝 Campo agregado: nombreDocente = $nombre');
       }
-      
+
       if (cedula != null && cedula.isNotEmpty) {
         request.fields['cedulaDocente'] = cedula;
         print('📝 Campo agregado: cedulaDocente = $cedula');
       }
-      
+
       if (fechaNacimiento != null && fechaNacimiento.isNotEmpty) {
         request.fields['fechaNacimientoDocente'] = fechaNacimiento;
       }
-      
+
       if (oficina != null && oficina.isNotEmpty) {
         request.fields['oficinaDocente'] = oficina;
         print('📝 Campo agregado: oficinaDocente = $oficina');
       }
-      
+
       if (emailAlternativo != null && emailAlternativo.isNotEmpty) {
         request.fields['emailAlternativoDocente'] = emailAlternativo;
         print('📝 Campo agregado: emailAlternativoDocente = $emailAlternativo');
       }
-      
+
       if (celular != null && celular.isNotEmpty) {
         request.fields['celularDocente'] = celular;
         print('📝 Campo agregado: celularDocente = $celular');
@@ -141,7 +141,7 @@ class PerfilService {
         // ✅ ENVIAR COMO JSON STRING (el backend espera esto)
         final asignaturasJson = jsonEncode(asignaturas);
         request.fields['asignaturas'] = asignaturasJson;
-        
+
         print('📝 Campo agregado: asignaturas');
         print('   Cantidad: ${asignaturas.length} materias');
         print('   Materias: ${asignaturas.join(", ")}');
@@ -188,16 +188,16 @@ class PerfilService {
 
         return data;
       }
-
       // ==========================================
       // ✅ ERRORES 401 / 403
       // ==========================================
       else if (response.statusCode == 401 || response.statusCode == 403) {
         final error = jsonDecode(response.body);
         print('❌ Error de autorización: ${error['msg']}');
-        return {'error': 'Acceso denegado. Por favor inicia sesión nuevamente.'};
+        return {
+          'error': 'Acceso denegado. Por favor inicia sesión nuevamente.',
+        };
       }
-
       // ==========================================
       // ✅ OTRO ERROR DEL BACKEND
       // ==========================================
@@ -206,7 +206,6 @@ class PerfilService {
         print('❌ Error en servidor: ${error['msg']}');
         return {'error': error['msg'] ?? 'Error al actualizar perfil'};
       }
-
     } catch (e) {
       print('❌ Error en actualizarPerfilDocente: $e');
       return {'error': 'Error de conexión: $e'};
@@ -251,20 +250,48 @@ class PerfilService {
       final streamed = await request.send();
       final response = await http.Response.fromStream(streamed);
 
+      print('📡 Status Code: ${response.statusCode}');
+      print('📦 Response Body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
+        print('✅ Respuesta del backend:');
+        print('   Keys: ${data.keys.join(", ")}');
+        print('   success: ${data['success']}');
+        print('   msg: ${data['msg']}');
+
         if (data['estudiante'] != null) {
+          print('📦 Datos del estudiante recibidos:');
+          print('   _id: ${data['estudiante']['_id']}');
+          print(
+            '   nombreEstudiante: ${data['estudiante']['nombreEstudiante']}',
+          );
+          print('   emailEstudiante: ${data['estudiante']['emailEstudiante']}');
+          print('   telefono: ${data['estudiante']['telefono']}');
+          print('   fotoPerfil: ${data['estudiante']['fotoPerfil']}');
+
           final usuarioActualizado = Usuario.fromJson(
             data['estudiante'],
             'Estudiante',
           );
+
+          print('🔄 Usuario actualizado creado:');
+          print('   ID: ${usuarioActualizado.id}');
+          print('   Nombre: ${usuarioActualizado.nombre}');
+          print('   Email: ${usuarioActualizado.email}');
+          print('   Foto: ${usuarioActualizado.fotoPerfil}');
+
           await AuthService.actualizarUsuario(usuarioActualizado);
+          print('💾 Usuario guardado en SharedPreferences');
+        } else {
+          print('⚠️ ADVERTENCIA: data["estudiante"] es null');
         }
 
         return data;
       } else {
         final error = jsonDecode(response.body);
+        print('❌ Error del servidor: ${error['msg']}');
         return {'error': error['msg'] ?? 'Error al actualizar perfil'};
       }
     } catch (e) {

@@ -53,7 +53,7 @@ class Usuario {
     print('   JSON keys: ${json.keys.join(", ")}');
     print('   _id: ${json['_id']}');
     print('   id: ${json['id']}');
-    
+
     switch (rol) {
       case 'Administrador':
         final id = json['_id'] ?? json['id'] ?? '';
@@ -73,25 +73,31 @@ class Usuario {
       case 'Docente':
         final id = json['_id'] ?? json['id'] ?? '';
         print('✅ Docente ID extraído: $id');
-        
+
+        // Aceptar tanto avatarDocente (backend) como fotoPerfil (SharedPreferences)
+        final fotoDocente = (json['avatarDocente'] ?? json['fotoPerfil'])
+            ?.toString();
+
         // ========================================
         // ✅ PROCESAMIENTO CORRECTO DE ASIGNATURAS
         // ========================================
         List<String>? asignaturasFinales;
-        
+
         if (json['asignaturas'] != null) {
           print('📚 Procesando asignaturas...');
           print('   Tipo: ${json['asignaturas'].runtimeType}');
           print('   Valor: ${json['asignaturas']}');
-          
+
           if (json['asignaturas'] is List) {
             // Ya es una lista
             asignaturasFinales = List<String>.from(json['asignaturas']);
-            print('   ✅ Ya es una lista: ${asignaturasFinales.length} materias');
+            print(
+              '   ✅ Ya es una lista: ${asignaturasFinales.length} materias',
+            );
           } else if (json['asignaturas'] is String) {
             // Es un string, intentar parsear
             final stringValue = json['asignaturas'] as String;
-            
+
             // Si es un string vacío o "[]", tratar como lista vacía
             if (stringValue.trim().isEmpty || stringValue.trim() == '[]') {
               asignaturasFinales = [];
@@ -101,7 +107,9 @@ class Usuario {
                 final parsed = jsonDecode(stringValue);
                 if (parsed is List) {
                   asignaturasFinales = List<String>.from(parsed);
-                  print('   ✅ Parseado desde string: ${asignaturasFinales.length} materias');
+                  print(
+                    '   ✅ Parseado desde string: ${asignaturasFinales.length} materias',
+                  );
                 } else {
                   asignaturasFinales = [];
                   print('   ⚠️ String parseado no es una lista válida');
@@ -119,22 +127,24 @@ class Usuario {
           asignaturasFinales = [];
           print('   ℹ️ asignaturas es null, usando lista vacía');
         }
-        
-        print('   📋 Asignaturas finales: ${asignaturasFinales.isEmpty ? "ninguna" : asignaturasFinales.join(", ")}');
-        
+
+        print(
+          '   📋 Asignaturas finales: ${asignaturasFinales.isEmpty ? "ninguna" : asignaturasFinales.join(", ")}',
+        );
+
         return Usuario(
           id: id,
-          nombre: json['nombreDocente'] ?? '',
-          email: json['emailDocente'] ?? '',
+          nombre: json['nombreDocente'] ?? json['nombre'] ?? '',
+          email: json['emailDocente'] ?? json['email'] ?? '',
           rol: 'Docente',
-          fotoPerfil: json['avatarDocente'],
+          fotoPerfil: fotoDocente,
           status: json['estadoDocente'] ?? true,
           confirmEmail: json['confirmEmail'] ?? true,
           cedula: json['cedulaDocente'],
           celular: json['celularDocente'],
           oficina: json['oficinaDocente'],
           emailAlternativo: json['emailAlternativoDocente'],
-          asignaturas: asignaturasFinales,                    // ✅ CORREGIDO
+          asignaturas: asignaturasFinales,
           semestreAsignado: json['semestreAsignado'],
           fechaNacimiento: json['fechaNacimientoDocente'] != null
               ? DateTime.parse(json['fechaNacimientoDocente'])
@@ -149,22 +159,36 @@ class Usuario {
       case 'Estudiante':
       default:
         final id = json['_id'] ?? json['id'] ?? '';
-        print('✅ Estudiante ID extraído: $id');
-        
+        // Aceptar tanto formato backend (nombreEstudiante) como SharedPreferences (nombre)
+        final nombre = json['nombreEstudiante'] ?? json['nombre'] ?? '';
+        final email = json['emailEstudiante'] ?? json['email'] ?? '';
+        final telefono = json['telefono'];
+        final fotoPerfil = json['fotoPerfil'];
+
+        print('🔨 Usuario.fromJson - Estudiante:');
+        print('   JSON completo: $json');
+        print('   _id extraído: $id');
+        print('   nombreEstudiante/nombre extraído: $nombre');
+        print('   emailEstudiante/email extraído: $email');
+        print('   telefono extraído: $telefono');
+        print('   fotoPerfil extraído: $fotoPerfil');
+
         if (id.isEmpty) {
           print('⚠️ ADVERTENCIA: ID de estudiante está vacío');
-          print('   JSON completo: $json');
         }
-        
+        if (nombre.isEmpty) {
+          print('⚠️ ADVERTENCIA: Nombre de estudiante está vacío');
+        }
+
         return Usuario(
           id: id,
-          nombre: json['nombreEstudiante'] ?? '',
-          email: json['emailEstudiante'] ?? '',
+          nombre: nombre,
+          email: email,
           rol: 'Estudiante',
-          fotoPerfil: json['fotoPerfil'],
+          fotoPerfil: fotoPerfil,
           status: json['status'] ?? true,
           confirmEmail: json['confirmEmail'] ?? false,
-          telefono: json['telefono'],
+          telefono: telefono,
           isOAuth: json['isOAuth'] ?? false,
           oauthProvider: json['oauthProvider'],
         );
@@ -190,7 +214,7 @@ class Usuario {
     if (celular != null) data['celular'] = celular;
     if (oficina != null) data['oficina'] = oficina;
     if (emailAlternativo != null) data['emailAlternativo'] = emailAlternativo;
-    if (asignaturas != null) data['asignaturas'] = asignaturas; // ✅ COMO LISTA
+    if (asignaturas != null) data['asignaturas'] = asignaturas;
     if (semestreAsignado != null) data['semestreAsignado'] = semestreAsignado;
     if (fechaNacimiento != null) {
       data['fechaNacimiento'] = fechaNacimiento!.toIso8601String();
@@ -266,7 +290,7 @@ class Usuario {
   bool get esOAuth => isOAuth;
 
   String get nombreCompleto => nombre;
-  
+
   String get fotoPerfilUrl {
     final placeholder =
         'https://cdn-icons-png.flaticon.com/512/4715/4715329.png';

@@ -59,16 +59,30 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   Future<void> _actualizarUsuario() async {
+    print('🔄 Actualizando usuario desde SharedPreferences...');
     final usuarioActualizado = await AuthService.getUsuarioActual();
-    if (usuarioActualizado != null && mounted) {
-      setState(() {
-        _usuario = usuarioActualizado;
-      });
-      widget.onUsuarioActualizado?.call();
+
+    if (usuarioActualizado != null) {
+      print('✅ Usuario obtenido de SharedPreferences:');
+      print('   ID: ${usuarioActualizado.id}');
+      print('   Nombre: ${usuarioActualizado.nombre}');
+      print('   Email: ${usuarioActualizado.email}');
+      print('   Foto: ${usuarioActualizado.fotoPerfil}');
+
+      if (mounted) {
+        setState(() {
+          _usuario = usuarioActualizado;
+        });
+        print('✅ Estado actualizado en perfil_screen');
+        widget.onUsuarioActualizado?.call();
+      }
+    } else {
+      print('❌ No se pudo obtener usuario de SharedPreferences');
     }
   }
 
   Future<void> _navegarAEditar() async {
+    print('🚀 Navegando a editar perfil...');
     await Navigator.push<Usuario>(
       context,
       MaterialPageRoute(
@@ -77,6 +91,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
 
     // Al regresar, actualizar SIEMPRE desde SharedPreferences
+    print('🔙 Regresando de editar perfil, actualizando usuario...');
     await _actualizarUsuario();
   }
 

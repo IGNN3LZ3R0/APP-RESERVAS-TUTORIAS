@@ -75,7 +75,7 @@ class AuthService {
         // ⭐ VERIFICAR SI REQUIERE CAMBIO DE CONTRASEÑA
         if (data['requiresPasswordChange'] == true) {
           print('⚠️ Docente requiere cambio de contraseña obligatorio');
-          
+
           // Guardar token temporalmente
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_keyToken, data['token']);
@@ -101,7 +101,8 @@ class AuthService {
                 'cedulaDocente': perfilData['cedulaDocente'],
                 'celularDocente': perfilData['celularDocente'],
                 'oficinaDocente': perfilData['oficinaDocente'],
-                'emailAlternativoDocente': perfilData['emailAlternativoDocente'],
+                'emailAlternativoDocente':
+                    perfilData['emailAlternativoDocente'],
                 'avatarDocente': perfilData['avatarDocente'],
                 'asignaturas': perfilData['asignaturas'],
                 'semestreAsignado': perfilData['semestreAsignado'],
@@ -116,10 +117,7 @@ class AuthService {
           }
 
           // Retornar con flag de cambio obligatorio
-          return {
-            ...data,
-            'requiresPasswordChange': true,
-          };
+          return {...data, 'requiresPasswordChange': true};
         }
 
         // LOGIN NORMAL - Sin cambio obligatorio
@@ -175,7 +173,7 @@ class AuthService {
     }
   }
 
-/// Login para Estudiante
+  /// Login para Estudiante
   /// Backend devuelve: { token, rol, nombreEstudiante, telefono, _id, emailEstudiante, fotoPerfil }
   static Future<Map<String, dynamic>?> loginEstudiante({
     required String email,
@@ -197,12 +195,20 @@ class AuthService {
         print('   _id: ${data['_id']}');
         print('   usuario._id: ${data['usuario']?['_id']}');
         print('   nombreEstudiante: ${data['nombreEstudiante']}');
-        print('   usuario.nombreEstudiante: ${data['usuario']?['nombreEstudiante']}');
+        print(
+          '   usuario.nombreEstudiante: ${data['usuario']?['nombreEstudiante']}',
+        );
 
         // ✅ EXTRAER ID CORRECTAMENTE (puede venir en data o en data.usuario)
         final userId = data['_id'] ?? data['usuario']?['_id'] ?? '';
-        final userName = data['nombreEstudiante'] ?? data['usuario']?['nombreEstudiante'] ?? '';
-        final userEmail = data['emailEstudiante'] ?? data['usuario']?['emailEstudiante'] ?? email;
+        final userName =
+            data['nombreEstudiante'] ??
+            data['usuario']?['nombreEstudiante'] ??
+            '';
+        final userEmail =
+            data['emailEstudiante'] ??
+            data['usuario']?['emailEstudiante'] ??
+            email;
         final userPhone = data['telefono'] ?? data['usuario']?['telefono'];
         final userPhoto = data['fotoPerfil'] ?? data['usuario']?['fotoPerfil'];
         final userRol = data['rol'] ?? data['usuario']?['rol'] ?? 'Estudiante';
@@ -292,9 +298,9 @@ class AuthService {
   }) async {
     try {
       print('🔄 Cambiando contraseña obligatoria para: $email');
-      
+
       final token = await getToken();
-      
+
       if (token == null) {
         return {'error': 'No hay sesión activa'};
       }
@@ -315,7 +321,10 @@ class AuthService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print('✅ Contraseña cambiada exitosamente');
-        return {'msg': data['msg'] ?? 'Contraseña actualizada', 'success': true};
+        return {
+          'msg': data['msg'] ?? 'Contraseña actualizada',
+          'success': true,
+        };
       } else {
         final error = jsonDecode(response.body);
         print('❌ Error: ${error['msg']}');
@@ -388,8 +397,27 @@ class AuthService {
 
   /// Actualiza la información del usuario en SharedPreferences
   static Future<void> actualizarUsuario(Usuario usuario) async {
+    print('💾 AuthService.actualizarUsuario llamado:');
+    print('   ID: ${usuario.id}');
+    print('   Nombre: ${usuario.nombre}');
+    print('   Email: ${usuario.email}');
+    print('   Rol: ${usuario.rol}');
+    print('   Foto: ${usuario.fotoPerfil}');
+
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyUsuario, jsonEncode(usuario.toJson()));
+    final usuarioJson = usuario.toJson();
+
+    print('📦 JSON a guardar:');
+    print('   $usuarioJson');
+
+    await prefs.setString(_keyUsuario, jsonEncode(usuarioJson));
+
+    print('✅ Usuario guardado en SharedPreferences');
+
+    // Verificar que se guardó correctamente
+    final guardado = prefs.getString(_keyUsuario);
+    print('🔍 Verificando guardado:');
+    print('   ${guardado?.substring(0, 200)}...');
   }
 
   // ========== OBTENER PERFIL DESDE EL SERVIDOR ==========
@@ -450,7 +478,7 @@ class AuthService {
     }
   }
 
-// ========== RECUPERAR CONTRASEÑA ==========
+  // ========== RECUPERAR CONTRASEÑA ==========
 
   /// Solicita recuperación de contraseña
   /// Detecta automáticamente el rol según el formato del email
@@ -459,14 +487,14 @@ class AuthService {
   }) async {
     try {
       print('📧 Enviando solicitud de recuperación para: $email');
-      
+
       // ✅ NORMALIZAR EMAIL DESDE LA APP
       final emailNormalizado = email.trim().toLowerCase();
-      
+
       // Detectar rol por email
       String endpoint;
       Map<String, String> body;
-      
+
       if (emailNormalizado.endsWith('@epn.edu.ec')) {
         // Email institucional - puede ser docente o admin
         endpoint = ApiConfig.recuperarPasswordDocente;
@@ -496,28 +524,28 @@ class AuthService {
           print('⚠️ Respuesta con success=false: ${data['msg']}');
           return {'error': data['msg']};
         }
-      } 
-      
+      }
+
       // ✅ Si falla con docente y es institucional, intentar como admin
-      if (response.statusCode == 404 && emailNormalizado.endsWith('@epn.edu.ec')) {
+      if (response.statusCode == 404 &&
+          emailNormalizado.endsWith('@epn.edu.ec')) {
         print('🔄 Reintentando como administrador...');
-        
+
         final adminResponse = await http.post(
           Uri.parse(ApiConfig.recuperarPasswordAdmin),
           headers: ApiConfig.getHeaders(),
           body: jsonEncode({'email': emailNormalizado}), // ✅ Enviar normalizado
         );
-        
+
         final adminData = jsonDecode(adminResponse.body);
-        
+
         if (adminResponse.statusCode == 200) {
           return {'msg': adminData['msg'], 'success': true};
         }
       }
-      
+
       print('❌ Error en recuperación: ${data['msg']}');
       return {'error': data['msg'] ?? 'Error al procesar la solicitud'};
-      
     } catch (e) {
       print('❌ Error en recuperarPassword: $e');
       return {'error': 'Error de conexión. Verifica tu internet.'};
@@ -537,7 +565,7 @@ class AuthService {
         ApiConfig.comprobarTokenDocente(token),
         ApiConfig.comprobarTokenAdmin(token),
       ];
-      
+
       for (String endpoint in endpoints) {
         try {
           final response = await http.get(
@@ -555,7 +583,7 @@ class AuthService {
           continue; // Intentar siguiente endpoint
         }
       }
-      
+
       return {'error': 'Token inválido o expirado'};
     } catch (e) {
       print('❌ Error en comprobarTokenPassword: $e');
@@ -578,7 +606,7 @@ class AuthService {
         ApiConfig.nuevoPasswordDocente(token),
         ApiConfig.nuevoPasswordAdmin(token),
       ];
-      
+
       for (String endpoint in endpoints) {
         try {
           final response = await http.post(
@@ -600,7 +628,7 @@ class AuthService {
           continue; // Intentar siguiente endpoint
         }
       }
-      
+
       return {'error': 'No se pudo actualizar la contraseña'};
     } catch (e) {
       print('❌ Error en crearNuevaPassword: $e');

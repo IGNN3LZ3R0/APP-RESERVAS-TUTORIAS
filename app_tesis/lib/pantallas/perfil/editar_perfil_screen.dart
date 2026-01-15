@@ -383,29 +383,51 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     // Extraer el usuario del resultado
     Usuario? usuarioActualizado;
 
+    print('🔍 Procesando resultado de actualización:');
+    print('   Keys disponibles: ${resultado?.keys.join(", ")}');
+    print('   Rol del usuario: ${widget.usuario.rol}');
+
     if (resultado != null && resultado.containsKey('estudiante')) {
+      print('✅ Encontrado campo "estudiante"');
+      print('   Datos recibidos: ${resultado['estudiante']}');
+
       usuarioActualizado = Usuario.fromJson(
         resultado['estudiante'],
-        widget.usuario.rol,
+        'Estudiante',
       );
+
+      print('✅ Usuario reconstruido desde JSON:');
+      print('   ID: ${usuarioActualizado.id}');
+      print('   Nombre: ${usuarioActualizado.nombre}');
+      print('   Email: ${usuarioActualizado.email}');
+      print('   Teléfono: ${usuarioActualizado.telefono}');
+      print('   Foto: ${usuarioActualizado.fotoPerfil}');
     } else if (resultado != null && resultado.containsKey('docente')) {
-      usuarioActualizado = Usuario.fromJson(
-        resultado['docente'],
-        widget.usuario.rol,
-      );
+      print('✅ Encontrado campo "docente"');
+      usuarioActualizado = Usuario.fromJson(resultado['docente'], 'Docente');
     } else if (resultado != null && resultado.containsKey('administrador')) {
+      print('✅ Encontrado campo "administrador"');
       usuarioActualizado = Usuario.fromJson(
         resultado['administrador'],
-        widget.usuario.rol,
+        'Administrador',
       );
+    } else {
+      print('⚠️ No se encontró campo de usuario en resultado');
+      print('   Resultado completo: $resultado');
     }
 
     // Actualizar en SharedPreferences
     if (usuarioActualizado != null) {
+      print('💾 Actualizando usuario en SharedPreferences...');
       await AuthService.actualizarUsuario(usuarioActualizado);
+      print('✅ Usuario guardado en SharedPreferences');
 
       // ✅ EMITIR NOTIFICACIÓN GLOBAL
+      print('📢 Emitiendo notificación global de actualización');
       notificationService.notificarActualizacionUsuario(usuarioActualizado);
+      print('✅ Notificación emitida');
+    } else {
+      print('❌ ERROR: No se pudo reconstruir el usuario actualizado');
     }
 
     // Actualizar estado local
