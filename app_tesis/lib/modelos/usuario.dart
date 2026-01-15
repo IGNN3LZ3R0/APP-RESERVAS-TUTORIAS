@@ -58,12 +58,17 @@ class Usuario {
       case 'Administrador':
         final id = json['_id'] ?? json['id'] ?? '';
         print('✅ Admin ID extraído: $id');
+
+        // Aceptar tanto claves del backend como de SharedPreferences
+        final nombreAdmin = json['nombreAdministrador'] ?? json['nombre'] ?? '';
+        final fotoAdmin = json['fotoPerfilAdmin'] ?? json['fotoPerfil'];
+
         return Usuario(
           id: id,
-          nombre: json['nombreAdministrador'] ?? '',
+          nombre: nombreAdmin,
           email: json['email'] ?? '',
           rol: 'Administrador',
-          fotoPerfil: json['fotoPerfilAdmin'],
+          fotoPerfil: fotoAdmin,
           status: json['status'] ?? true,
           confirmEmail: json['confirmEmail'] ?? true,
           isOAuth: json['isOAuth'] ?? false,
@@ -77,6 +82,22 @@ class Usuario {
         // Aceptar tanto avatarDocente (backend) como fotoPerfil (SharedPreferences)
         final fotoDocente = (json['avatarDocente'] ?? json['fotoPerfil'])
             ?.toString();
+
+        // Normalizar fechas provenientes del backend o de SharedPreferences
+        DateTime? _parseFecha(dynamic raw) {
+          if (raw == null) return null;
+          try {
+            return DateTime.parse(raw.toString());
+          } catch (_) {
+            return null;
+          }
+        }
+        final fechaNacimientoDocente = _parseFecha(
+          json['fechaNacimientoDocente'] ?? json['fechaNacimiento'],
+        );
+        final fechaIngresoDocente = _parseFecha(
+          json['fechaIngresoDocente'] ?? json['fechaIngreso'],
+        );
 
         // ========================================
         // ✅ PROCESAMIENTO CORRECTO DE ASIGNATURAS
@@ -138,20 +159,17 @@ class Usuario {
           email: json['emailDocente'] ?? json['email'] ?? '',
           rol: 'Docente',
           fotoPerfil: fotoDocente,
-          status: json['estadoDocente'] ?? true,
+          status: json['estadoDocente'] ?? json['status'] ?? true,
           confirmEmail: json['confirmEmail'] ?? true,
-          cedula: json['cedulaDocente'],
-          celular: json['celularDocente'],
-          oficina: json['oficinaDocente'],
-          emailAlternativo: json['emailAlternativoDocente'],
+          cedula: json['cedulaDocente'] ?? json['cedula'],
+          celular: json['celularDocente'] ?? json['celular'],
+          oficina: json['oficinaDocente'] ?? json['oficina'],
+          emailAlternativo:
+              json['emailAlternativoDocente'] ?? json['emailAlternativo'],
           asignaturas: asignaturasFinales,
           semestreAsignado: json['semestreAsignado'],
-          fechaNacimiento: json['fechaNacimientoDocente'] != null
-              ? DateTime.parse(json['fechaNacimientoDocente'])
-              : null,
-          fechaIngreso: json['fechaIngresoDocente'] != null
-              ? DateTime.parse(json['fechaIngresoDocente'])
-              : null,
+          fechaNacimiento: fechaNacimientoDocente,
+          fechaIngreso: fechaIngresoDocente,
           isOAuth: json['isOAuth'] ?? false,
           oauthProvider: json['oauthProvider'],
         );
