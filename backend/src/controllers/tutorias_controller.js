@@ -770,11 +770,12 @@ export const reagendarTutoria = async (req, res) => {
     }
 
     // ✅ VALIDACIÓN 3: Tutoría no expirada
+    // Comparar siempre en zona horaria de Ecuador para evitar expiraciones adelantadas
     const fechaHoraTutoria = moment.tz(`${tutoria.fecha} ${tutoria.horaFin}`, 'YYYY-MM-DD HH:mm', 'America/Guayaquil');
-    const ahora = moment().tz('America/Guayaquil');
+    const ahora = moment.tz('America/Guayaquil');
 
     if (fechaHoraTutoria.isBefore(ahora)) {
-      console.log(`⏰ Tutoría expirada: ${tutoria._id}`);
+      console.log(`⏰ Tutoría expirada (zona Ecuador): ${tutoria._id}`);
       tutoria.estado = 'expirada';
       await tutoria.save();
       return res.status(400).json({
