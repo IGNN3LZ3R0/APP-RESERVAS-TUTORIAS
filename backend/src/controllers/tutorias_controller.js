@@ -851,10 +851,15 @@ export const reagendarTutoria = async (req, res) => {
           tutoria.docente.emailDocente,
           tutoria.docente.nombreDocente,
           tutoria.estudiante.nombreEstudiante,
-          tutoria.materia,
-          nuevaFecha,
-          nuevaHoraInicio,
-          nuevaHoraFin
+          {
+            fechaAnterior: tutoria.fecha,
+            horaInicioAnterior: tutoria.horaInicio,
+            horaFinAnterior: tutoria.horaFin,
+            fechaNueva: nuevaFecha,
+            horaInicioNueva: nuevaHoraInicio,
+            horaFinNueva: nuevaHoraFin,
+            motivo: req.body.motivo || 'Reagendada por el estudiante'
+          }
         );
         console.log(`✅ Email de reagendamiento enviado al docente: ${tutoria.docente.emailDocente}`);
       } else if (esDocente) {
@@ -863,10 +868,15 @@ export const reagendarTutoria = async (req, res) => {
           tutoria.estudiante.emailEstudiante,
           tutoria.estudiante.nombreEstudiante,
           tutoria.docente.nombreDocente,
-          tutoria.materia,
-          nuevaFecha,
-          nuevaHoraInicio,
-          nuevaHoraFin
+          {
+            fechaAnterior: tutoria.fecha,
+            horaInicioAnterior: tutoria.horaInicio,
+            horaFinAnterior: tutoria.horaFin,
+            fechaNueva: nuevaFecha,
+            horaInicioNueva: nuevaHoraInicio,
+            horaFinNueva: nuevaHoraFin,
+            motivo: req.body.motivo || 'Reagendada por el docente'
+          }
         );
         console.log(`✅ Email de reagendamiento enviado al estudiante: ${tutoria.estudiante.emailEstudiante}`);
       }
