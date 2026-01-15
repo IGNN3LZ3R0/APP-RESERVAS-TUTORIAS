@@ -858,7 +858,8 @@ export const reagendarTutoria = async (req, res) => {
             fechaNueva: nuevaFecha,
             horaInicioNueva: nuevaHoraInicio,
             horaFinNueva: nuevaHoraFin,
-            motivo: req.body.motivo || 'Reagendada por el estudiante'
+            motivo: req.body.motivo || 'Reagendada por el estudiante',
+            quienReagendo: 'estudiante'
           }
         );
         console.log(`✅ Email de reagendamiento enviado al docente: ${tutoria.docente.emailDocente}`);
@@ -875,7 +876,8 @@ export const reagendarTutoria = async (req, res) => {
             fechaNueva: nuevaFecha,
             horaInicioNueva: nuevaHoraInicio,
             horaFinNueva: nuevaHoraFin,
-            motivo: req.body.motivo || 'Reagendada por el docente'
+            motivo: req.body.motivo || 'Reagendada por el docente',
+            quienReagendo: 'docente'
           }
         );
         console.log(`✅ Email de reagendamiento enviado al estudiante: ${tutoria.estudiante.emailEstudiante}`);

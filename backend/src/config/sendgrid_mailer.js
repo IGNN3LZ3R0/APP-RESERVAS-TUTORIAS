@@ -5,9 +5,9 @@ dotenv.config();
 // Configurar SendGrid con API Key
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// ✅ CONFIGURACIÓN DEL REMITENTE (tu Gmail verificado)
+// CONFIGURACIÓN DEL REMITENTE (Gmail verificado)
 const SENDER = {
-  email: 'maehdros863@gmail.com',  // YA ESTÁ VERIFICADO
+  email: 'maehdros863@gmail.com',  
   name: 'Tutorias ESFOT'
 };
 const REPLY_TO = 'maehdros863@gmail.com';
@@ -232,7 +232,7 @@ const sendMailWithCredentials = async (email, nombreAdministrador, passwordGener
 // ========== EMAILS REAGENDAMIENTO (VERSIÓN MEJORADA) ==========
 const sendMailReagendamientoDocente = async (emailEstudiante, nombreEstudiante, nombreDocente, datosReagendamiento) => {
   try {
-    const { fechaAnterior, horaInicioAnterior, horaFinAnterior, fechaNueva, horaInicioNueva, horaFinNueva, motivo } = datosReagendamiento;
+    const { fechaAnterior, horaInicioAnterior, horaFinAnterior, fechaNueva, horaInicioNueva, horaFinNueva, motivo, quienReagendo } = datosReagendamiento;
 
     const msg = {
       to: emailEstudiante,
@@ -264,7 +264,7 @@ const sendMailReagendamientoDocente = async (emailEstudiante, nombreEstudiante, 
                 Hola <strong>${nombreEstudiante}</strong>,
               </p>
               <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
-                El docente <strong>${nombreDocente}</strong> ha reagendado tu tutoría a un nuevo horario.
+                ${quienReagendo === 'estudiante' ? `El estudiante <strong>${nombreEstudiante}</strong> ha reagendado tu tutoría a un nuevo horario.` : `El docente <strong>${nombreDocente}</strong> ha reagendado tu tutoría a un nuevo horario.`}
               </p>
 
               <!-- Horario Anterior -->
@@ -332,7 +332,7 @@ const sendMailReagendamientoDocente = async (emailEstudiante, nombreEstudiante, 
 
 const sendMailReagendamientoEstudiante = async (emailDocente, nombreDocente, nombreEstudiante, datosReagendamiento) => {
   try {
-    const { fechaAnterior, horaInicioAnterior, horaFinAnterior, fechaNueva, horaInicioNueva, horaFinNueva, motivo } = datosReagendamiento;
+    const { fechaAnterior, horaInicioAnterior, horaFinAnterior, fechaNueva, horaInicioNueva, horaFinNueva, motivo, quienReagendo } = datosReagendamiento;
 
     const msg = {
       to: emailDocente,
@@ -350,7 +350,7 @@ const sendMailReagendamientoEstudiante = async (emailDocente, nombreDocente, nom
               Hola <strong>${nombreDocente}</strong>,
             </p>
             <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 30px;">
-              El estudiante <strong>${nombreEstudiante}</strong> ha reagendado su tutoria a un nuevo horario. 
+              ${quienReagendo === 'docente' ? `El docente <strong>${nombreDocente}</strong> ha reagendado su tutoria a un nuevo horario.` : `El estudiante <strong>${nombreEstudiante}</strong> ha reagendado su tutoria a un nuevo horario.`}
             </p>
             <div style="background-color: #FFEBEE; border-left: 4px solid #EF5350; padding: 20px; margin: 20px 0; border-radius: 8px;">
               <p style="color: #C62828; font-size: 14px; margin:  0 0 10px; font-weight: 600;">HORARIO ANTERIOR (cancelado)</p>
