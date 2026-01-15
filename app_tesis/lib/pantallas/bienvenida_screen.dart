@@ -457,3 +457,8 @@ class BienvenidaScreen extends StatelessWidget {
     );
   }
 }
+
+
+//codigo secreto aplicacion funcional son las perras 5 de la mañana mi compañero vale madres qque todo lo hago yo esta es la subida final espero
+// y con eso contruyo la apk final espero que no haya errores
+// y si los hay que sean minimos ya que he probado todo y funciona bien
