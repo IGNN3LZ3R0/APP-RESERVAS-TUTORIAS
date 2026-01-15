@@ -7,7 +7,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // CONFIGURACIÓN DEL REMITENTE (Gmail verificado)
 const SENDER = {
-  email: 'lenin.proano01@epn.edu.ec',
+  email: 'pablo-e1@hotmail.com',
   name: 'Tutorias ESFOT'
 };
 const REPLY_TO = 'ignnel01end@gmail.com';
