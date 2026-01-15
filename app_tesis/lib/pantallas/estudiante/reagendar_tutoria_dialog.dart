@@ -62,12 +62,18 @@ class _ReagendarTutoriaDialogState extends State<ReagendarTutoriaDialog>
 
     final ahora = DateTime.now();
     final hoy = DateTime(ahora.year, ahora.month, ahora.day);
+    // 🔧 Normalizar fechaTutoria a solo fecha (sin hora) para comparación correcta
+    final fechaTutoriaNormalizada = DateTime(
+      fechaTutoria.year,
+      fechaTutoria.month,
+      fechaTutoria.day,
+    );
 
-    if (fechaTutoria.isBefore(hoy)) {
+    if (fechaTutoriaNormalizada.isBefore(hoy)) {
       _fechaSeleccionada = null;
       print('⚠️ Tutoría pasada detectada. Se buscará próximo día disponible.');
     } else {
-      _fechaSeleccionada = fechaTutoria;
+      _fechaSeleccionada = fechaTutoriaNormalizada;
     }
 
     _horaInicio = widget.tutoria['horaInicio'];
@@ -278,8 +284,12 @@ class _ReagendarTutoriaDialogState extends State<ReagendarTutoriaDialog>
           _cargandoDias = false;
         });
 
+        // 🔧 Normalizar comparación con hoy para evitar problemas de hora
+        final ahora = DateTime.now();
+        final hoy = DateTime(ahora.year, ahora.month, ahora.day);
+
         if (_fechaSeleccionada == null ||
-            _fechaSeleccionada!.isBefore(DateTime.now()) ||
+            _fechaSeleccionada!.isBefore(hoy) ||
             !_diasDisponiblesDocente.contains(_fechaSeleccionada!.weekday)) {
           _fechaSeleccionada = _buscarProximoDiaDisponible();
           print('📅 Usando próximo día disponible: $_fechaSeleccionada');
@@ -570,10 +580,20 @@ class _ReagendarTutoriaDialogState extends State<ReagendarTutoriaDialog>
       int.parse(_horaInicio!.split(':')[1]),
     );
 
-    final diferencia = fechaHoraNueva.difference(DateTime.now());
+    final ahora = DateTime.now();
+    final diferencia = fechaHoraNueva.difference(ahora);
+    final horasAnticipacion = diferencia.inMinutes / 60.0;
 
-    if (diferencia.inHours < 2) {
-      _mostrarError('Debes reagendar con al menos 2 horas de anticipación');
+    print('⏰ Validación de anticipación:');
+    print('   Hora actual: ${ahora}');
+    print('   Nueva hora: ${fechaHoraNueva}');
+    print('   Horas de anticipación: ${horasAnticipacion.toStringAsFixed(2)}');
+
+    if (horasAnticipacion < 2) {
+      _mostrarError(
+        'Debes reagendar con al menos 2 horas de anticipación. '
+        'Tiempo disponible: ${horasAnticipacion.toStringAsFixed(1)} horas',
+      );
       return;
     }
 
@@ -938,42 +958,77 @@ class _ReagendarTutoriaDialogState extends State<ReagendarTutoriaDialog>
                               ],
                             ),
 
-                            if (widget.tutoria['fecha'] != null &&
-                                DateTime.parse(
-                                  widget.tutoria['fecha'],
-                                ).isBefore(DateTime.now())) ...[
-                              SizedBox(height: spacing),
-                              Container(
-                                padding: EdgeInsets.all(contentPadding * 0.6),
-                                decoration: BoxDecoration(
-                                  color: Colors.red[100],
-                                  borderRadius: BorderRadius.circular(
-                                    dialogRadius * 0.5,
-                                  ),
-                                  border: Border.all(color: Colors.red[300]!),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.warning,
-                                      color: Colors.red[700],
-                                      size: context.responsiveIconSize(16),
-                                    ),
-                                    SizedBox(width: spacing * 0.5),
-                                    Expanded(
-                                      child: Text(
-                                        'Esta fecha ya pasó. Selecciona una fecha futura.',
-                                        style: TextStyle(
-                                          fontSize: context.responsiveFontSize(
-                                            12,
+                            if (widget.tutoria['fecha'] != null) ...[
+                              // 🔧 Normalizar fecha para comparación correcta
+                              Builder(
+                                builder: (context) {
+                                  final fechaTutParsed = DateTime.parse(
+                                    widget.tutoria['fecha'],
+                                  );
+                                  final fechaTutNorm = DateTime(
+                                    fechaTutParsed.year,
+                                    fechaTutParsed.month,
+                                    fechaTutParsed.day,
+                                  );
+                                  final ahora = DateTime.now();
+                                  final hoy = DateTime(
+                                    ahora.year,
+                                    ahora.month,
+                                    ahora.day,
+                                  );
+
+                                  if (fechaTutNorm.isBefore(hoy)) {
+                                    return SizedBox(
+                                      width: double.infinity,
+                                      child: Column(
+                                        children: [
+                                          SizedBox(height: spacing),
+                                          Container(
+                                            padding: EdgeInsets.all(
+                                              contentPadding * 0.6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red[100],
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    dialogRadius * 0.5,
+                                                  ),
+                                              border: Border.all(
+                                                color: Colors.red[300]!,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.warning,
+                                                  color: Colors.red[700],
+                                                  size: context
+                                                      .responsiveIconSize(16),
+                                                ),
+                                                SizedBox(width: spacing * 0.5),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Esta fecha ya pasó. Selecciona una fecha futura.',
+                                                    style: TextStyle(
+                                                      fontSize: context
+                                                          .responsiveFontSize(
+                                                            12,
+                                                          ),
+                                                      color: Colors.red[900],
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                          color: Colors.red[900],
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                        ],
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                    );
+                                  }
+                                  return SizedBox.shrink();
+                                },
                               ),
                             ],
                           ],
