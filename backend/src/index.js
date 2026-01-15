@@ -20,13 +20,13 @@ app.listen(PORT, '0.0.0.0', async () => {
   await enviarRecordatoriosTutorias(24);
   await enviarRecordatoriosTutorias(3);
   
-  // TAREAS PROGRAMADAS CADA HORA
+  // TAREAS PROGRAMADAS CADA 5 MINUTOS
   setInterval(async () => {
     console.log('\n🔄 Ejecutando tareas programadas...');
     await marcarTutoriasExpiradas();
     await enviarRecordatoriosTutorias(24);
     await enviarRecordatoriosTutorias(3);
-  }, 60 * 60 * 1000);
+  }, 5 * 60 * 1000);
   
   // Limpieza diaria a las 2 AM
   const programarLimpiezaDiaria = () => {
@@ -53,6 +53,6 @@ app.listen(PORT, '0.0.0.0', async () => {
   console.log('\n📅 Sistema de recordatorios activado:');
   console.log('   ⏰ Recordatorios 24h antes');
   console.log('   ⏰ Recordatorios 3h antes');
-  console.log('   🔄 Verificación cada hora');
+  console.log('   🔄 Verificación cada 5 minutos');
   console.log('   🧹 Limpieza diaria a las 2 AM\n');
 });
