@@ -770,8 +770,8 @@ export const reagendarTutoria = async (req, res) => {
     }
 
     // ✅ VALIDACIÓN 3: Tutoría no expirada
-    const fechaHoraTutoria = moment(`${tutoria.fecha} ${tutoria.horaFin}`, 'YYYY-MM-DD HH:mm');
-    const ahora = moment();
+    const fechaHoraTutoria = moment.tz(`${tutoria.fecha} ${tutoria.horaFin}`, 'YYYY-MM-DD HH:mm', 'America/Guayaquil');
+    const ahora = moment().tz('America/Guayaquil');
 
     if (fechaHoraTutoria.isBefore(ahora)) {
       console.log(`⏰ Tutoría expirada: ${tutoria._id}`);
@@ -792,7 +792,7 @@ export const reagendarTutoria = async (req, res) => {
     }
 
     // VALIDACIÓN 5: VALIDAR ANTICIPACIÓN DE 2 HORAS
-    const fechaHoraNueva = moment(`${nuevaFecha} ${nuevaHoraInicio}`, 'YYYY-MM-DD HH:mm');
+    const fechaHoraNueva = moment.tz(`${nuevaFecha} ${nuevaHoraInicio}`, 'YYYY-MM-DD HH:mm', 'America/Guayaquil');
     const horasAnticipacion = fechaHoraNueva.diff(ahora, 'hours', true);
 
     console.log(`⏰ Validación de anticipación:`);
