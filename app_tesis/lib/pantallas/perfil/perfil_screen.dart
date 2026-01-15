@@ -24,11 +24,15 @@ class PerfilScreen extends StatefulWidget {
 class _PerfilScreenState extends State<PerfilScreen> {
   late Usuario _usuario;
   StreamSubscription? _usuarioSubscription;
+  StreamSubscription? _materiasSubscription;
 
   @override
   void initState() {
     super.initState();
     _usuario = widget.usuario;
+
+    // ✅ Cargar usuario actualizado desde SharedPreferences al iniciar
+    _actualizarUsuario();
 
     // ✅ ESCUCHAR CAMBIOS EN USUARIO
     _usuarioSubscription = notificationService.usuarioActualizado.listen((
@@ -40,6 +44,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
         });
       }
     });
+
+    // ✅ ESCUCHAR CAMBIOS EN MATERIAS (solo para docentes)
+    if (_usuario.esDocente) {
+      _materiasSubscription = notificationService.materiasActualizadas.listen((
+        _,
+      ) async {
+        print('🔔 Perfil: Materias actualizadas detectadas');
+        await _actualizarUsuario();
+      });
+    }
   }
 
   @override
@@ -55,6 +69,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   @override
   void dispose() {
     _usuarioSubscription?.cancel();
+    _materiasSubscription?.cancel();
     super.dispose();
   }
 
