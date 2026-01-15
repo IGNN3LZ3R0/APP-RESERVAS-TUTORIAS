@@ -91,13 +91,20 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
   void _checkForChanges() {
     bool changed = false;
 
-    if (_nombreController.text.trim() != _initialValues['nombre']) changed = true;
+    if (_nombreController.text.trim() != _initialValues['nombre'])
+      changed = true;
     if (_emailController.text.trim() != _initialValues['email']) changed = true;
-    if (_telefonoController.text.trim() != _initialValues['telefono']) changed = true;
-    if (_cedulaController.text.trim() != _initialValues['cedula']) changed = true;
-    if (_oficinaController.text.trim() != _initialValues['oficina']) changed = true;
-    if (_celularController.text.trim() != _initialValues['celular']) changed = true;
-    if (_emailAlternativoController.text.trim() != _initialValues['emailAlternativo']) changed = true;
+    if (_telefonoController.text.trim() != _initialValues['telefono'])
+      changed = true;
+    if (_cedulaController.text.trim() != _initialValues['cedula'])
+      changed = true;
+    if (_oficinaController.text.trim() != _initialValues['oficina'])
+      changed = true;
+    if (_celularController.text.trim() != _initialValues['celular'])
+      changed = true;
+    if (_emailAlternativoController.text.trim() !=
+        _initialValues['emailAlternativo'])
+      changed = true;
     if (_imagenSeleccionada != null) changed = true;
 
     if (changed != _hasChanges) {
@@ -200,7 +207,8 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                     _seleccionarImagen(ImageSource.gallery);
                   },
                 ),
-                if (_imagenSeleccionada != null || widget.usuario.fotoPerfil != null) ...[
+                if (_imagenSeleccionada != null ||
+                    widget.usuario.fotoPerfil != null) ...[
                   const SizedBox(height: 12),
                   _buildOptionTile(
                     icon: Icons.delete_rounded,
@@ -269,15 +277,16 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                     ),
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey[400]),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: Colors.grey[400],
+              ),
             ],
           ),
         ),
@@ -372,24 +381,24 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
 
     // Extraer el usuario del resultado
     Usuario? usuarioActualizado;
-    
+
     if (resultado != null && resultado.containsKey('estudiante')) {
       usuarioActualizado = Usuario.fromJson(
-        resultado['estudiante'], 
-        widget.usuario.rol
+        resultado['estudiante'],
+        widget.usuario.rol,
       );
     } else if (resultado != null && resultado.containsKey('docente')) {
       usuarioActualizado = Usuario.fromJson(
-        resultado['docente'], 
-        widget.usuario.rol
+        resultado['docente'],
+        widget.usuario.rol,
       );
     } else if (resultado != null && resultado.containsKey('administrador')) {
       usuarioActualizado = Usuario.fromJson(
-        resultado['administrador'], 
-        widget.usuario.rol
+        resultado['administrador'],
+        widget.usuario.rol,
       );
     }
-    
+
     // Actualizar en SharedPreferences
     if (usuarioActualizado != null) {
       await AuthService.actualizarUsuario(usuarioActualizado);
@@ -406,7 +415,8 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
         _cedulaController.text = usuarioActualizado.cedula ?? '';
         _oficinaController.text = usuarioActualizado.oficina ?? '';
         _celularController.text = usuarioActualizado.celular ?? '';
-        _emailAlternativoController.text = usuarioActualizado.emailAlternativo ?? '';
+        _emailAlternativoController.text =
+            usuarioActualizado.emailAlternativo ?? '';
 
         _initialValues = {
           'nombre': _nombreController.text.trim(),
@@ -423,10 +433,11 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
 
     await Future.delayed(const Duration(milliseconds: 300));
 
-    if (!mounted) return;
-    
-    print('🚀 Retornando usuario actualizado: ${usuarioActualizado?.nombre}');
-    Navigator.pop(context, usuarioActualizado);
+    if (mounted && usuarioActualizado != null) {
+      Navigator.pop(context, usuarioActualizado);
+    } else if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   void _mostrarError(String mensaje) {
@@ -484,10 +495,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
       appBar: AppBar(
         title: const Text(
           'Editar Perfil',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
         ),
         centerTitle: true,
         elevation: 0,
@@ -542,7 +550,8 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                         radius: 65,
                         backgroundImage: _imagenSeleccionada != null
                             ? FileImage(_imagenSeleccionada!)
-                            : NetworkImage(widget.usuario.fotoPerfilUrl) as ImageProvider,
+                            : NetworkImage(widget.usuario.fotoPerfilUrl)
+                                  as ImageProvider,
                         backgroundColor: Colors.grey[200],
                       ),
                     ),
@@ -709,10 +718,7 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                     borderRadius: BorderRadius.circular(20),
                     gradient: _isLoading
                         ? LinearGradient(
-                            colors: [
-                              Colors.grey[400]!,
-                              Colors.grey[500]!,
-                            ],
+                            colors: [Colors.grey[400]!, Colors.grey[500]!],
                           )
                         : const LinearGradient(
                             colors: [
@@ -868,7 +874,10 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
           ),
           filled: true,
           fillColor: enabled ? Colors.white : Colors.grey[50],
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
         ),
       ),
     );

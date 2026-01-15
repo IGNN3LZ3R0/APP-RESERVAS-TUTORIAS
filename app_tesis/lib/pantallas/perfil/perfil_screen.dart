@@ -7,8 +7,13 @@ import '../auth/cambiar_password_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
   final Usuario usuario;
+  final VoidCallback? onUsuarioActualizado;
 
-  const PerfilScreen({super.key, required this.usuario});
+  const PerfilScreen({
+    super.key,
+    required this.usuario,
+    this.onUsuarioActualizado,
+  });
 
   @override
   State<PerfilScreen> createState() => _PerfilScreenState();
@@ -23,12 +28,23 @@ class _PerfilScreenState extends State<PerfilScreen> {
     _usuario = widget.usuario;
   }
 
+  @override
+  void didUpdateWidget(PerfilScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.usuario != widget.usuario) {
+      setState(() {
+        _usuario = widget.usuario;
+      });
+    }
+  }
+
   Future<void> _actualizarUsuario() async {
     final usuarioActualizado = await AuthService.getUsuarioActual();
     if (usuarioActualizado != null && mounted) {
       setState(() {
         _usuario = usuarioActualizado;
       });
+      widget.onUsuarioActualizado?.call();
     }
   }
 
@@ -40,11 +56,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
       ),
     );
 
-    if (usuarioActualizado != null && mounted) {
-      setState(() {
-        _usuario = usuarioActualizado;
-      });
-    }
+    // Al regresar, actualizar SIEMPRE desde SharedPreferences
+    await _actualizarUsuario();
   }
 
   void _navegarACambiarPassword() {
@@ -81,7 +94,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
             children: [
               // Header con foto de perfil
               _buildHeader(),
-              
+
               // Contenido principal
               ResponsiveHelper.centerConstrainedBox(
                 context: context,
@@ -92,7 +105,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       // Información del perfil
                       _buildInfoSection(),
                       SizedBox(height: context.responsiveSpacing * 1.5),
-                      
+
                       // Botones de acción
                       _buildActionButtons(),
                       SizedBox(height: context.responsiveSpacing * 1.5),
@@ -109,18 +122,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   Widget _buildHeader() {
     final avatarRadius = context.isMobile ? 55.0 : 60.0;
-    
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF1565C0),
-            Color(0xFF1976D2),
-            Color(0xFF42A5F5),
-          ],
+          colors: [Color(0xFF1565C0), Color(0xFF1976D2), Color(0xFF42A5F5)],
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(context.isMobile ? 30 : 40),
@@ -154,7 +163,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               ),
             ),
           ),
-          
+
           Padding(
             padding: EdgeInsets.fromLTRB(
               context.responsivePadding,
@@ -207,10 +216,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                 colors: [Color(0xFF42A5F5), Color(0xFF1E88E5)],
                               ),
                               shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 3,
-                              ),
+                              border: Border.all(color: Colors.white, width: 3),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withOpacity(0.2),
@@ -236,7 +242,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 Text(
                   _usuario.nombre,
                   style: TextStyle(
-                    fontSize: context.responsiveFontSize(context.isMobile ? 22 : 24),
+                    fontSize: context.responsiveFontSize(
+                      context.isMobile ? 22 : 24,
+                    ),
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                     letterSpacing: 0.3,
@@ -263,7 +271,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        _usuario.esDocente ? Icons.school_rounded : Icons.person_rounded,
+                        _usuario.esDocente
+                            ? Icons.school_rounded
+                            : Icons.person_rounded,
                         color: Colors.white,
                         size: context.responsiveIconSize(16),
                       ),
@@ -292,19 +302,20 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ResponsiveHelper.getBorderRadius(context)),
+        borderRadius: BorderRadius.circular(
+          ResponsiveHelper.getBorderRadius(context),
+        ),
       ),
       color: Colors.white,
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(ResponsiveHelper.getBorderRadius(context)),
+          borderRadius: BorderRadius.circular(
+            ResponsiveHelper.getBorderRadius(context),
+          ),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.white,
-              Colors.blue.shade50.withOpacity(0.3),
-            ],
+            colors: [Colors.white, Colors.blue.shade50.withOpacity(0.3)],
           ),
         ),
         child: Padding(
@@ -335,7 +346,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   Text(
                     'Información Personal',
                     style: TextStyle(
-                      fontSize: context.responsiveFontSize(context.isMobile ? 18 : 19),
+                      fontSize: context.responsiveFontSize(
+                        context.isMobile ? 18 : 19,
+                      ),
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF1565C0),
                       letterSpacing: 0.2,
@@ -409,11 +422,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
       padding: EdgeInsets.all(context.isMobile ? 14 : 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(ResponsiveHelper.getBorderRadius(context)),
-        border: Border.all(
-          color: Colors.grey.shade100,
-          width: 1,
+        borderRadius: BorderRadius.circular(
+          ResponsiveHelper.getBorderRadius(context),
         ),
+        border: Border.all(color: Colors.grey.shade100, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.blue.shade50.withOpacity(0.5),
@@ -478,11 +490,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
       padding: EdgeInsets.all(context.isMobile ? 14 : 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(ResponsiveHelper.getBorderRadius(context)),
-        border: Border.all(
-          color: Colors.grey.shade100,
-          width: 1,
+        borderRadius: BorderRadius.circular(
+          ResponsiveHelper.getBorderRadius(context),
         ),
+        border: Border.all(color: Colors.grey.shade100, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.blue.shade50.withOpacity(0.5),
@@ -544,45 +555,47 @@ class _PerfilScreenState extends State<PerfilScreen> {
             spacing: 10,
             runSpacing: 10,
             children: _usuario.asignaturas!
-                .map((materia) => Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: context.isMobile ? 14 : 16,
-                        vertical: context.isMobile ? 8 : 10,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF42A5F5).withOpacity(0.1),
-                            const Color(0xFF1E88E5).withOpacity(0.15),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(
-                          color: const Color(0xFF42A5F5).withOpacity(0.3),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.circle,
-                            size: 8,
-                            color: Color(0xFF1565C0),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            materia,
-                            style: TextStyle(
-                              fontSize: context.responsiveFontSize(13),
-                              color: const Color(0xFF1565C0),
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
+                .map(
+                  (materia) => Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: context.isMobile ? 14 : 16,
+                      vertical: context.isMobile ? 8 : 10,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF42A5F5).withOpacity(0.1),
+                          const Color(0xFF1E88E5).withOpacity(0.15),
                         ],
                       ),
-                    ))
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: const Color(0xFF42A5F5).withOpacity(0.3),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.circle,
+                          size: 8,
+                          color: Color(0xFF1565C0),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          materia,
+                          style: TextStyle(
+                            fontSize: context.responsiveFontSize(13),
+                            color: const Color(0xFF1565C0),
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -592,7 +605,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   Widget _buildActionButtons() {
     final buttonHeight = ResponsiveHelper.getButtonHeight(context);
-    
+
     return Column(
       children: [
         // Botón Editar Perfil
@@ -600,11 +613,15 @@ class _PerfilScreenState extends State<PerfilScreen> {
           color: Colors.transparent,
           child: InkWell(
             onTap: _navegarAEditar,
-            borderRadius: BorderRadius.circular(ResponsiveHelper.getBorderRadius(context)),
+            borderRadius: BorderRadius.circular(
+              ResponsiveHelper.getBorderRadius(context),
+            ),
             child: Ink(
               height: buttonHeight,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(ResponsiveHelper.getBorderRadius(context)),
+                borderRadius: BorderRadius.circular(
+                  ResponsiveHelper.getBorderRadius(context),
+                ),
                 gradient: const LinearGradient(
                   colors: [
                     Color(0xFF42A5F5),
@@ -663,16 +680,17 @@ class _PerfilScreenState extends State<PerfilScreen> {
           color: Colors.transparent,
           child: InkWell(
             onTap: _navegarACambiarPassword,
-            borderRadius: BorderRadius.circular(ResponsiveHelper.getBorderRadius(context)),
+            borderRadius: BorderRadius.circular(
+              ResponsiveHelper.getBorderRadius(context),
+            ),
             child: Container(
               height: buttonHeight,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(ResponsiveHelper.getBorderRadius(context)),
-                color: Colors.white,
-                border: Border.all(
-                  color: const Color(0xFF1565C0),
-                  width: 2,
+                borderRadius: BorderRadius.circular(
+                  ResponsiveHelper.getBorderRadius(context),
                 ),
+                color: Colors.white,
+                border: Border.all(color: const Color(0xFF1565C0), width: 2),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.grey.withOpacity(0.15),

@@ -44,25 +44,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       });
       print('✅ Usuario actualizado en HomeScreen');
       print('   Nombre: ${_usuario.nombre}');
-      print('   Rol: ${_usuario.rol}');
-      if (_usuario.esDocente) {
-        print(
-          '   Asignaturas: ${_usuario.asignaturas?.join(", ") ?? "ninguna"}',
-        );
-      }
+      print('   Foto: ${_usuario.fotoPerfil ?? "sin foto"}');
     }
-  }
-
-  // 🆕 NUEVO MÉTODO:  Navegar a perfil y actualizar al regresar
-  Future<void> _navegarAPerfil() async {
-    // Navegar a la pantalla de perfil
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => PerfilScreen(usuario: _usuario)),
-    );
-
-    // Al regresar, recargar el usuario actualizado
-    await _cargarUsuarioActualizado();
   }
 
   List<Widget> _buildScreens() {
@@ -71,30 +54,47 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _buildDashboardAdmin(),
         GestionUsuariosScreen(usuario: _usuario),
         GestionEstudiantesScreen(usuario: _usuario),
-        // 🔄 Ya no retorna PerfilScreen directamente, se maneja por navegación
-        Container(), // Placeholder, no se usa porque navegamos manualmente
+        PerfilScreen(
+          usuario: _usuario,
+          onUsuarioActualizado: () async {
+            await _cargarUsuarioActualizado();
+          },
+        ),
       ];
     } else if (_usuario.esDocente) {
       return [
         _buildDashboardDocente(),
         DocenteMaterias.GestionMateriasScreen(usuario: _usuario),
         GestionHorariosScreen(usuario: _usuario),
-        Container(), // Placeholder
+        PerfilScreen(
+          usuario: _usuario,
+          onUsuarioActualizado: () async {
+            await _cargarUsuarioActualizado();
+          },
+        ),
       ];
     } else {
       return [
         _buildDashboardEstudiante(),
         VerDisponibilidadDocentesScreen(usuario: _usuario),
-        Container(), // Placeholder
+        MisTutoriasScreen(usuario: _usuario),
+        PerfilScreen(
+          usuario: _usuario,
+          onUsuarioActualizado: () async {
+            await _cargarUsuarioActualizado();
+          },
+        ),
       ];
     }
   }
 
-  List<BottomNavigationBarItem> _buildNavItems() {
+  Widget _buildBottomNav() {
     final iconSize = context.isMobile ? 24.0 : 28.0;
 
+    List<BottomNavigationBarItem> items;
+
     if (_usuario.esAdministrador) {
-      return [
+      items = [
         BottomNavigationBarItem(
           icon: Icon(Icons.dashboard_outlined, size: iconSize),
           activeIcon: Icon(Icons.dashboard_rounded, size: iconSize),
@@ -117,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
       ];
     } else if (_usuario.esDocente) {
-      return [
+      items = [
         BottomNavigationBarItem(
           icon: Icon(Icons.dashboard_outlined, size: iconSize),
           activeIcon: Icon(Icons.dashboard_rounded, size: iconSize),
@@ -140,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
       ];
     } else {
-      return [
+      items = [
         BottomNavigationBarItem(
           icon: Icon(Icons.dashboard_outlined, size: iconSize),
           activeIcon: Icon(Icons.dashboard_rounded, size: iconSize),
@@ -154,10 +154,44 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline_rounded, size: iconSize),
           activeIcon: Icon(Icons.person_rounded, size: iconSize),
+          label: 'Mis Tutorías',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline_rounded, size: iconSize),
+          activeIcon: Icon(Icons.person_rounded, size: iconSize),
           label: 'Perfil',
         ),
       ];
     }
+
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: items,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: const Color(0xFF1565C0),
+        unselectedItemColor: Colors.grey[400],
+        selectedFontSize: context.isMobile ? 11 : 12,
+        unselectedFontSize: context.isMobile ? 10 : 11,
+        selectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.3,
+        ),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
+    );
   }
 
   Widget _buildDashboardAdmin() {
@@ -969,54 +1003,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  // 🔄 MODIFICADO: Interceptar el tap en la navegación inferior
   void _onItemTapped(int index) {
-    // Si selecciona "Perfil" (último índice), navegar manualmente
-    final int perfilIndex = _usuario.esAdministrador
-        ? 3
-        : _usuario.esDocente
-        ? 3
-        : 2;
-
-    if (index == perfilIndex) {
-      _navegarAPerfil();
-    } else {
-      setState(() => _selectedIndex = index);
-    }
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final screens = _buildScreens();
+
     return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _buildScreens()),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped, // 🔄 Usa el nuevo manejador
-          items: _buildNavItems(),
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFF1565C0),
-          unselectedItemColor: Colors.grey[400],
-          selectedFontSize: context.isMobile ? 11 : 12,
-          unselectedFontSize: context.isMobile ? 10 : 11,
-          selectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.3,
-          ),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-          backgroundColor: Colors.white,
-          elevation: 0,
-        ),
-      ),
+      body: screens[_selectedIndex],
+      bottomNavigationBar: _buildBottomNav(),
     );
   }
 }
