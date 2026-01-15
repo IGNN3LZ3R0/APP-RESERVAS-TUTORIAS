@@ -333,6 +333,45 @@ class _ReagendarTutoriaDialogState extends State<ReagendarTutoriaDialog>
     return dias[fecha.weekday - 1];
   }
 
+  List<Map<String, dynamic>> _generarTurnos20Min(String inicio, String fin) {
+    // 🔧 Definir la función de conversión DENTRO de este método
+    int convertirAMinutos(String hora) {
+      try {
+        final partes = hora.split(':');
+        final horas = int.parse(partes[0]);
+        final minutos = int.parse(partes[1]);
+        return horas * 60 + minutos;
+      } catch (e) {
+        print('⚠️ Error convirtiendo hora en _generarTurnos20Min: $hora');
+        return 0;
+      }
+    }
+
+    final minutosInicio = convertirAMinutos(inicio);
+    final minutosFin = convertirAMinutos(fin);
+    const duracionTurno = 20;
+
+    List<Map<String, dynamic>> turnos = [];
+    int actual = minutosInicio;
+
+    while (actual + duracionTurno <= minutosFin) {
+      final hInicio = (actual ~/ 60).toString().padLeft(2, '0');
+      final mInicio = (actual % 60).toString().padLeft(2, '0');
+      final inicioTurno = '$hInicio:$mInicio';
+
+      final siguienteMinuto = actual + duracionTurno;
+      final hFin = (siguienteMinuto ~/ 60).toString().padLeft(2, '0');
+      final mFin = (siguienteMinuto % 60).toString().padLeft(2, '0');
+      final finTurno = '$hFin:$mFin';
+
+      turnos.add({'horaInicio': inicioTurno, 'horaFin': finTurno});
+
+      actual += duracionTurno;
+    }
+
+    return turnos;
+  }
+
   Future<void> _cargarDisponibilidadDelDia() async {
     if (_fechaSeleccionada == null || _materiaOriginal == null) return;
 
@@ -441,9 +480,16 @@ class _ReagendarTutoriaDialogState extends State<ReagendarTutoriaDialog>
         );
 
         for (var turno in turnos) {
+          // 🔧 Convertir a minutos para comparación
+          final turnoInicio = _convertirAMinutos(turno['horaInicio']);
+          final turnoFin = _convertirAMinutos(turno['horaFin']);
+
           final ocupado = ocupadosEnFecha.any((tutoria) {
-            return !(turno['horaFin'] <= tutoria['horaInicio'] ||
-                turno['horaInicio'] >= tutoria['horaFin']);
+            final tutoriaInicio = _convertirAMinutos(tutoria['horaInicio']);
+            final tutoriaFin = _convertirAMinutos(tutoria['horaFin']);
+
+            // Verificar solapamiento usando números
+            return !(turnoFin <= tutoriaInicio || turnoInicio >= tutoriaFin);
           });
 
           if (!ocupado) {
@@ -468,41 +514,12 @@ class _ReagendarTutoriaDialogState extends State<ReagendarTutoriaDialog>
 
       print('✅ Turnos disponibles para reagendar: ${turnosDisponibles.length}');
     } catch (e) {
+      print('❌ Error en _cargarDisponibilidadDelDia: $e');
       setState(() {
         _cargandoDisponibilidad = false;
         _error = 'Error al cargar disponibilidad: $e';
       });
     }
-  }
-
-  List<Map<String, dynamic>> _generarTurnos20Min(String inicio, String fin) {
-    int convertirAMinutos(String hora) {
-      final partes = hora.split(':');
-      return int.parse(partes[0]) * 60 + int.parse(partes[1]);
-    }
-
-    String formatearHora(int minutos) {
-      final horas = minutos ~/ 60;
-      final mins = minutos % 60;
-      return '${horas.toString().padLeft(2, '0')}:${mins.toString().padLeft(2, '0')}';
-    }
-
-    final minutosInicio = convertirAMinutos(inicio);
-    final minutosFin = convertirAMinutos(fin);
-    final duracionTurno = 20;
-
-    List<Map<String, dynamic>> turnos = [];
-    int actual = minutosInicio;
-
-    while (actual + duracionTurno <= minutosFin) {
-      turnos.add({
-        'horaInicio': formatearHora(actual),
-        'horaFin': formatearHora(actual + duracionTurno),
-      });
-      actual += duracionTurno;
-    }
-
-    return turnos;
   }
 
   Future<void> _seleccionarFecha() async {

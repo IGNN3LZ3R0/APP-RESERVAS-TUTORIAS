@@ -732,10 +732,11 @@ const cancelarTutoria = async (req, res) => {
 export const reagendarTutoria = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nuevaFecha, nuevaHoraInicio, nuevaHoraFin, motivo } = req.body;
+    const { nuevaFecha, nuevaHoraInicio, nuevaHoraFin } = req.body;
 
     console.log(`🔄 Intentando reagendar tutoría: ${id}`);
 
+    // ✅ VALIDACIÓN 1: Verificar que el usuario sea parte de la tutoría
     const tutoria = await Tutoria.findById(id)
       .populate('estudiante', 'nombreEstudiante emailEstudiante')
       .populate('docente', 'nombreDocente emailDocente');
@@ -747,11 +748,10 @@ export const reagendarTutoria = async (req, res) => {
       });
     }
 
-    // ✅ VALIDACIÓN 1: Permisos
-    const esEstudiante = req.estudianteBDD &&
-      tutoria.estudiante._id.toString() === req.estudianteBDD._id.toString();
-    const esDocente = req.docenteBDD &&
-      tutoria.docente._id.toString() === req.docenteBDD._id.toString();
+    // 🔧 IDENTIFICAR QUIÉN ESTÁ REAGENDANDO
+    const usuarioId = req.estudianteBDD?._id || req.docenteBDD?._id;
+    const esEstudiante = tutoria.estudiante._id.toString() === usuarioId?.toString();
+    const esDocente = tutoria.docente._id.toString() === usuarioId?.toString();
 
     if (!esEstudiante && !esDocente) {
       return res.status(403).json({
@@ -779,31 +779,19 @@ export const reagendarTutoria = async (req, res) => {
       await tutoria.save();
       return res.status(400).json({
         success: false,
-        msg: 'Esta tutoría ya expiró. Por favor, agenda una nueva tutoría.',
-        estado: 'expirada'
+        msg: 'No se puede reagendar una tutoría que ya pasó'
       });
     }
 
-    // Validar campos obligatorios
+    // VALIDACIÓN 4: Validar datos nuevos
     if (!nuevaFecha || !nuevaHoraInicio || !nuevaHoraFin) {
       return res.status(400).json({
         success: false,
-        msg: 'Nueva fecha, hora inicio y hora fin son obligatorios'
+        msg: 'Todos los campos son obligatorios'
       });
     }
 
-    // VALIDACIÓN 4: Fecha no pasada
-    const hoy = moment().startOf('day');
-    const nuevaFechaTutoria = moment(nuevaFecha, 'YYYY-MM-DD').startOf('day');
-
-    if (nuevaFechaTutoria.isBefore(hoy)) {
-      return res.status(400).json({
-        success: false,
-        msg: 'No puedes reagendar para una fecha pasada'
-      });
-    }
-
-    // VALIDACIÓN 5: VALIDAR ANTICIPACIÓN DE 2 HORAS (PARA CUALQUIER HORA)
+    // VALIDACIÓN 5: VALIDAR ANTICIPACIÓN DE 2 HORAS
     const fechaHoraNueva = moment(`${nuevaFecha} ${nuevaHoraInicio}`, 'YYYY-MM-DD HH:mm');
     const horasAnticipacion = fechaHoraNueva.diff(ahora, 'hours', true);
 
@@ -812,102 +800,98 @@ export const reagendarTutoria = async (req, res) => {
     console.log(`   Nueva hora: ${fechaHoraNueva.format('YYYY-MM-DD HH:mm')}`);
     console.log(`   Horas de anticipación: ${horasAnticipacion.toFixed(2)}`);
 
-    // ⭐ PERMITE REAGENDAMIENTO A CUALQUIER HORA (ANTERIOR O POSTERIOR)
-    // SIEMPRE QUE CUMPLA CON 2 HORAS DE ANTICIPACIÓN
     if (horasAnticipacion < 2) {
       return res.status(400).json({
         success: false,
-        msg: `Debes reagendar con al menos 2 horas de anticipación. Tiempo disponible: ${horasAnticipacion.toFixed(1)} horas`
+        msg: 'Debes reagendar con al menos 2 horas de anticipación'
       });
     }
 
     console.log('✅ Validación de anticipación pasada');
 
-    // VALIDACIÓN 6: Verificar conflicto de horario
-    const tutoriasEnMismaFecha = await Tutoria.find({
+    // VALIDACIÓN 6: Verificar conflictos de horario
+    const tutoriasConflicto = await Tutoria.find({
+      _id: { $ne: id },
       docente: tutoria.docente._id,
       fecha: nuevaFecha,
       estado: { $in: ['pendiente', 'confirmada'] },
-      _id: { $ne: tutoria._id }
+      $or: [
+        {
+          $and: [
+            { horaInicio: { $lt: nuevaHoraFin } },
+            { horaFin: { $gt: nuevaHoraInicio } }
+          ]
+        }
+      ]
     });
 
-    const tieneConflicto = tutoriasEnMismaFecha.some(t => {
-      return !(nuevaHoraFin <= t.horaInicio || nuevaHoraInicio >= t.horaFin);
-    });
-
-    if (tieneConflicto) {
+    if (tutoriasConflicto.length > 0) {
       return res.status(400).json({
         success: false,
-        msg: 'Ya tienes una tutoría agendada en ese horario'
+        msg: 'El docente ya tiene una tutoría en ese horario'
       });
     }
 
     console.log('✅ No hay conflictos de horario');
 
-    // ACTUALIZAR TUTORÍA
+    // ✅ ACTUALIZAR TUTORÍA
     tutoria.fecha = nuevaFecha;
     tutoria.horaInicio = nuevaHoraInicio;
     tutoria.horaFin = nuevaHoraFin;
-    tutoria.motivo = motivo || 'Reagendada por el estudiante';
-    tutoria.estado = 'pendiente';
-
+    tutoria.estado = 'pendiente'; // Vuelve a pendiente tras reagendamiento
     await tutoria.save();
 
-    await tutoria.populate('docente', 'nombreDocente emailDocente');
-    await tutoria.populate('estudiante', 'nombreEstudiante emailEstudiante');
+    console.log('✅ Tutoría reagendada exitosamente');
 
-    console.log(`✅ Tutoría reagendada exitosamente`);
-
-    // ✅ ENVIAR EMAILS DE REAGENDAMIENTO
+    // 🔧 ENVIAR EMAILS CORRECTAMENTE SEGÚN QUIÉN REAGENDÓ
     try {
-      if (sendMailReagendamientoEstudiante && sendMailReagendamientoDocente) {
-        // Email para el estudiante
-        await sendMailReagendamientoEstudiante(
-          tutoria.estudiante.emailEstudiante,
-          tutoria.estudiante.nombreEstudiante,
-          tutoria.docente.nombreDocente,
-          {
-            fechaAnterior: tutoria.fecha,
-            horaInicioAnterior: tutoria.horaInicio,
-            horaFinAnterior: tutoria.horaFin,
-            fechaNueva: nuevaFecha,
-            horaInicioNueva: nuevaHoraInicio,
-            horaFinNueva: nuevaHoraFin,
-            motivo: tutoria.motivo
-          }
-        );
-
-        // Email para el docente
+      if (esEstudiante) {
+        // Si reagendó el ESTUDIANTE → enviar email al DOCENTE
         await sendMailReagendamientoDocente(
           tutoria.docente.emailDocente,
           tutoria.docente.nombreDocente,
           tutoria.estudiante.nombreEstudiante,
-          {
-            fechaAnterior: tutoria.fecha,
-            horaInicioAnterior: tutoria.horaInicio,
-            horaFinAnterior: tutoria.horaFin,
-            fechaNueva: nuevaFecha,
-            horaInicioNueva: nuevaHoraInicio,
-            horaFinNueva: nuevaHoraFin,
-            motivo: tutoria.motivo
-          }
+          tutoria.materia,
+          nuevaFecha,
+          nuevaHoraInicio,
+          nuevaHoraFin
         );
+        console.log(`✅ Email de reagendamiento enviado al docente: ${tutoria.docente.emailDocente}`);
+      } else if (esDocente) {
+        // Si reagendó el DOCENTE → enviar email al ESTUDIANTE
+        await sendMailReagendamientoEstudiante(
+          tutoria.estudiante.emailEstudiante,
+          tutoria.estudiante.nombreEstudiante,
+          tutoria.docente.nombreDocente,
+          tutoria.materia,
+          nuevaFecha,
+          nuevaHoraInicio,
+          nuevaHoraFin
+        );
+        console.log(`✅ Email de reagendamiento enviado al estudiante: ${tutoria.estudiante.emailEstudiante}`);
       }
     } catch (emailError) {
-      console.error('⚠️ Error enviando emails de reagendamiento:', emailError);
+      console.error('⚠️ Error enviando email de reagendamiento:', emailError);
+      // No fallar la operación por error de email
     }
 
     res.status(200).json({
       success: true,
-      msg: 'Tutoría reagendada correctamente. El docente confirmará el nuevo horario.',
-      tutoria
+      msg: 'Tutoría reagendada exitosamente',
+      tutoria: {
+        _id: tutoria._id,
+        fecha: tutoria.fecha,
+        horaInicio: tutoria.horaInicio,
+        horaFin: tutoria.horaFin,
+        estado: tutoria.estado
+      }
     });
 
   } catch (error) {
-    console.error("❌ Error al reagendar tutoría:", error);
+    console.error('❌ Error reagendando tutoría:', error);
     res.status(500).json({
       success: false,
-      msg: 'Error al reagendar la tutoría',
+      msg: 'Error al reagendar tutoría',
       error: error.message
     });
   }
@@ -2054,7 +2038,6 @@ export const aceptarTutoria = async (req, res) => {
     // Verificar que sea el docente correcto
     if (tutoria.docente.toString() !== docente.toString()) {
       return res.status(403).json({
-
         success: false,
         msg: 'No tienes permiso para gestionar esta tutoría'
       });
@@ -2086,6 +2069,7 @@ export const aceptarTutoria = async (req, res) => {
         horaFin: tutoria.horaFin
       }
     });
+
 
   } catch (error) {
     console.error("❌ Error aceptando tutoría:", error);
