@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../modelos/usuario.dart';
 import '../../servicios/perfil_service.dart';
 import '../../servicios/auth_service.dart';
@@ -25,17 +26,30 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
   late Usuario _usuarioActual;
   String _searchQuery = '';
   final _searchController = TextEditingController();
+  StreamSubscription? _materiasSubscription;
 
   @override
   void initState() {
     super.initState();
     _usuarioActual = widget.usuario;
     _inicializarPantalla();
+
+    // ✅ ESCUCHAR CAMBIOS EN MATERIAS GLOBALES
+    _materiasSubscription = notificationService.materiasActualizadas.listen((
+      _,
+    ) {
+      if (mounted) {
+        print('🔄 Materias actualizadas detectadas en GestionMateriasScreen');
+        _validarMateriasDocente();
+        _cargarMateriasDisponibles();
+      }
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _materiasSubscription?.cancel();
     super.dispose();
   }
 
@@ -52,16 +66,23 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
       final bool fueronEliminadas = resultado['fueronEliminadas'] ?? false;
 
       if (fueronEliminadas) {
-        _materiasSeleccionadas = materiasValidas.map((m) => m.toString()).toList();
+        _materiasSeleccionadas = materiasValidas
+            .map((m) => m.toString())
+            .toList();
         final usuarioActualizado = await AuthService.obtenerPerfil();
 
         if (usuarioActualizado != null) {
           await AuthService.actualizarUsuario(usuarioActualizado);
           _usuarioActual = usuarioActualizado;
-          if (mounted) _mostrarInfo('Materias eliminadas del sistema fueron sincronizadas');
+          if (mounted)
+            _mostrarInfo(
+              'Materias eliminadas del sistema fueron sincronizadas',
+            );
         }
       } else {
-        _materiasSeleccionadas = materiasValidas.map((m) => m.toString()).toList();
+        _materiasSeleccionadas = materiasValidas
+            .map((m) => m.toString())
+            .toList();
       }
     } else {
       _materiasSeleccionadas = List.from(_usuarioActual.asignaturas ?? []);
@@ -77,12 +98,21 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
       if (materiasAgrupadas.isEmpty && mounted) {
         _mostrarError('No hay materias disponibles');
       } else {
-        final todasLasMaterias = materiasAgrupadas.values.expand((l) => l).toSet();
-        final materiasInvalidas = _materiasSeleccionadas.where((m) => !todasLasMaterias.contains(m)).toList();
+        final todasLasMaterias = materiasAgrupadas.values
+            .expand((l) => l)
+            .toSet();
+        final materiasInvalidas = _materiasSeleccionadas
+            .where((m) => !todasLasMaterias.contains(m))
+            .toList();
 
         if (materiasInvalidas.isNotEmpty) {
-          _materiasSeleccionadas.removeWhere((m) => materiasInvalidas.contains(m));
-          if (mounted) _mostrarAdvertencia('Se eliminaron ${materiasInvalidas.length} materias no disponibles');
+          _materiasSeleccionadas.removeWhere(
+            (m) => materiasInvalidas.contains(m),
+          );
+          if (mounted)
+            _mostrarAdvertencia(
+              'Se eliminaron ${materiasInvalidas.length} materias no disponibles',
+            );
         }
       }
 
@@ -119,9 +149,13 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
     resultado.sort((a, b) => a.value.compareTo(b.value));
 
     if (_searchQuery.isEmpty) return resultado;
-    return resultado.where((e) =>
-        e.value.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-        e.key.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+    return resultado
+        .where(
+          (e) =>
+              e.value.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              e.key.toLowerCase().contains(_searchQuery.toLowerCase()),
+        )
+        .toList();
   }
 
   Future<void> _guardarCambios() async {
@@ -130,9 +164,13 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
       return;
     }
 
-    final todasLasMaterias = _materiasDisponibles.values.expand((l) => l).toSet();
-    final materiasInvalidas = _materiasSeleccionadas.where((m) => !todasLasMaterias.contains(m)).toList();
-    
+    final todasLasMaterias = _materiasDisponibles.values
+        .expand((l) => l)
+        .toSet();
+    final materiasInvalidas = _materiasSeleccionadas
+        .where((m) => !todasLasMaterias.contains(m))
+        .toList();
+
     if (materiasInvalidas.isNotEmpty) {
       _mostrarError('Materias inválidas: ${materiasInvalidas.join(", ")}');
       return;
@@ -154,14 +192,16 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
         _mostrarError(resultado['error']);
       } else {
         _mostrarExito('Materias actualizadas correctamente');
-        
+
         final usuarioActualizado = await AuthService.obtenerPerfil();
         if (usuarioActualizado != null && mounted) {
           await AuthService.actualizarUsuario(usuarioActualizado);
           setState(() {
             _usuarioActual = usuarioActualizado;
             _hasChanges = false;
-            _materiasSeleccionadas = List.from(usuarioActualizado.asignaturas ?? []);
+            _materiasSeleccionadas = List.from(
+              usuarioActualizado.asignaturas ?? [],
+            );
           });
           notificationService.notificarMateriasActualizadas();
         }
@@ -172,19 +212,35 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
     }
   }
 
-  void _mostrarError(String m) => _mostrarSnackBar(m, const Color(0xFFD32F2F), Icons.error_outline_rounded);
-  void _mostrarExito(String m) => _mostrarSnackBar(m, const Color(0xFF43A047), Icons.check_circle_outline_rounded);
-  void _mostrarInfo(String m) => _mostrarSnackBar(m, const Color(0xFF1976D2), Icons.info_outline_rounded);
-  void _mostrarAdvertencia(String m) => _mostrarSnackBar(m, const Color(0xFFF57C00), Icons.warning_rounded);
+  void _mostrarError(String m) =>
+      _mostrarSnackBar(m, const Color(0xFFD32F2F), Icons.error_outline_rounded);
+  void _mostrarExito(String m) => _mostrarSnackBar(
+    m,
+    const Color(0xFF43A047),
+    Icons.check_circle_outline_rounded,
+  );
+  void _mostrarInfo(String m) =>
+      _mostrarSnackBar(m, const Color(0xFF1976D2), Icons.info_outline_rounded);
+  void _mostrarAdvertencia(String m) =>
+      _mostrarSnackBar(m, const Color(0xFFF57C00), Icons.warning_rounded);
 
   void _mostrarSnackBar(String mensaje, Color color, IconData icon) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            Icon(icon, color: Colors.white, size: context.responsiveIconSize(24)),
+            Icon(
+              icon,
+              color: Colors.white,
+              size: context.responsiveIconSize(24),
+            ),
             SizedBox(width: context.responsiveSpacing),
-            Expanded(child: Text(mensaje, style: const TextStyle(fontWeight: FontWeight.w600))),
+            Expanded(
+              child: Text(
+                mensaje,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
           ],
         ),
         backgroundColor: color,
@@ -207,11 +263,16 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
           final confirmar = await showDialog<bool>(
             context: context,
             builder: (ctx) => AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               title: const Text('¿Descartar cambios?'),
               content: const Text('Tienes cambios sin guardar'),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancelar'),
+                ),
                 ElevatedButton(
                   onPressed: () => Navigator.pop(ctx, true),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -257,8 +318,8 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
         body: _cargandoMaterias
             ? _buildLoadingState()
             : _materiasDisponibles.isEmpty
-                ? _buildEmptyState()
-                : _buildContent(materiasFiltradas, isMobile, padding),
+            ? _buildEmptyState()
+            : _buildContent(materiasFiltradas, isMobile, padding),
       ),
     );
   }
@@ -289,9 +350,11 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline_rounded, 
-              size: context.responsiveIconSize(90), 
-              color: Colors.orange),
+            Icon(
+              Icons.error_outline_rounded,
+              size: context.responsiveIconSize(90),
+              color: Colors.orange,
+            ),
             SizedBox(height: context.responsiveSpacing * 2),
             Text(
               'No hay materias disponibles',
@@ -316,7 +379,11 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
     );
   }
 
-  Widget _buildContent(List<MapEntry<String, String>> materiasFiltradas, bool isMobile, double padding) {
+  Widget _buildContent(
+    List<MapEntry<String, String>> materiasFiltradas,
+    bool isMobile,
+    double padding,
+  ) {
     return Column(
       children: [
         // Header
@@ -370,7 +437,11 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                    Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                     SizedBox(width: context.responsiveSpacing * 0.75),
                     Text(
                       '${_materiasSeleccionadas.length} materias seleccionadas',
@@ -395,7 +466,10 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
             style: TextStyle(fontSize: context.responsiveFontSize(15)),
             decoration: InputDecoration(
               hintText: 'Buscar materia o semestre...',
-              prefixIcon: Icon(Icons.search_rounded, size: context.responsiveIconSize(23)),
+              prefixIcon: Icon(
+                Icons.search_rounded,
+                size: context.responsiveIconSize(23),
+              ),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
                       icon: const Icon(Icons.clear_rounded),
@@ -443,9 +517,11 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_off_rounded, 
-            size: context.responsiveIconSize(85), 
-            color: Colors.grey[400]),
+          Icon(
+            Icons.search_off_rounded,
+            size: context.responsiveIconSize(85),
+            color: Colors.grey[400],
+          ),
           SizedBox(height: context.responsiveSpacing * 2),
           Text(
             'No se encontraron materias',
@@ -473,8 +549,20 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
           width: isSelected ? 2.5 : 1.5,
         ),
         boxShadow: isSelected
-            ? [BoxShadow(color: const Color(0xFF1565C0).withOpacity(0.2), blurRadius: 16, offset: Offset(0, 6))]
-            : [BoxShadow(color: Colors.grey.withOpacity(0.08), blurRadius: 8, offset: Offset(0, 2))],
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF1565C0).withOpacity(0.2),
+                  blurRadius: 16,
+                  offset: Offset(0, 6),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -490,12 +578,27 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    gradient: isSelected ? const LinearGradient(colors: [Color(0xFF42A5F5), Color(0xFF1565C0)]) : null,
+                    gradient: isSelected
+                        ? const LinearGradient(
+                            colors: [Color(0xFF42A5F5), Color(0xFF1565C0)],
+                          )
+                        : null,
                     color: isSelected ? null : Colors.grey[200],
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: isSelected ? Colors.transparent : Colors.grey[400]!, width: 2),
+                    border: Border.all(
+                      color: isSelected
+                          ? Colors.transparent
+                          : Colors.grey[400]!,
+                      width: 2,
+                    ),
                   ),
-                  child: isSelected ? const Icon(Icons.check_rounded, color: Colors.white, size: 18) : null,
+                  child: isSelected
+                      ? const Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        )
+                      : null,
                 ),
                 SizedBox(width: context.responsiveSpacing),
                 Expanded(
@@ -505,15 +608,22 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
                       Text(
                         materia,
                         style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w600,
                           fontSize: context.responsiveFontSize(15.5),
                         ),
                       ),
                       SizedBox(height: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF1565C0).withOpacity(0.12) : Colors.grey[100],
+                          color: isSelected
+                              ? const Color(0xFF1565C0).withOpacity(0.12)
+                              : Colors.grey[100],
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -521,7 +631,9 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
                           style: TextStyle(
                             fontSize: context.responsiveFontSize(12),
                             fontWeight: FontWeight.w600,
-                            color: isSelected ? const Color(0xFF1565C0) : Colors.grey[600],
+                            color: isSelected
+                                ? const Color(0xFF1565C0)
+                                : Colors.grey[600],
                           ),
                         ),
                       ),
@@ -529,7 +641,11 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
                   ),
                 ),
                 if (isSelected)
-                  Icon(Icons.check_circle_rounded, color: const Color(0xFF1565C0), size: 22),
+                  Icon(
+                    Icons.check_circle_rounded,
+                    color: const Color(0xFF1565C0),
+                    size: 22,
+                  ),
               ],
             ),
           ),
@@ -543,7 +659,13 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
       padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12, offset: Offset(0, -4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: Offset(0, -4),
+          ),
+        ],
       ),
       child: SafeArea(
         child: SizedBox(
@@ -553,7 +675,9 @@ class _GestionMateriasScreenState extends State<GestionMateriasScreen> {
             onPressed: _isLoading ? null : _guardarCambios,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF43A047),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
             ),
             child: _isLoading
                 ? const CircularProgressIndicator(color: Colors.white)

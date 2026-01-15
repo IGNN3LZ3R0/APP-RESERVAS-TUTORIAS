@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../modelos/usuario.dart';
 import '../../servicios/auth_service.dart';
+import '../../servicios/notification_service.dart';
 import '../../config/responsive_helper.dart';
 import 'editar_perfil_screen.dart';
 import '../auth/cambiar_password_screen.dart';
@@ -21,11 +23,23 @@ class PerfilScreen extends StatefulWidget {
 
 class _PerfilScreenState extends State<PerfilScreen> {
   late Usuario _usuario;
+  StreamSubscription? _usuarioSubscription;
 
   @override
   void initState() {
     super.initState();
     _usuario = widget.usuario;
+
+    // ✅ ESCUCHAR CAMBIOS EN USUARIO
+    _usuarioSubscription = notificationService.usuarioActualizado.listen((
+      usuarioActualizado,
+    ) {
+      if (mounted) {
+        setState(() {
+          _usuario = usuarioActualizado;
+        });
+      }
+    });
   }
 
   @override
@@ -36,6 +50,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
         _usuario = widget.usuario;
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _usuarioSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _actualizarUsuario() async {
@@ -49,7 +69,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   Future<void> _navegarAEditar() async {
-    final usuarioActualizado = await Navigator.push<Usuario>(
+    await Navigator.push<Usuario>(
       context,
       MaterialPageRoute(
         builder: (context) => EditarPerfilScreen(usuario: _usuario),

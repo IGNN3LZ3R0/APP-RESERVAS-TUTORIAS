@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:app_tesis/pantallas/docente/solicitudes_tutorias_screen.dart';
 import 'package:app_tesis/pantallas/estudiante/mis_tutorias_screen.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ import 'docente/gestion_materias_screen.dart' as DocenteMaterias;
 import 'docente/gestion_horarios_screen.dart';
 import 'docente/reportes_screen.dart';
 import 'estudiante/ver_disponibilidad_docentes_screen.dart';
+import '../../servicios/notification_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final Usuario usuario;
@@ -28,12 +30,33 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _selectedIndex = 0;
   late Usuario _usuario;
+  StreamSubscription? _usuarioSubscription;
 
   @override
   void initState() {
     super.initState();
     _usuario = widget.usuario;
     _cargarUsuarioActualizado();
+
+    // ✅ ESCUCHAR CAMBIOS EN USUARIO
+    _usuarioSubscription = notificationService.usuarioActualizado.listen((
+      usuarioActualizado,
+    ) {
+      if (mounted) {
+        setState(() {
+          _usuario = usuarioActualizado;
+        });
+        print('✅ Usuario actualizado en HomeScreen');
+        print('   Nombre: ${_usuario.nombre}');
+        print('   Foto: ${_usuario.fotoPerfil ?? "sin foto"}');
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _usuarioSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _cargarUsuarioActualizado() async {

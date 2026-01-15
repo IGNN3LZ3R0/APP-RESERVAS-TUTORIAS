@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../servicios/estudiante_service.dart';
+import '../../servicios/notification_service.dart';
 import '../../config/responsive_helper.dart';
 
 class EditarEstudianteScreen extends StatefulWidget {
@@ -13,11 +14,11 @@ class EditarEstudianteScreen extends StatefulWidget {
 
 class _EditarEstudianteScreenState extends State<EditarEstudianteScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _nombreController;
   late TextEditingController _emailController;
   late TextEditingController _telefonoController;
-  
+
   bool _isLoading = false;
 
   @override
@@ -27,9 +28,15 @@ class _EditarEstudianteScreenState extends State<EditarEstudianteScreen> {
   }
 
   void _cargarDatosIniciales() {
-    _nombreController = TextEditingController(text: widget.estudiante['nombreEstudiante']);
-    _emailController = TextEditingController(text: widget.estudiante['emailEstudiante']);
-    _telefonoController = TextEditingController(text: widget.estudiante['telefono'] ?? '');
+    _nombreController = TextEditingController(
+      text: widget.estudiante['nombreEstudiante'],
+    );
+    _emailController = TextEditingController(
+      text: widget.estudiante['emailEstudiante'],
+    );
+    _telefonoController = TextEditingController(
+      text: widget.estudiante['telefono'] ?? '',
+    );
   }
 
   @override
@@ -78,8 +85,8 @@ class _EditarEstudianteScreenState extends State<EditarEstudianteScreen> {
       id: widget.estudiante['_id'],
       nombreEstudiante: _nombreController.text.trim(),
       emailEstudiante: _emailController.text.trim(),
-      telefono: _telefonoController.text.trim().isEmpty 
-          ? null 
+      telefono: _telefonoController.text.trim().isEmpty
+          ? null
           : _telefonoController.text.trim(),
     );
 
@@ -91,9 +98,12 @@ class _EditarEstudianteScreenState extends State<EditarEstudianteScreen> {
       _mostrarError(resultado['error']);
     } else {
       _mostrarExito('Estudiante actualizado exitosamente');
-      
+
+      // ✅ EMITIR NOTIFICACIÓN GLOBAL
+      notificationService.notificarMateriasActualizadas();
+
       await Future.delayed(const Duration(seconds: 1));
-      
+
       if (!mounted) return;
       Navigator.pop(context, true);
     }
@@ -123,7 +133,7 @@ class _EditarEstudianteScreenState extends State<EditarEstudianteScreen> {
   @override
   Widget build(BuildContext context) {
     final isTablet = context.isTablet || context.isDesktop;
-    
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -146,7 +156,7 @@ class _EditarEstudianteScreenState extends State<EditarEstudianteScreen> {
             padding: ResponsiveHelper.getContentPadding(context),
             children: [
               ResponsiveHelper.verticalSpace(context),
-              
+
               // Información
               Container(
                 padding: EdgeInsets.all(context.responsivePadding),
@@ -177,7 +187,7 @@ class _EditarEstudianteScreenState extends State<EditarEstudianteScreen> {
                   ],
                 ),
               ),
-              
+
               ResponsiveHelper.verticalSpace(context, multiplier: 1.5),
 
               // Layout responsive
@@ -190,7 +200,8 @@ class _EditarEstudianteScreenState extends State<EditarEstudianteScreen> {
                         controller: _nombreController,
                         label: 'Nombre Completo',
                         icon: Icons.person,
-                        validator: (value) => _validarRequerido(value, 'El nombre'),
+                        validator: (value) =>
+                            _validarRequerido(value, 'El nombre'),
                       ),
                     ),
                     SizedBox(width: context.responsiveSpacing),
@@ -237,7 +248,7 @@ class _EditarEstudianteScreenState extends State<EditarEstudianteScreen> {
                   validator: _validarTelefono,
                 ),
               ],
-              
+
               ResponsiveHelper.verticalSpace(context, multiplier: 2),
 
               // Botón actualizar
@@ -280,8 +291,10 @@ class _EditarEstudianteScreenState extends State<EditarEstudianteScreen> {
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.save, 
-                              size: context.responsiveIconSize(22)),
+                            Icon(
+                              Icons.save,
+                              size: context.responsiveIconSize(22),
+                            ),
                             SizedBox(width: context.responsiveSpacing),
                             Text(
                               'Actualizar Estudiante',
@@ -336,9 +349,11 @@ class _EditarEstudianteScreenState extends State<EditarEstudianteScreen> {
               color: const Color(0xFF1565C0).withOpacity(0.08),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, 
-              size: context.responsiveIconSize(20), 
-              color: const Color(0xFF1565C0)),
+            child: Icon(
+              icon,
+              size: context.responsiveIconSize(20),
+              color: const Color(0xFF1565C0),
+            ),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(

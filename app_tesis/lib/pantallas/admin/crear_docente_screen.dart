@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../servicios/docente_service.dart';
+import '../../servicios/notification_service.dart';
 import '../../config/responsive_helper.dart';
 
 class CrearDocenteScreen extends StatefulWidget {
@@ -11,14 +12,14 @@ class CrearDocenteScreen extends StatefulWidget {
 
 class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   final _nombreController = TextEditingController();
   final _cedulaController = TextEditingController();
   final _emailController = TextEditingController();
   final _celularController = TextEditingController();
   final _oficinaController = TextEditingController();
   final _emailAlternativoController = TextEditingController();
-  
+
   bool _isLoading = false;
   DateTime? _fechaNacimiento;
   DateTime? _fechaIngreso;
@@ -75,7 +76,10 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
     return null;
   }
 
-  Future<void> _seleccionarFecha(BuildContext context, bool esNacimiento) async {
+  Future<void> _seleccionarFecha(
+    BuildContext context,
+    bool esNacimiento,
+  ) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -97,7 +101,7 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
         );
       },
     );
-    
+
     if (picked != null) {
       setState(() {
         if (esNacimiento) {
@@ -109,7 +113,7 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
     }
   }
 
-  Future<void> _registrarDocente() async {
+  Future<void> _crearDocente() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -126,7 +130,8 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
 
     int edadReal = edad;
     if (mesActual < _fechaNacimiento!.month ||
-        (mesActual == _fechaNacimiento!.month && diaActual < _fechaNacimiento!.day)) {
+        (mesActual == _fechaNacimiento!.month &&
+            diaActual < _fechaNacimiento!.day)) {
       edadReal = edad - 1;
     }
 
@@ -165,10 +170,15 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
     if (resultado != null && resultado.containsKey('error')) {
       _mostrarError(resultado['error']);
     } else {
-      _mostrarExito('Docente registrado exitosamente. Se envió un correo con las credenciales.');
-      
+      _mostrarExito(
+        'Docente registrado exitosamente. Se envió un correo con las credenciales.',
+      );
+
+      // ✅ EMITIR NOTIFICACIÓN GLOBAL
+      notificationService.notificarMateriasActualizadas();
+
       await Future.delayed(const Duration(seconds: 2));
-      
+
       if (!mounted) return;
       Navigator.pop(context, true);
     }
@@ -236,7 +246,7 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
             padding: ResponsiveHelper.getContentPadding(context),
             children: [
               ResponsiveHelper.verticalSpace(context),
-              
+
               // Banner informativo
               Container(
                 padding: EdgeInsets.all(context.responsivePadding),
@@ -278,7 +288,7 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
                   ],
                 ),
               ),
-              
+
               ResponsiveHelper.verticalSpace(context, multiplier: 1.5),
 
               // Sección: Información Personal
@@ -319,11 +329,14 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
                 fecha: _fechaIngreso,
                 onTap: () => _seleccionarFecha(context, false),
               ),
-              
+
               ResponsiveHelper.verticalSpace(context, multiplier: 1.5),
 
               // Sección: Información de Contacto
-              _buildSeccionTitulo('Información de Contacto', Icons.contact_mail_outlined),
+              _buildSeccionTitulo(
+                'Información de Contacto',
+                Icons.contact_mail_outlined,
+              ),
               ResponsiveHelper.verticalSpace(context),
 
               _buildTextField(
@@ -363,7 +376,7 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
                 hint: 'Edificio A - Oficina 101',
                 validator: (value) => _validarRequerido(value, 'La oficina'),
               ),
-              
+
               ResponsiveHelper.verticalSpace(context, multiplier: 2),
 
               // Botón registrar
@@ -382,7 +395,7 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
                   ],
                 ),
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _registrarDocente,
+                  onPressed: _isLoading ? null : _crearDocente,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1565C0),
                     foregroundColor: Colors.white,
@@ -406,8 +419,10 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.person_add, 
-                              size: context.responsiveIconSize(22)),
+                            Icon(
+                              Icons.person_add,
+                              size: context.responsiveIconSize(22),
+                            ),
                             SizedBox(width: context.responsiveSpacing),
                             Text(
                               'Registrar Docente',
@@ -488,12 +503,8 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          labelStyle: TextStyle(
-            fontSize: context.responsiveFontSize(14),
-          ),
-          hintStyle: TextStyle(
-            fontSize: context.responsiveFontSize(14),
-          ),
+          labelStyle: TextStyle(fontSize: context.responsiveFontSize(14)),
+          hintStyle: TextStyle(fontSize: context.responsiveFontSize(14)),
           prefixIcon: Container(
             margin: const EdgeInsets.all(12),
             padding: const EdgeInsets.all(8),
@@ -501,9 +512,11 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
               color: const Color(0xFF1565C0).withOpacity(0.08),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, 
-              size: context.responsiveIconSize(20), 
-              color: const Color(0xFF1565C0)),
+            child: Icon(
+              icon,
+              size: context.responsiveIconSize(20),
+              color: const Color(0xFF1565C0),
+            ),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
@@ -584,9 +597,11 @@ class _CrearDocenteScreenState extends State<CrearDocenteScreen> {
                 color: const Color(0xFF1565C0).withOpacity(0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, 
-                size: context.responsiveIconSize(20), 
-                color: const Color(0xFF1565C0)),
+              child: Icon(
+                icon,
+                size: context.responsiveIconSize(20),
+                color: const Color(0xFF1565C0),
+              ),
             ),
             SizedBox(width: context.responsiveSpacing),
             Expanded(

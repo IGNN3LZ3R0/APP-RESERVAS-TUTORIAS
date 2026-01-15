@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../servicios/docente_service.dart';
+import '../../servicios/notification_service.dart';
 import '../../config/responsive_helper.dart';
 
 class EditarDocenteScreen extends StatefulWidget {
@@ -198,6 +199,9 @@ class _EditarDocenteScreenState extends State<EditarDocenteScreen> {
       _mostrarError(resultado['error']);
     } else {
       _mostrarExito('Docente actualizado exitosamente');
+      
+      // ✅ EMITIR NOTIFICACIÓN GLOBAL
+      notificationService.notificarMateriasActualizadas();
       
       await Future.delayed(const Duration(seconds: 1));
       

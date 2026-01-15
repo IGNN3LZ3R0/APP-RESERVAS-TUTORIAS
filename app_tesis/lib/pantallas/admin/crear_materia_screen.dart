@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../servicios/materia_service.dart';
+import '../../servicios/notification_service.dart';
 import '../../config/responsive_helper.dart';
 
 class CrearMateriaScreen extends StatefulWidget {
@@ -12,12 +13,12 @@ class CrearMateriaScreen extends StatefulWidget {
 
 class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   final _nombreController = TextEditingController();
   final _codigoController = TextEditingController();
   final _creditosController = TextEditingController();
   final _descripcionController = TextEditingController();
-  
+
   String? _semestreSeleccionado;
   bool _isLoading = false;
 
@@ -104,9 +105,12 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
       _mostrarError(resultado['error']);
     } else {
       _mostrarExito('Materia creada exitosamente');
-      
+
+      // ✅ EMITIR NOTIFICACIÓN GLOBAL
+      notificationService.notificarMateriasActualizadas();
+
       await Future.delayed(const Duration(seconds: 1));
-      
+
       if (!mounted) return;
       Navigator.pop(context, true);
     }
@@ -124,9 +128,7 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
         ),
         backgroundColor: const Color(0xFFD32F2F),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
       ),
     );
@@ -144,9 +146,7 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
         ),
         backgroundColor: const Color(0xFF388E3C),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
         duration: const Duration(seconds: 2),
       ),
@@ -156,7 +156,7 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
   @override
   Widget build(BuildContext context) {
     final isTablet = context.isTablet || context.isDesktop;
-    
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -180,7 +180,7 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
             padding: ResponsiveHelper.getContentPadding(context),
             children: [
               ResponsiveHelper.verticalSpace(context),
-              
+
               // Información
               Container(
                 padding: EdgeInsets.all(context.responsivePadding),
@@ -222,7 +222,7 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
                   ],
                 ),
               ),
-              
+
               ResponsiveHelper.verticalSpace(context, multiplier: 1.5),
 
               // Para tablets/desktop: layout de 2 columnas
@@ -236,7 +236,8 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
                         label: 'Nombre de la Materia',
                         icon: Icons.book,
                         hint: 'Cálculo Diferencial',
-                        validator: (value) => _validarRequerido(value, 'El nombre'),
+                        validator: (value) =>
+                            _validarRequerido(value, 'El nombre'),
                       ),
                     ),
                     SizedBox(width: context.responsiveSpacing),
@@ -255,9 +256,7 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: _buildDropdown(),
-                    ),
+                    Expanded(child: _buildDropdown()),
                     SizedBox(width: context.responsiveSpacing),
                     Expanded(
                       child: _buildTextField(
@@ -300,7 +299,7 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
                   validator: _validarCreditos,
                 ),
               ],
-              
+
               ResponsiveHelper.verticalSpace(context),
 
               // Descripción (siempre full width)
@@ -311,7 +310,7 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
                 hint: 'Breve descripción de la materia',
                 maxLines: 3,
               ),
-              
+
               ResponsiveHelper.verticalSpace(context, multiplier: 2),
 
               // Botón crear
@@ -354,8 +353,10 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.add_circle_outline,
-                                size: context.responsiveIconSize(22)),
+                            Icon(
+                              Icons.add_circle_outline,
+                              size: context.responsiveIconSize(22),
+                            ),
                             SizedBox(width: context.responsiveSpacing),
                             Text(
                               'Crear Materia',
@@ -405,25 +406,25 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
         keyboardType: keyboardType,
         maxLines: maxLines,
         maxLength: maxLines != null && maxLines > 1 ? 200 : null,
-        textCapitalization: label.contains('Código') 
-            ? TextCapitalization.characters 
+        textCapitalization: label.contains('Código')
+            ? TextCapitalization.characters
             : TextCapitalization.words,
         inputFormatters: label.contains('Código')
             ? [FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9\-]'))]
             : label.contains('Créditos')
-                ? [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(2),
-                  ]
-                : null,
+            ? [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(2),
+              ]
+            : null,
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
           helperText: label.contains('Código')
               ? 'Ej: MAT-101, FIS-201, etc.'
               : label.contains('Créditos')
-                  ? 'Entre 1 y 10'
-                  : null,
+              ? 'Entre 1 y 10'
+              : null,
           labelStyle: TextStyle(fontSize: context.responsiveFontSize(14)),
           hintStyle: TextStyle(fontSize: context.responsiveFontSize(14)),
           helperStyle: TextStyle(fontSize: context.responsiveFontSize(12)),
@@ -434,9 +435,11 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
               color: const Color(0xFF1565C0).withOpacity(0.08),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon,
-                size: context.responsiveIconSize(20),
-                color: const Color(0xFF1565C0)),
+            child: Icon(
+              icon,
+              size: context.responsiveIconSize(20),
+              color: const Color(0xFF1565C0),
+            ),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
@@ -510,9 +513,11 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
               color: const Color(0xFF1565C0).withOpacity(0.08),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.school,
-                size: context.responsiveIconSize(20),
-                color: const Color(0xFF1565C0)),
+            child: Icon(
+              Icons.school,
+              size: context.responsiveIconSize(20),
+              color: const Color(0xFF1565C0),
+            ),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
@@ -556,10 +561,7 @@ class _CrearMateriaScreenState extends State<CrearMateriaScreen> {
           color: Colors.black87,
         ),
         items: _semestres.map((semestre) {
-          return DropdownMenuItem(
-            value: semestre,
-            child: Text(semestre),
-          );
+          return DropdownMenuItem(value: semestre, child: Text(semestre));
         }).toList(),
         onChanged: (value) {
           setState(() => _semestreSeleccionado = value);

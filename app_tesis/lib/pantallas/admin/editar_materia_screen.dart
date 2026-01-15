@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../modelos/materia.dart';
 import '../../servicios/materia_service.dart';
+import '../../servicios/notification_service.dart';
 import '../../config/responsive_helper.dart';
 
 class EditarMateriaScreen extends StatefulWidget {
@@ -15,12 +16,12 @@ class EditarMateriaScreen extends StatefulWidget {
 
 class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _nombreController;
   late TextEditingController _codigoController;
   late TextEditingController _creditosController;
   late TextEditingController _descripcionController;
-  
+
   String? _semestreSeleccionado;
   bool _isLoading = false;
 
@@ -43,8 +44,12 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
   void _cargarDatosIniciales() {
     _nombreController = TextEditingController(text: widget.materia.nombre);
     _codigoController = TextEditingController(text: widget.materia.codigo);
-    _creditosController = TextEditingController(text: widget.materia.creditos.toString());
-    _descripcionController = TextEditingController(text: widget.materia.descripcion ?? '');
+    _creditosController = TextEditingController(
+      text: widget.materia.creditos.toString(),
+    );
+    _descripcionController = TextEditingController(
+      text: widget.materia.descripcion ?? '',
+    );
     _semestreSeleccionado = widget.materia.semestre;
   }
 
@@ -122,9 +127,12 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
       _mostrarError(resultado['error']);
     } else {
       _mostrarExito('Materia actualizada exitosamente');
-      
+
+      // ✅ EMITIR NOTIFICACIÓN GLOBAL
+      notificationService.notificarMateriasActualizadas();
+
       await Future.delayed(const Duration(seconds: 1));
-      
+
       if (!mounted) return;
       Navigator.pop(context, true);
     }
@@ -154,7 +162,7 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
   @override
   Widget build(BuildContext context) {
     final isTablet = context.isTablet || context.isDesktop;
-    
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -177,7 +185,7 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
             padding: ResponsiveHelper.getContentPadding(context),
             children: [
               ResponsiveHelper.verticalSpace(context),
-              
+
               // Información
               Container(
                 padding: EdgeInsets.all(context.responsivePadding),
@@ -208,7 +216,7 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
                   ],
                 ),
               ),
-              
+
               ResponsiveHelper.verticalSpace(context, multiplier: 1.5),
 
               // Layout responsive
@@ -221,7 +229,8 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
                         controller: _nombreController,
                         label: 'Nombre de la Materia',
                         icon: Icons.book,
-                        validator: (value) => _validarRequerido(value, 'El nombre'),
+                        validator: (value) =>
+                            _validarRequerido(value, 'El nombre'),
                       ),
                     ),
                     SizedBox(width: context.responsiveSpacing),
@@ -240,9 +249,7 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: _buildDropdown(),
-                    ),
+                    Expanded(child: _buildDropdown()),
                     SizedBox(width: context.responsiveSpacing),
                     Expanded(
                       child: _buildTextField(
@@ -283,7 +290,7 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
                   validator: _validarCreditos,
                 ),
               ],
-              
+
               ResponsiveHelper.verticalSpace(context),
 
               // Descripción (siempre full width)
@@ -293,7 +300,7 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
                 icon: Icons.description,
                 maxLines: 3,
               ),
-              
+
               ResponsiveHelper.verticalSpace(context, multiplier: 2),
 
               // Botón actualizar
@@ -336,8 +343,10 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.save, 
-                              size: context.responsiveIconSize(22)),
+                            Icon(
+                              Icons.save,
+                              size: context.responsiveIconSize(22),
+                            ),
                             SizedBox(width: context.responsiveSpacing),
                             Text(
                               'Actualizar Materia',
@@ -392,11 +401,11 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
         inputFormatters: label.contains('Código')
             ? [FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9\-]'))]
             : label.contains('Créditos')
-                ? [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(2),
-                  ]
-                : null,
+            ? [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(2),
+              ]
+            : null,
         decoration: InputDecoration(
           labelText: label,
           helperText: helperText,
@@ -409,9 +418,11 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
               color: const Color(0xFF1565C0).withOpacity(0.08),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon,
-                size: context.responsiveIconSize(20),
-                color: const Color(0xFF1565C0)),
+            child: Icon(
+              icon,
+              size: context.responsiveIconSize(20),
+              color: const Color(0xFF1565C0),
+            ),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
@@ -485,9 +496,11 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
               color: const Color(0xFF1565C0).withOpacity(0.08),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.school,
-                size: context.responsiveIconSize(20),
-                color: const Color(0xFF1565C0)),
+            child: Icon(
+              Icons.school,
+              size: context.responsiveIconSize(20),
+              color: const Color(0xFF1565C0),
+            ),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(
@@ -531,10 +544,7 @@ class _EditarMateriaScreenState extends State<EditarMateriaScreen> {
           color: Colors.black87,
         ),
         items: _semestres.map((semestre) {
-          return DropdownMenuItem(
-            value: semestre,
-            child: Text(semestre),
-          );
+          return DropdownMenuItem(value: semestre, child: Text(semestre));
         }).toList(),
         onChanged: (value) {
           setState(() => _semestreSeleccionado = value);

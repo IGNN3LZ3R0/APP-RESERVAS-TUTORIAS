@@ -2,11 +2,11 @@
 import 'package:app_tesis/servicios/auth_service.dart';
 import 'package:app_tesis/servicios/docente_service.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../modelos/usuario.dart';
 import '../../servicios/horario_service.dart';
 import '../../servicios/notification_service.dart';
 import '../../config/responsive_helper.dart';
-import 'dart:async';
 
 class GestionHorariosScreen extends StatefulWidget {
   final Usuario usuario;
@@ -19,13 +19,7 @@ class GestionHorariosScreen extends StatefulWidget {
 
 class _GestionHorariosScreenState extends State<GestionHorariosScreen>
     with AutomaticKeepAliveClientMixin {
-  final List<String> _diasSemana = [
-    'Lunes',
-    'Martes',
-    'Miércoles',
-    'Jueves',
-    'Viernes',
-  ];
+  final List<String> _diasSemana = ['Martes', 'Miércoles', 'Jueves', 'Viernes'];
 
   final List<String> _horasDisponibles = [
     '07:00',
@@ -59,6 +53,7 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
   bool _hasChanges = false;
   List<String> _materiasDocente = [];
   StreamSubscription? _materiasSubscription;
+  StreamSubscription? _horariosSubscription;
 
   @override
   bool get wantKeepAlive => true;
@@ -75,16 +70,32 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
   void initState() {
     super.initState();
     _cargarMateriasDocente();
+
+    // ✅ ESCUCHAR CAMBIOS EN MATERIAS
     _materiasSubscription = notificationService.materiasActualizadas.listen((
       _,
     ) {
-      if (mounted) _cargarMateriasDocente();
+      if (mounted) {
+        print('🔄 Materias actualizadas en GestionHorariosScreen');
+        _cargarMateriasDocente();
+      }
+    });
+
+    // ✅ ESCUCHAR CAMBIOS EN HORARIOS
+    _horariosSubscription = notificationService.horariosActualizados.listen((
+      _,
+    ) {
+      if (mounted) {
+        print('🔄 Horarios actualizados en GestionHorariosScreen');
+        _cargarHorariosExistentes();
+      }
     });
   }
 
   @override
   void dispose() {
     _materiasSubscription?.cancel();
+    _horariosSubscription?.cancel();
     super.dispose();
   }
 
@@ -242,6 +253,10 @@ class _GestionHorariosScreenState extends State<GestionHorariosScreen>
       if (mounted) {
         if (resultado['success'] == true) {
           _mostrarExito(resultado['mensaje'] ?? 'Horarios guardados');
+
+          // ✅ EMITIR NOTIFICACIÓN GLOBAL
+          notificationService.notificarHorariosActualizados();
+
           setState(() => _hasChanges = false);
         } else {
           _mostrarError(resultado['mensaje'] ?? 'Error al guardar');

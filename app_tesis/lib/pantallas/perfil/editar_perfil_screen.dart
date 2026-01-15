@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../modelos/usuario.dart';
 import '../../servicios/perfil_service.dart';
 import '../../servicios/auth_service.dart';
+import '../../servicios/notification_service.dart';
 
 class EditarPerfilScreen extends StatefulWidget {
   final Usuario usuario;
@@ -402,6 +403,9 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     // Actualizar en SharedPreferences
     if (usuarioActualizado != null) {
       await AuthService.actualizarUsuario(usuarioActualizado);
+
+      // ✅ EMITIR NOTIFICACIÓN GLOBAL
+      notificationService.notificarActualizacionUsuario(usuarioActualizado);
     }
 
     // Actualizar estado local
