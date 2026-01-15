@@ -1,7 +1,18 @@
 // backend/src/utils/recordatorios.js
-import moment from 'moment';
+import moment from 'moment-timezone';
 import Tutoria from '../models/tutorias.js';
 import { sendMailRecordatorioTutoria } from '../config/sendgrid_mailer.js';
+
+/**
+ * Ejecutar recordatorios para 24h y 3h antes de la tutoría
+ */
+export const ejecutarTodosLosRecordatorios = async () => {
+  console.log('\n🚀 Ejecutando recordatorios de tutorías (24h y 3h antes)...');
+  const resultado24h = await enviarRecordatoriosTutorias(24);
+  const resultado3h = await enviarRecordatoriosTutorias(3);
+  return { resultado24h, resultado3h };
+};
+
 
 /**
  * Enviar recordatorios de tutorías próximas
@@ -10,8 +21,8 @@ import { sendMailRecordatorioTutoria } from '../config/sendgrid_mailer.js';
 export const enviarRecordatoriosTutorias = async (horasAntes = 24) => {
   try {
     console.log(`\n⏰ Iniciando envío de recordatorios (${horasAntes}h antes)...`);
-    
-    const ahora = moment();
+
+    const ahora = moment.tz('America/Guayaquil');
     const tiempoInicio = moment(ahora).add(horasAntes - 0.5, 'hours');
     const tiempoFin = moment(ahora).add(horasAntes + 0.5, 'hours');
 
@@ -23,8 +34,8 @@ export const enviarRecordatoriosTutorias = async (horasAntes = 24) => {
       estado: 'confirmada',
       [`recordatorio${horasAntes}hEnviado`]: { $ne: true }
     })
-    .populate('estudiante', 'nombreEstudiante emailEstudiante')
-    .populate('docente', 'nombreDocente emailDocente oficinaDocente');
+      .populate('estudiante', 'nombreEstudiante emailEstudiante')
+      .populate('docente', 'nombreDocente emailDocente oficinaDocente');
 
     console.log(`   Total tutorías confirmadas: ${tutorias.length}`);
 
@@ -33,12 +44,12 @@ export const enviarRecordatoriosTutorias = async (horasAntes = 24) => {
 
     for (const tutoria of tutorias) {
       try {
-        const fechaHoraTutoria = moment(`${tutoria.fecha} ${tutoria.horaInicio}`, 'YYYY-MM-DD HH:mm');
+        const fechaHoraTutoria = moment.tz(`${tutoria.fecha} ${tutoria.horaInicio}`, 'YYYY-MM-DD HH:mm', 'America/Guayaquil');
         const horasRestantes = fechaHoraTutoria.diff(ahora, 'hours', true);
 
         // Verificar si está en el rango correcto
         if (horasRestantes >= (horasAntes - 0.5) && horasRestantes <= (horasAntes + 0.5)) {
-          
+
           const formatearFecha = (fecha) => {
             const date = moment(fecha, 'YYYY-MM-DD');
             const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -80,14 +91,14 @@ export const enviarRecordatoriosTutorias = async (horasAntes = 24) => {
           } else if (horasAntes === 3) {
             tutoria.recordatorio3hEnviado = true;
           }
-          
+
           await tutoria.save();
 
           console.log(`   ✅ Recordatorio enviado: ${tutoria._id}`);
           console.log(`      Estudiante: ${tutoria.estudiante.nombreEstudiante}`);
           console.log(`      Docente: ${tutoria.docente.nombreDocente}`);
           console.log(`      Fecha/Hora: ${tutoria.fecha} ${tutoria.horaInicio}`);
-          
+
           enviados++;
         } else {
           omitidos++;
@@ -116,14 +127,14 @@ export const enviarRecordatoriosTutorias = async (horasAntes = 24) => {
 export const limpiarFlagsRecordatorios = async () => {
   try {
     const ayer = moment().subtract(1, 'day').format('YYYY-MM-DD');
-    
+
     const resultado = await Tutoria.updateMany(
       { fecha: { $lt: ayer } },
-      { 
-        $unset: { 
+      {
+        $unset: {
           recordatorio24hEnviado: "",
-          recordatorio3hEnviado: "" 
-        } 
+          recordatorio3hEnviado: ""
+        }
       }
     );
 
