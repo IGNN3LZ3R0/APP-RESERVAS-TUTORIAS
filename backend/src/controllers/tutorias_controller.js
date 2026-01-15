@@ -1842,7 +1842,9 @@ const registrarDisponibilidadPorMateria = async (req, res) => {
     );
 
     if (!validacionEntreMaterias.valido) {
+      // ❌ RETORNAR 400 (NO 200) para indicar error de validación
       return res.status(400).json({
+        success: false,  // ✅ Añadir success: false
         msg: validacionEntreMaterias.mensaje
       });
     }
