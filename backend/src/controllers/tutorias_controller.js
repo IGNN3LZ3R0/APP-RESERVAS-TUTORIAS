@@ -594,17 +594,7 @@ const cancelarTutoria = async (req, res) => {
 
     // ✅ SOLUCIÓN: Parseado robusto de fecha y hora
     const ahora = moment();
-
-    // Convertir fecha a string en formato correcto (manejar Date object o string)
-    let fechaStr;
-    if (tutoria.fecha instanceof Date) {
-      fechaStr = moment(tutoria.fecha).format('YYYY-MM-DD');
-    } else {
-      fechaStr = moment(tutoria.fecha, 'YYYY-MM-DD').format('YYYY-MM-DD');
-    }
-
-    // Construir fecha-hora completa de la tutoría
-    const fechaHoraTutoria = moment(`${fechaStr} ${tutoria.horaInicio}`, 'YYYY-MM-DD HH:mm');
+    const fechaHoraTutoria = moment.tz(`${tutoria.fecha} ${tutoria.horaFin}`, 'YYYY-MM-DD HH:mm', 'America/Guayaquil');
 
     // 🔍 LOGS DE DEPURACIÓN
     console.log('📊 Validación de cancelación:');
@@ -771,8 +761,8 @@ export const reagendarTutoria = async (req, res) => {
 
     // ✅ VALIDACIÓN 3: Tutoría no expirada
     // Comparar siempre en zona horaria de Ecuador para evitar expiraciones adelantadas
-    const fechaHoraTutoria = moment.tz(`${tutoria.fecha} ${tutoria.horaFin}`, 'YYYY-MM-DD HH:mm', 'America/Guayaquil');
     const ahora = moment.tz('America/Guayaquil');
+    const fechaHoraTutoria = moment.tz(`${tutoria.fecha} ${tutoria.horaFin}`, 'YYYY-MM-DD HH:mm', 'America/Guayaquil');
 
     if (fechaHoraTutoria.isBefore(ahora)) {
       console.log(`⏰ Tutoría expirada (zona Ecuador): ${tutoria._id}`);
@@ -2068,6 +2058,8 @@ export const aceptarTutoria = async (req, res) => {
     tutoria.estado = 'confirmada';
     await tutoria.save();
 
+
+
     console.log(`✅ Tutoría aceptada: ${tutoria._id}`);
 
     res.status(200).json({
@@ -2256,13 +2248,13 @@ export const finalizarTutoria = async (req, res) => {
     }
 
     // Validar que la fecha no sea futura
-    const fechaTutoria = moment(tutoria.fecha, 'YYYY-MM-DD');
-    const hoy = moment().startOf('day');
-
-    if (fechaTutoria.isAfter(hoy)) {
+    // Validar que la fecha y hora de fin ya hayan pasado
+    const fechaHoraFinTutoria = moment.tz(`${tutoria.fecha} ${tutoria.horaFin}`, 'YYYY-MM-DD HH:mm', 'America/Guayaquil');
+    const ahora = moment.tz('America/Guayaquil');
+    if (fechaHoraFinTutoria.isAfter(ahora)) {
       return res.status(400).json({
         success: false,
-        msg: 'No puedes finalizar una tutoría que aún no ha ocurrido'
+        msg: 'No puedes finalizar una tutoría que aún no ha terminado'
       });
     }
 
@@ -2311,10 +2303,7 @@ export const finalizarTutoria = async (req, res) => {
 // =====================================================
 export const marcarTutoriasExpiradas = async () => {
   try {
-    const ahora = moment();
-    const fechaHoy = ahora.format('YYYY-MM-DD');
-    const horaActual = ahora.format('HH:mm');
-
+    const ahora = moment.tz('America/Guayaquil');
     console.log('🔍 Buscando tutorías expiradas...');
 
     // Buscar tutorías pendientes o confirmadas cuya fecha/hora ya pasó
@@ -2325,7 +2314,7 @@ export const marcarTutoriasExpiradas = async () => {
     let marcadas = 0;
 
     for (const tutoria of tutoriasActivas) {
-      const fechaHoraTutoria = moment(`${tutoria.fecha} ${tutoria.horaFin}`, 'YYYY-MM-DD HH:mm');
+      const fechaHoraTutoria = moment.tz(`${tutoria.fecha} ${tutoria.horaFin}`, 'YYYY-MM-DD HH:mm', 'America/Guayaquil');
 
       if (fechaHoraTutoria.isBefore(ahora)) {
         tutoria.estado = 'expirada';
